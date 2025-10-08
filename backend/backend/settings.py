@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+
+from django.conf.global_settings import INSTALLED_APPS
 from dotenv import load_dotenv
 import os
 
@@ -35,22 +37,30 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dashboard',
-    'investors',
-    'user_messages',
-    'projects',
-    'startups',
-    'users',
+]
+
+THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
 ]
+
+LOCAL_APPS = [
+    'apps.dashboard',
+    'apps.investors',
+    'apps.projects',
+    'apps.startups',
+    'apps.user_messages',
+    'apps.users',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
