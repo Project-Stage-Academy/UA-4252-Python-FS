@@ -5,5 +5,6 @@ from rest_framework.views import APIView
 
 class GetHealth(APIView):
     """ Simple health-check endpoint to check health. """
+
     def get(self, request):
-        return Response({'status':'ok'}, status=status.HTTP_200_OK)
+        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
