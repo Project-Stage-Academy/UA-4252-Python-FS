@@ -1,3 +1,7 @@
-export default function Inbox() {
-  return <h1>💬 Messages Inbox</h1>
+type InboxProps = {
+  title?: string;
+};
+
+export default function Inbox({ title = "💬 Messages Inbox" }: InboxProps) {
+  return <h1>{title}</h1>;
 }

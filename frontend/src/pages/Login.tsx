@@ -1,3 +1,7 @@
-export default function Login() {
-  return <h1>🔐 Login Page</h1>
+type LoginProps = {
+  title?: string;
+};
+
+export default function Login({ title = "🔐 Login Page" }: LoginProps) {
+  return <h1>{title}</h1>;
 }

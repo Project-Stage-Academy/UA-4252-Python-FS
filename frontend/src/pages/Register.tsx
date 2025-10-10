@@ -1,3 +1,7 @@
-export default function Register() {
-  return <h1>📝 Register Page</h1>
+type RegisterProps = {
+  title?: string;
+};
+
+export default function Register({ title = "📝 Register Page" }: RegisterProps) {
+  return <h1>{title}</h1>;
 }

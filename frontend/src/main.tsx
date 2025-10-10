@@ -2,24 +2,28 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import StartupView from './pages/StartupView'
-import InvestorDashboard from './pages/InvestorDashboard'
-import Inbox from './pages/Inbox'
+import { routes } from "./routes";
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/startups/:id" element={<StartupView />} />
-        <Route path="/dashboard" element={<InvestorDashboard />} />
-        <Route path="/messages" element={<Inbox />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>
-)
+const rootElement = document.getElementById('root')
+
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            {routes.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
+          </Routes>
+        </React.Suspense>
+      </BrowserRouter>
+    </React.StrictMode>
+  );
+} else {
+  console.error(
+    "Root element not found. Make sure index.html contains <div id='root'></div>"
+  );
+}
+
+

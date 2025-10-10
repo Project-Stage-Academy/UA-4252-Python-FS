@@ -1,3 +1,7 @@
-export default function InvestorDashboard() {
-  return <h1>📊 Investor Dashboard</h1>
+type InvestorDashboardProps = {
+  title?: string;
+};
+
+export default function InvestorDashboard({ title = "📊 Investor Dashboard" }: InvestorDashboardProps) {
+  return <h1>{title}</h1>;
 }

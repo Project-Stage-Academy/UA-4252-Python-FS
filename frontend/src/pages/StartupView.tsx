@@ -1,3 +1,7 @@
-export default function StartupView() {
-  return <h1>🚀 Startup View Page</h1>
+type StartupViewProps = {
+  title?: string;
+};
+
+export default function StartupView({ title = "🚀 Startup View Page" }: StartupViewProps) {
+  return <h1>{title}</h1>;
 }
