@@ -85,7 +85,10 @@ We are committed to delivering a platform that is not just a marketplace for ide
 
 ### CI/CD Workflow
 
-This project uses GitHub Actions for Continuous Integration. The workflow runs linters, tests, and builds for every pull request to the `develop` branch.
+This project uses GitHub Actions for Continuous Integration. The workflow runs for every pull request to the `develop` and `main` branches and includes two jobs:
+
+- **`backend`**: Lints the code and runs tests for the Django application.
+- **`frontend`**: Installs dependencies and builds the frontend application.
 
 #### How to Read CI Logs
 
@@ -93,3 +96,4 @@ This project uses GitHub Actions for Continuous Integration. The workflow runs l
 2.  Scroll down to the **Checks** section.
 3.  If the workflow fails, you will see a red 'X'. Click on the **Details** link next to the failing job (e.g., `backend` or `frontend`).
 4.  This will open the logs. Expand the step that failed (e.g., `Lint (flake8)` or `Tests`) to see the detailed error message.
+5.  To view build artifacts, go to the 'Artifacts' section under the job summary. (available only for frontend)
