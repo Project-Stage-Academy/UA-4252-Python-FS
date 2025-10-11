@@ -1,0 +1,21 @@
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+.dockerignore
+
+# Python / Backend
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+.venv/
+venv/
+*.log
+backend/.env
