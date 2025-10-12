@@ -6,14 +6,12 @@ updates:
       interval: "daily"
       time: "18:00"
 
-  # npm (якщо є package.json)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
       time: "18:00"
 
-  # pip (якщо є requirements.txt або pyproject.toml)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
