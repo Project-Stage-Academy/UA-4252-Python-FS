@@ -1,0 +1,107 @@
+[
+    {
+        "model": "users.user",
+        "pk": 1,
+        "fields": {
+            "username": "startupuser",
+            "email": "startup@example.com",
+            "password": "pbkdf2_sha256$260000$dummyhash",
+            "first_name": "Startup",
+            "last_name": "User",
+            "is_verified": true,
+            "is_active": true,
+            "is_staff": false,
+            "is_superuser": false,
+            "date_joined": "2025-01-01T00:00:00Z",
+            "last_login": null,
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 2,
+        "fields": {
+            "username": "investoruser",
+            "email": "investor@example.com",
+            "password": "pbkdf2_sha256$260000$dummyhash",
+            "first_name": "Investor",
+            "last_name": "User",
+            "is_verified": true,
+            "is_active": true,
+            "is_staff": false,
+            "is_superuser": false,
+            "date_joined": "2025-01-01T00:00:00Z",
+            "last_login": null,
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "startups.startupprofile",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "company_name": "Tech Startup Inc.",
+            "description": "An innovative tech startup.",
+            "founded_year": 2023,
+            "team_size": 10,
+            "website": "http://techstartup.com",
+            "email": "contact@techstartup.com",
+            "phone": "+380123456789",
+            "city": "Kyiv",
+            "address": "123 Tech Street",
+            "postal_code": "01001",
+            "logo": "",
+            "partners_brands": "BrandX, BrandY",
+            "audit_status": "Pending",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "investors.investorprofile",
+        "pk": 1,
+        "fields": {
+            "user": 2,
+            "company_name": "Global Ventures",
+            "full_name": "Investor User",
+            "description": "A global investor.",
+            "investment_range_min": "50000.00",
+            "investment_range_max": "500000.00",
+            "preferred_industries": "Tech, Healthcare",
+            "website": "http://globalventures.com",
+            "email": "investor@globalventures.com",
+            "phone": "+380987654321",
+            "country": "Ukraine",
+            "region": 8,
+            "city": "Kyiv",
+            "address": "456 Investor Road",
+            "postal_code": "01002",
+            "logo": "",
+            "partners_brands": "BrandA, BrandB",
+            "audit_status": "Approved",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "projects.project",
+        "pk": 1,
+        "fields": {
+            "startup": 1,
+            "title": "Innovative Tech Product",
+            "slug": "innovative-tech-product",
+            "short_description": "A new tech product with high potential.",
+            "description": "This project aims to develop a groundbreaking tech product.",
+            "status": "Pending",
+            "target_amount": "100000.00",
+            "raised_amount": "50000.00",
+            "currency": "UAH",
+            "tags": "tech, innovation",
+            "visibility": "public",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z"
+        }
+    }
+]
