@@ -17,11 +17,11 @@ class Command(BaseCommand):
         while not db_up and retries_left:
             try:
                 connect(
-                    dbname=os.environ.get('DB_NAME'),
-                    user=os.environ.get('DB_USER'),
-                    password=os.environ.get('DB_PASSWORD'),
-                    host=os.environ.get('DB_HOST'),
-                    port=os.environ.get('DB_PORT')
+                    dbname=os.environ.get('POSTGRES_DB'),
+                    user=os.environ.get('POSTGRES_USER'),
+                    password=os.environ.get('POSTGRES_PASSWORD'),
+                    host=os.environ.get('POSTGRES_HOST'),
+                    port=os.environ.get('POSTGRES_PORT')
                 )
                 db_up = True
             except (Psycopg2OpError, OperationalError) as e:
