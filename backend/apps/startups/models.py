@@ -1,7 +1,8 @@
 from django.db import models
-from apps.users.models import User
+from django.contrib.auth import get_user_model
 from apps.investors.models import InvestorProfile
 
+User = get_user_model()
 
 class StartupProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -9,8 +10,8 @@ class StartupProfile(models.Model):
     description = models.TextField()
     founded_year = models.IntegerField()
     team_size = models.IntegerField()
-    website = models.URLField()
-    email = models.EmailField()
+    website  = models.URLField(max_length=200)
+    email = models.EmailField(max_length=100)
     phone = models.CharField(max_length=20)
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=255)

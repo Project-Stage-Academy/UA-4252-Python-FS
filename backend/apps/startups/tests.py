@@ -33,6 +33,8 @@ class StartupProfileModelTest(TestCase):
             "logo": "media/startup_logos/smartvision.png",
             "partners_brands": "NVIDIA, Intel",
             "audit_status": "Approved",
+            "created_at": "2025-01-01T00:00:00Z",
+            "updated_at": "2025-01-01T00:00:00Z",
         }
 
     def test_create_valid_startup_profile(self):
@@ -53,7 +55,7 @@ class StartupProfileModelTest(TestCase):
     def test_invalid_website_url(self):
         """Invalid website URL should raise ValidationError"""
         invalid_data = self.valid_data.copy()
-        invalid_data["website"] = "not-a-valid-url"
+        invalid_data["website"] = "invalid-url"
         startup = StartupProfile(**invalid_data)
         with self.assertRaises(ValidationError):
             startup.full_clean()
@@ -68,7 +70,7 @@ class StartupProfileModelTest(TestCase):
     def test_str_method_returns_company_name(self):
         """__str__ should return company name"""
         startup = StartupProfile.objects.create(**self.valid_data)
-        self.assertEqual(str(startup), startup.company_name)
+        self.assertEqual(str(startup), "SmartVision")
 
     def test_user_foreign_key_relation(self):
         """StartupProfile should be linked to a valid User"""
@@ -82,7 +84,7 @@ class SavedStartupModelTest(TestCase):
 
     def setUp(self):
         """Create related objects for testing SavedStartup"""
-        self.user = User.objects.create(
+        self.investor_user = User.objects.create(
             username="investoruser",
             email="investor@example.com",
             password="password123",
@@ -91,10 +93,10 @@ class SavedStartupModelTest(TestCase):
         )
 
         self.investor = InvestorProfile.objects.create(
-            user=self.user,
+            user=self.investor_user,
             company_name="Global Ventures",
             full_name="Investor Inc.",
-            description="An active venture fund investing in tech startups.",
+            description="A venture fund investing in tech startups.",
             investment_range_min=10000.00,
             investment_range_max=50000.00,
             preferred_industries="AI, SaaS",
@@ -106,12 +108,13 @@ class SavedStartupModelTest(TestCase):
             city="Kyiv",
             address="Khreshchatyk 10",
             postal_code="01001",
+            logo="media/Investor_logos/logo.png",
             partners_brands="Tesla, SpaceX",
             audit_status="Verified",
         )
 
         self.startup_user = User.objects.create(
-            username="startupowner",
+            username="founderuser",
             email="owner@smartvision.ai",
             password="password321",
             first_name="Owner",
@@ -132,7 +135,9 @@ class SavedStartupModelTest(TestCase):
             postal_code="79000",
             logo="media/startup_logos/smartvision.png",
             partners_brands="Google, Amazon",
-            audit_status="Approved"
+            audit_status="Approved",
+            created_at="2025-01-01T00:00:00Z",
+            updated_at="2025-01-01T00:00:00Z",
         )
 
         self.valid_data = {
@@ -151,7 +156,7 @@ class SavedStartupModelTest(TestCase):
     def test_str_method_returns_readable_text(self):
         """__str__ should return readable text with both company names"""
         saved = SavedStartup.objects.create(**self.valid_data)
-        expected_str = f"Saved {self.startup.company_name} by {self.investor.company_name}"
+        expected_str = f"Saved SmartVision by Global Ventures"
         self.assertEqual(str(saved), expected_str)
 
     def test_missing_required_fields(self):

@@ -1,5 +1,9 @@
 from django.db import models
-from apps.users.models import User
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from phonenumber_field.modelfields import PhoneNumberField
+
+User = get_user_model()
 
 REGION_CHOICES = (
     (0, 'Cherkasy'),
@@ -21,7 +25,7 @@ REGION_CHOICES = (
     (16, 'Ternopil'),
     (17, 'Vinnytsia'),
     (18, 'Volyn'),
-    (19, 'Zaporizhzhia'),
+    (19, 'Khmelnytskyi'),
     (20, 'Zhytomyr'),
     (21, 'Zakarpattia'),
     (22, 'Zaporizhzhia'),
@@ -39,7 +43,7 @@ class InvestorProfile(models.Model):
     preferred_industries = models.CharField(max_length=200) # In the future, consider using other table for statuses
     website = models.URLField(max_length=200)
     email = models.EmailField(max_length=100, unique=True)
-    phone = models.CharField(max_length=30)
+    phone = PhoneNumberField(region='UA')
     country = models.CharField(max_length=100)
     region = models.IntegerField(
         choices=REGION_CHOICES,
@@ -51,8 +55,13 @@ class InvestorProfile(models.Model):
     logo = models.ImageField(upload_to='media/Investor_logos/')
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=50, default="Pending")
-    created_at = models.DateTimeField(null=True)
-    updated_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.investment_range_max < self.investment_range_min:
+            raise ValidationError("Maximum investment must be greater than minimum investment.")
+
 
     def __str__(self):
         return self.company_name

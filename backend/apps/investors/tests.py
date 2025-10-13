@@ -8,9 +8,8 @@ class InvestorProfileModelTest(TestCase):
     """Unit tests for the InvestorProfile model"""
 
     def setUp(self):
-        """Create a sample User and base data for InvestorProfile"""
+        """Create a base User and default valid InvestorProfile data"""
         self.user = User.objects.create(
-            username="investoruser",
             email="investor@example.com",
             password="plainpassword123",
             first_name="Investor",
@@ -37,77 +36,81 @@ class InvestorProfileModelTest(TestCase):
             "audit_status": "Pending",
         }
 
-    def test_create_valid_investor_profile(self):
-        """Ensure a valid InvestorProfile can be created"""
+    def test_valid_investor_profile_creation(self):
+        """Should create InvestorProfile successfully with valid data"""
         investor = InvestorProfile.objects.create(**self.valid_data)
         self.assertIsInstance(investor, InvestorProfile)
         self.assertEqual(investor.company_name, "Tech Invest Group")
         self.assertEqual(investor.region, 8)
+        self.assertEqual(str(investor), "Tech Invest Group")
 
     def test_email_unique_constraint(self):
-        """InvestorProfile should not allow duplicate emails"""
+        """Should not allow duplicate investor emails"""
         InvestorProfile.objects.create(**self.valid_data)
         duplicate = self.valid_data.copy()
-        duplicate["email"] = "investorprofile@example.com"  # duplicate email
-        with self.assertRaises(Exception):  # IntegrityError or ValidationError
+        duplicate["email"] = "investorprofile@example.com"
+        with self.assertRaises(Exception):
             InvestorProfile.objects.create(**duplicate)
 
     def test_investment_range_validation(self):
-        """Investment range max should be greater than min"""
+        """Should raise ValidationError if max < min"""
         invalid_data = self.valid_data.copy()
         invalid_data["investment_range_min"] = 50000.00
         invalid_data["investment_range_max"] = 10000.00
         investor = InvestorProfile(**invalid_data)
-        # Currently no model-level validation, but logic placeholder
-        self.assertTrue(investor.investment_range_min > investor.investment_range_max)
+        with self.assertRaises(ValidationError):
+            investor.clean()  # should trigger validation logic
 
     def test_invalid_email_format(self):
-        """Invalid email format should raise ValidationError"""
+        """Should raise ValidationError for invalid email format"""
         invalid_data = self.valid_data.copy()
         invalid_data["email"] = "not-an-email"
         investor = InvestorProfile(**invalid_data)
         with self.assertRaises(ValidationError):
             investor.full_clean()
 
-    def test_region_choices_validation(self):
-        """Region must be one of the defined REGION_CHOICES"""
+    def test_invalid_website_format(self):
+        """Should raise ValidationError for invalid website format"""
         invalid_data = self.valid_data.copy()
-        invalid_data["region"] = 999  # invalid region
+        invalid_data["website"] = "invalid-url"
         investor = InvestorProfile(**invalid_data)
         with self.assertRaises(ValidationError):
             investor.full_clean()
 
-    def test_str_method_returns_company_name(self):
-        """__str__ should return the company name"""
-        investor = InvestorProfile.objects.create(**self.valid_data)
-        self.assertEqual(str(investor), "Tech Invest Group")
+    def test_invalid_phone_format(self):
+        """Should raise ValidationError for invalid phone number"""
+        invalid_data = self.valid_data.copy()
+        invalid_data["phone"] = "12345"  # not valid for UA region
+        investor = InvestorProfile(**invalid_data)
+        with self.assertRaises(ValidationError):
+            investor.full_clean()
 
-    def test_user_relation(self):
-        """InvestorProfile should be linked to the correct User"""
-        investor = InvestorProfile.objects.create(**self.valid_data)
-        self.assertEqual(investor.user, self.user)
-        self.assertEqual(investor.user.email, "investor@example.com")
+    def test_invalid_region_choice(self):
+        """Should raise ValidationError for invalid region number"""
+        invalid_data = self.valid_data.copy()
+        invalid_data["region"] = 999  # not in REGION_CHOICES
+        investor = InvestorProfile(**invalid_data)
+        with self.assertRaises(ValidationError):
+            investor.full_clean()
 
-    def test_missing_required_fields(self):
-        """Missing required fields should raise ValidationError"""
+    def test_missing_required_field(self):
+        """Should raise ValidationError when required fields are missing"""
         invalid_data = self.valid_data.copy()
         invalid_data.pop("company_name")
         investor = InvestorProfile(**invalid_data)
         with self.assertRaises(ValidationError):
             investor.full_clean()
 
-    def test_website_field_validation(self):
-        """Website field must contain a valid URL"""
+    def test_field_max_length_constraints(self):
+        """Should raise ValidationError if field exceeds max_length"""
         invalid_data = self.valid_data.copy()
-        invalid_data["website"] = "not-a-url"
+        invalid_data["company_name"] = "A" * 300  # exceeds max_length=200
         investor = InvestorProfile(**invalid_data)
         with self.assertRaises(ValidationError):
             investor.full_clean()
 
-    def test_max_length_fields(self):
-        """CharField values exceeding max_length should raise ValidationError"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["company_name"] = "A" * 201  # exceeds max_length=200
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
+    def test_user_relation(self):
+        """InvestorProfile should correctly link to its User"""
+        investor = InvestorProfile.objects.create(**self.valid_data)
+        self.assertEqual(investor.user.email, "investor@example.com")
+        self.assertEqual(investor.user.first_name, "Investor")

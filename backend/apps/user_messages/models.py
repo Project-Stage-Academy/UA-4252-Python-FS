@@ -1,7 +1,10 @@
 from django.db import models
 from apps.investors.models import InvestorProfile
-from apps.users.models import User
+from django.contrib.auth import get_user_model
 from apps.projects.models import Project
+
+User = get_user_model()
+
 class Notification(models.Model):
     user = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE)
     notification_type = models.CharField(max_length=50)

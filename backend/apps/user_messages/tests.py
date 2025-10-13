@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from apps.user_messages.models import Notification
 from apps.investors.models import InvestorProfile
 from apps.users.models import User
@@ -12,25 +13,26 @@ class NotificationModelTest(TestCase):
 
     def setUp(self):
         """Prepare all required related objects"""
-        # Create investor user
+
+        # --- Investor user ---
         self.investor_user = User.objects.create(
-            username="investoruser",
+            username="investor_user",
             email="investor@example.com",
             password="password123",
             first_name="Investor",
             last_name="User"
         )
 
-        # Create startup user
+        # --- Startup user ---
         self.startup_user = User.objects.create(
-            username="startupuser",
+            username="startup_user",
             email="startup@example.com",
             password="password456",
             first_name="Startup",
             last_name="Owner"
         )
 
-        # Create startup profile
+        # --- Startup profile ---
         self.startup = StartupProfile.objects.create(
             user=self.startup_user,
             company_name="TechStart",
@@ -45,10 +47,10 @@ class NotificationModelTest(TestCase):
             postal_code="01001",
             logo="media/startup_logos/techstart.png",
             partners_brands="NVIDIA, AWS",
-            audit_status="Approved"
+            audit_status="Approved",
         )
 
-        # Create investor profile
+        # --- Investor profile ---
         self.investor = InvestorProfile.objects.create(
             user=self.investor_user,
             company_name="VenturePlus",
@@ -65,18 +67,19 @@ class NotificationModelTest(TestCase):
             city="Kyiv",
             address="Khreshchatyk 12",
             postal_code="01001",
+            logo="media/Investor_logos/logo.png",
             partners_brands="Google, Amazon",
-            audit_status="Verified"
+            audit_status="Verified",
         )
 
-        # Create project
+        # --- Project ---
         self.project = Project.objects.create(
             startup=self.startup,
             title="AI Analytics System",
             slug="ai-analytics-system",
             short_description="AI-powered data analytics tool.",
             description="A scalable data platform using ML algorithms.",
-            status="In Progress",
+            status="in_progress",
             target_amount=50000.00,
             raised_amount=10000.00,
             currency="USD",
@@ -119,7 +122,7 @@ class NotificationModelTest(TestCase):
     def test_invalid_link_url(self):
         """Invalid link_url format should raise ValidationError"""
         invalid_data = self.valid_data.copy()
-        invalid_data["link_url"] = "not-a-valid-url"
+        invalid_data["link_url"] = "invalid-url"
         notification = Notification(**invalid_data)
         with self.assertRaises(ValidationError):
             notification.full_clean()
@@ -128,7 +131,7 @@ class NotificationModelTest(TestCase):
         """Foreign key relations must link to valid objects"""
         notification = Notification.objects.create(**self.valid_data)
         self.assertEqual(notification.user.company_name, "VenturePlus")
-        self.assertEqual(notification.related_user.username, "startupuser")
+        self.assertEqual(notification.related_user.email, "startup@example.com")
         self.assertEqual(notification.related_project.slug, "ai-analytics-system")
 
     def test_is_read_default_false(self):
@@ -140,5 +143,7 @@ class NotificationModelTest(TestCase):
         """Notification can be marked as read"""
         notification = Notification.objects.create(**self.valid_data)
         notification.is_read = True
+        notification.read_at = timezone.now()
         notification.save()
         self.assertTrue(notification.is_read)
+        self.assertIsNotNone(notification.read_at)
