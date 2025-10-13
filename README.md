@@ -1,4 +1,6 @@
 # Forum-Project-Stage-CC
+[![Build Status](https://github.com/Project-Stage-Academy/UA-4252-Python-FS/workflows/ci/badge.svg?branch=develop)](https://github.com/Project-Stage-Academy/UA-4252-Python-FS/actions)
+[![codecov](https://codecov.io/gh/Project-Stage-Academy/UA-4252-Python-FS/branch/develop/graph/badge.svg)](https://codecov.io/gh/Project-Stage-Academy/UA-4252-Python-FS)
 
 Forum Project Stage CC Template Repo
 
