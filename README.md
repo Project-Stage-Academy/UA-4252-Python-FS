@@ -136,3 +136,17 @@ You can execute Django management commands inside the backend container, for exa
 - `docker-compose run --rm backend python manage.py migrate`
 - `docker-compose run --rm backend python manage.py createsuperuser`
 
+### CI/CD Workflow
+
+This project uses GitHub Actions for Continuous Integration. The workflow runs for every pull request to the `develop` and `main` branches and includes two jobs:
+
+- **`backend`**: Lints the code and runs tests for the Django application.
+- **`frontend`**: Installs dependencies and builds the frontend application.
+
+#### How to Read CI Logs
+
+1.  Open the **Pull Request** on GitHub.
+2.  Scroll down to the **Checks** section.
+3.  If the workflow fails, you will see a red 'X'. Click on the **Details** link next to the failing job (e.g., `backend` or `frontend`).
+4.  This will open the logs. Expand the step that failed (e.g., `Lint (flake8)` or `Tests`) to see the detailed error message.
+5.  To view build artifacts, go to the 'Artifacts' section under the job summary. (available only for frontend)
