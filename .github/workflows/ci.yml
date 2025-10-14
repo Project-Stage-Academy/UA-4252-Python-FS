@@ -13,10 +13,10 @@ jobs:
       matrix:
         python-version: [3.10, 3.11, 3.12, 3.13]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -36,17 +36,24 @@ jobs:
       - name: "Lint (flake8)"
         run: pip install flake8==7.0.0 && flake8 backend/
 
-      - name: "Tests"
-        run: python manage.py test
-        working-directory: backend        
+      - name: 'Tests with coverage'
+        run: |
+          coverage run --source='.' manage.py test
+          coverage xml
+        working-directory: backend
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: "Set up Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.11.1'
 
