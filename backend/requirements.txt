@@ -11,5 +11,5 @@ tzdata==2025.2
 
 psycopg2-binary==2.9.9
 flake8==7.3.0
-coverage==7.6.0
+coverage==7.10.7
 
