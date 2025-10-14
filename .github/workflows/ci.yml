@@ -36,9 +36,16 @@ jobs:
       - name: "Lint (flake8)"
         run: pip install flake8==7.0.0 && flake8 backend/
 
-      - name: "Tests"
-        run: python manage.py test
-        working-directory: backend        
+      - name: 'Tests with coverage'
+        run: |
+          coverage run --source='.' manage.py test
+          coverage xml
+        working-directory: backend
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   frontend:
     runs-on: ubuntu-latest
