@@ -44,6 +44,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
+    'phonenumber_field',
 ]
 
 LOCAL_APPS = [
@@ -141,3 +142,5 @@ STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.User'
