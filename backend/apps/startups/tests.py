@@ -3,7 +3,13 @@ from django.test import TestCase
 from apps.startups.models import StartupProfile, SavedStartup
 from apps.users.models import User
 from apps.investors.models import InvestorProfile
+from django.urls import reverse
+from rest_framework.test import APITestCase
+from rest_framework import status
+from .models import StartupProfile
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class StartupProfileModelTest(TestCase):
     """Unit tests for the StartupProfile model"""
@@ -172,3 +178,98 @@ class SavedStartupModelTest(TestCase):
         saved = SavedStartup.objects.create(**self.valid_data)
         self.assertEqual(saved.investor.user.email, "investor@example.com")
         self.assertEqual(saved.startup.user.email, "owner@smartvision.ai")
+
+
+class StartupPublicProfileAPITest(APITestCase):
+    def setUp(self):
+        self.user1 = User.objects.create(
+            username="startupuser1",
+            email="startup@example.com1",
+            password="securepassword1",
+            first_name="Startup1",
+            last_name="Owner1"
+        )
+        self.startup1 = StartupProfile.objects.create(
+            user=self.user1,
+            company_name="Test Startup One",
+            description="First test startup.",
+            founded_year=2024,
+            team_size=10,
+            website="http://test1.com",
+            email="test1@startup.com",
+            phone="1111111111",
+            city="Test City One",
+            partners_brands="tech, innovation",
+            audit_status="approved"
+        )
+
+        self.user2 = User.objects.create(
+            username="startupuser2",
+            email="startup@example.com2",
+            password="securepassword2",
+            first_name="Startup2",
+            last_name="Owner2"
+        )
+        self.startup2 = StartupProfile.objects.create(
+            user=self.user2,
+            company_name="Test Startup Two",
+            description="Second test startup.",
+            founded_year=2025,
+            team_size=5,
+            website="http://test2.com",
+            email="test2@startup.com",
+            phone="2222222222",
+            city="Test City Two",
+            partners_brands="saas, finance",
+            audit_status="pending"
+        )
+
+    def test_get_existing_startup_profile(self):
+        """
+        Check that an existing startup profile can be retrieved.
+        """
+        url = reverse('startupprofile-detail', kwargs={'id': self.startup1.id})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['company_name'], self.startup1.company_name)
+        self.assertIn('logo_url', response.data)
+        self.assertEqual(response.data['tags'], ['tech', 'innovation'])
+        self.assertEqual(response.data['followers_count'], 0)
+
+    def test_get_correct_startup_profile_when_multiple_exist(self):
+        """
+        Check that the correct profile is returned when multiple exist.
+        """
+        url = reverse('startupprofile-detail', kwargs={'id': self.startup2.id})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['company_name'], "Test Startup Two")
+        self.assertNotEqual(response.data['company_name'], "Test Startup One")
+        self.assertEqual(response.data['founded_year'], 2025)
+        self.assertEqual(response.data['tags'], ['saas', 'finance'])
+
+    def test_response_schema_is_correct(self):
+        """
+        Check that the API response contains all expected fields.
+        """
+        url = reverse('startupprofile-detail', kwargs={'id': self.startup1.id})
+        response = self.client.get(url)
+        
+        expected_keys = [
+            'id', 'company_name', 'description', 'founded_year', 'team_size',
+            'website', 'email', 'phone', 'city', 'logo_url', 'tags',
+            'followers_count', 'created_at'
+        ]
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_keys)
+
+    def test_get_non_existent_startup_profile(self):
+        """
+        Check that a 404 is returned for a non-existent startup.
+        """
+        url = reverse('startupprofile-detail', kwargs={'id': 999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
