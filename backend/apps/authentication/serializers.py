@@ -8,22 +8,11 @@ class RegistrationSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
     role = serializers.ChoiceField(choices=['startup', 'investor'], required=True)
 
-    company_name = serializers.CharField(max_length=255, required=True, allow_blank=True)
-
-    description = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    founded_year = serializers.IntegerField(required=False, allow_null=True)
-    team_size = serializers.IntegerField(required=False, allow_null=True)
-
-    website = serializers.URLField(required=False, allow_blank=True)
-
     # startup
+    company_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    short_pitch = serializers.CharField(required=False, allow_blank=True)
+    website = serializers.URLField(required=False, allow_blank=True)
     phone = serializers.CharField(required=False, allow_blank=True)
-    city = serializers.CharField(required=False, allow_blank=True)
-    address = serializers.CharField(required=False, allow_blank=True)
-    postal_code = serializers.CharField(required=False, allow_blank=True)
-    logo = serializers.CharField(required=False, allow_blank=True)
-    partners_brand = serializers.CharField(required=False, allow_blank=True)
-    audit_status = serializers.CharField(required=False, allow_blank=True)
 
     # investor
     investment_range_min = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
@@ -32,9 +21,16 @@ class RegistrationSerializer(serializers.Serializer):
     def validate(self, data):
         role = data.get('role')
 
+        if role == 'startup':
+            if not data.get('company_name'):
+                raise serializers.ValidationError({
+                    'company_name': 'This field is required for startups'
+                })
+
+
         if role == 'investor':
             if not data.get('investment_range_min'):
-                raise serializers.ValidationError({'investment_range_min': 'This field is required for startups'})
+                raise serializers.ValidationError({'investment_range_min': 'This field is required for investors'})
         return data
 
     def create(self, validated_data):
@@ -53,6 +49,7 @@ class RegistrationSerializer(serializers.Serializer):
             StartupProfile.objects.create(
                 user=user,
                 company_name=validated_data.get('company_name', ''),
+                short_pitch=validated_data.get('short_pitch', ''),
                 website=validated_data.get('website', ''),
                 phone=validated_data.get('phone', ''),
             )
@@ -60,8 +57,8 @@ class RegistrationSerializer(serializers.Serializer):
         elif role == 'investor':
             InvestorProfile.objects.create(
                 user=user,
-                investment_range_min=validated_data.get('investment_range_min', 0),
-                investment_range_max=validated_data.get('investment_range_max', 0)
+                investment_range_min=validated_data.get('investment_range_min'),
+                investment_range_max=validated_data.get('investment_range_max')
             )
 
         return user
