@@ -16,8 +16,7 @@ class StartupProfileModelTest(TestCase):
 
     def setUp(self):
         """Create a test User for the startup profile"""
-        self.user = User.objects.create(
-            username="startupuser",
+        self.user = User.objects.create_user(
             email="startup@example.com",
             password="securepassword",
             first_name="Startup",
@@ -39,8 +38,6 @@ class StartupProfileModelTest(TestCase):
             "logo": "media/startup_logos/smartvision.png",
             "partners_brands": "NVIDIA, Intel",
             "audit_status": "Approved",
-            "created_at": "2025-01-01T00:00:00Z",
-            "updated_at": "2025-01-01T00:00:00Z",
         }
 
     def test_create_valid_startup_profile(self):
@@ -90,8 +87,7 @@ class SavedStartupModelTest(TestCase):
 
     def setUp(self):
         """Create related objects for testing SavedStartup"""
-        self.investor_user = User.objects.create(
-            username="investoruser",
+        self.investor_user = User.objects.create_user(
             email="investor@example.com",
             password="password123",
             first_name="Investor",
@@ -119,8 +115,7 @@ class SavedStartupModelTest(TestCase):
             audit_status="Verified",
         )
 
-        self.startup_user = User.objects.create(
-            username="founderuser",
+        self.startup_user = User.objects.create_user(
             email="owner@smartvision.ai",
             password="password321",
             first_name="Owner",
@@ -142,8 +137,6 @@ class SavedStartupModelTest(TestCase):
             logo="media/startup_logos/smartvision.png",
             partners_brands="Google, Amazon",
             audit_status="Approved",
-            created_at="2025-01-01T00:00:00Z",
-            updated_at="2025-01-01T00:00:00Z",
         )
 
         self.valid_data = {
@@ -182,12 +175,11 @@ class SavedStartupModelTest(TestCase):
 
 class StartupPublicProfileAPITest(APITestCase):
     def setUp(self):
-        self.user1 = User.objects.create(
-            username="startupuser1",
-            email="startup@example.com1",
-            password="securepassword1",
-            first_name="Startup1",
-            last_name="Owner1"
+        self.user1 = User.objects.create_user(
+            email='user1@example.com',
+            password='password123',
+            first_name='Test',
+            last_name='User1'
         )
         self.startup1 = StartupProfile.objects.create(
             user=self.user1,
@@ -203,12 +195,11 @@ class StartupPublicProfileAPITest(APITestCase):
             audit_status="approved"
         )
 
-        self.user2 = User.objects.create(
-            username="startupuser2",
-            email="startup@example.com2",
-            password="securepassword2",
-            first_name="Startup2",
-            last_name="Owner2"
+        self.user2 = User.objects.create_user(
+            email='user2@example.com',
+            password='password123',
+            first_name='Test',
+            last_name='User2'
         )
         self.startup2 = StartupProfile.objects.create(
             user=self.user2,
