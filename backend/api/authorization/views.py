@@ -49,17 +49,21 @@ class LoginView(APIView):
         
 class LogoutView(APIView):
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh')
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         token = RefreshToken(refresh_token)
-        if token:
+        try:
             token.blacklist()
             response = Response(status=status.HTTP_204_NO_CONTENT)
 
-            response.delete_cookie('refresh')
-            response.delete_cookie('access')
+            response.delete_cookie('refresh_token')
+            response.delete_cookie('access_token')
 
             return response
-        else:
+        except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

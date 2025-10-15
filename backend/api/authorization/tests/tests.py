@@ -80,13 +80,11 @@ class JWTAuthTests(APITestCase):
         refresh_cookie = self.client.cookies.get('refresh_token')
         refresh_token = refresh_cookie.value
 
-        logout_data = {
-            'refresh': refresh_token
-        }
+        self.client.cookies['refresh_token'] = refresh_token
 
         logout_response = self.client.post(
             self.logout_url,
-            logout_data,
+            {},
             format='json'
         )
 
