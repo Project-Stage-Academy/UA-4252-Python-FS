@@ -7,6 +7,5 @@ class UserLoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
-        """ Need to change fields and model when User model will be available. """
         model = User
         fields = ('email', 'password')
