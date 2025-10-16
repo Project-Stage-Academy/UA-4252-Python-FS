@@ -1,7 +1,7 @@
-from django.urls import path
-from . import views
-from apps.startups.views import StartupPublicProfileViewSet
+from rest_framework.routers import DefaultRouter
+from .views import StartupPublicProfileViewSet
 
-urlpatterns = [
-    path('<int:id>/', StartupPublicProfileViewSet.as_view({'get': 'retrieve'}), name='startupprofile-detail'),
-]
+router = DefaultRouter()
+router.register(r'startups', StartupPublicProfileViewSet, basename='startup')
+
+urlpatterns = router.urls

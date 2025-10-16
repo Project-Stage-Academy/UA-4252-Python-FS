@@ -4,7 +4,7 @@ from .models import StartupProfile
 class StartupPublicProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-    followers_count = serializers.SerializerMethodField()
+    followers_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = StartupProfile
@@ -34,6 +34,3 @@ class StartupPublicProfileSerializer(serializers.ModelSerializer):
         if obj.partners_brands:
             return [tag.strip() for tag in obj.partners_brands.split(',') if tag.strip()]
         return []
-
-    def get_followers_count(self, obj):
-        return obj.savedstartup_set.count()

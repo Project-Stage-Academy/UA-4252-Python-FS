@@ -219,7 +219,7 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that an existing startup profile can be retrieved.
         """
-        url = reverse('startupprofile-detail', kwargs={'id': self.startup1.id})
+        url = reverse('startup-detail', kwargs={'id': self.startup1.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -232,7 +232,7 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that the correct profile is returned when multiple exist.
         """
-        url = reverse('startupprofile-detail', kwargs={'id': self.startup2.id})
+        url = reverse('startup-detail', kwargs={'id': self.startup2.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -245,7 +245,7 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that the API response contains all expected fields.
         """
-        url = reverse('startupprofile-detail', kwargs={'id': self.startup1.id})
+        url = reverse('startup-detail', kwargs={'id': self.startup1.id})
         response = self.client.get(url)
         
         expected_keys = [
@@ -261,6 +261,6 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that a 404 is returned for a non-existent startup.
         """
-        url = reverse('startupprofile-detail', kwargs={'id': 999})
+        url = reverse('startup-detail', kwargs={'id': 999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
