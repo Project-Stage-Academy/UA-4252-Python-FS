@@ -1,0 +1,37 @@
+name: Tests & Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt || true
+          pip install pytest pytest-django coverage
+
+      - name: Run smoke + full tests
+        working-directory: backend
+        run: |
+          coverage run --rcfile=../.coveragerc -m pytest -vv
+          coverage xml  --rcfile=../.coveragerc -o ../coverage.xml
+          coverage report --rcfile=../.coveragerc
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: backend
+          fail_ci_if_error: true
