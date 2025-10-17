@@ -174,7 +174,7 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('investment_range_min', response.data)
 
-    def test_duplicate_email(self):
+    def test_duplicate_email_anti_enumeration(self):
         User.objects.create_user(
             email='existing@example.com',
             first_name='Existing',
@@ -193,10 +193,12 @@ class RegistrationTestCase(TestCase):
 
         response = self.client.post(self.register_url, data, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['detail'],'Verification email sent.')
 
         self.assertEqual(User.objects.filter(email='existing@example.com').count(), 1)
+
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class EmailVerificationTestCase(TestCase):
