@@ -1,16 +1,26 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from apps.users.models import User
+from django.conf import settings
 from .serializers import UserLoginSerializer
+from .throttling import CommonRedisThrottle
+
+
 
 class LoginView(APIView):
     """ Authenticates user, generates refresh/access tokens.
     Throttle limited in settings.py with throttle_scope. """
-    throttle_scope = 'auth_login'
+    # throttle_scope = 'auth_login'
+    throttle_classes = [CommonRedisThrottle]
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -48,6 +58,9 @@ class LoginView(APIView):
 
         
 class LogoutView(APIView):
+    """
+    Gets token from cookies, blacklisting it, deleting token from cookies.
+    """
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
 
@@ -65,5 +78,64 @@ class LogoutView(APIView):
             return response
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyEmailView(APIView):
+    def get(self, request, uid, token):
+        verification_token = token
+
+        try:
+            user_id = urlsafe_base64_decode(uid).decode()
+            user = get_object_or_404(User, id=user_id)
+
+            if user.is_active:
+                return Response({'detail': 'Account already verified.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not default_token_generator.check_token(user, verification_token):
+                return Response({'detail': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.is_active = True
+            user.save()
+
+            return Response(status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class ResendVerificationView(APIView):
+    """
+    Generates access token for link,
+    sends mail with verification link.
+    """
+    throttle_classes = [CommonRedisThrottle]
+
+    def post(self, request):
+        email = request.data.get('email')
+
+        if not email:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+
+            if user.is_active:
+                return Response({'detail':'Account was already verified'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_200_OK) # 404 for test
+
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.id))
+
+        verification_link = f'http://{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/'
+
+        send_mail(
+            subject='Verify your email',
+            message=f'Please, verify your email by clicking: {verification_link}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
 
 

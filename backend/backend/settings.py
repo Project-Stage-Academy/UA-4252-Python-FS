@@ -13,7 +13,7 @@ from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 import os
-
+import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -141,6 +141,32 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(os.environ.get('ACCESS_TOKEN_LIFETIME', '1'))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get('REFRESH_TOKEN_LIFETIME', '1'))),
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        }
+    }
+}
+
+if 'test' in sys.argv:
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-for-testing',
+    }
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

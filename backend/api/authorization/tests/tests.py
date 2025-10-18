@@ -1,5 +1,3 @@
-from http.cookies import SimpleCookie
-
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework.test import APITestCase
@@ -44,8 +42,8 @@ class JWTAuthTests(APITestCase):
 
     def test_login_throttled(self):
         data = {
-            "email": "somemail@email.com",
-            "password": "somepass123"
+            "email": self.email,
+            "password": self.password
         }
 
         for i in range(0, 10):
