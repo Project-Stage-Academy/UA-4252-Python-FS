@@ -23,7 +23,7 @@ jobs:
       - name: Run smoke + full tests
         working-directory: backend
         run: |
-          coverage run --rcfile=backend/.coveragerc -m pytest -vv backend
+          coverage run --rcfile=backend/.coveragerc -m pytest -vv
           coverage xml  --rcfile=backend/.coveragerc -o coverage.xml
           coverage report --rcfile=backend/.coveragerc
 
