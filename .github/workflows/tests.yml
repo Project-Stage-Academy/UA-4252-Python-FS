@@ -23,9 +23,9 @@ jobs:
       - name: Run smoke + full tests
         working-directory: backend
         run: |
-          coverage run --rcfile=backend/.coveragerc -m pytest -vv
-          coverage xml  --rcfile=backend/.coveragerc -o coverage.xml
-          coverage report --rcfile=backend/.coveragerc
+          coverage run --rcfile=.coveragerc -m pytest -vv 
+          coverage xml --rcfile=.coveragerc -o ../coverage.xml 
+          coverage report --rcfile=.coveragerc
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
