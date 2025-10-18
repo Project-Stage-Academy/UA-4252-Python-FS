@@ -13,12 +13,12 @@ if (Test-Path ".\.venv\Scripts\Activate.ps1") {
 
 Write-Host "`n▶ Running tests with coverage..." -ForegroundColor Cyan
 
-coverage run --rcfile=.coveragerc -m pytest -vv
+coverage run --rcfile=backend/.coveragerc -m pytest -vv
 
 Write-Host "`n📊 Generating coverage report..." -ForegroundColor Cyan
-coverage report --rcfile=.coveragerc
+coverage report --rcfile=backend/.coveragerc
 
 Write-Host "`n🌐 Creating HTML report..." -ForegroundColor Cyan
-coverage html --rcfile=.coveragerc
+coverage html --rcfile=backend/.coveragerc
 
 Write-Host "`n✅ Coverage complete! Open coverage_html\index.html in your browser." -ForegroundColor Green

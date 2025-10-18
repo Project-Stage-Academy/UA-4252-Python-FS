@@ -55,7 +55,7 @@ LOCAL_APPS = [
     'apps.investors',
     'apps.projects',
     'apps.startups',
-    'apps.user_messages',
+    'backend.apps.user_messages',
     'backend.apps.users',
     'backend.apps.startups',
     'backend.apps.investors',
