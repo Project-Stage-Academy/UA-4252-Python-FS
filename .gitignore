@@ -41,6 +41,7 @@ htmlcov/
 .tox/
 .nox/
 .coverage
+coverage_html/
 .coverage.*
 .cache
 nosetests.xml
@@ -50,7 +51,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-
+/shelf/
+/workspace.xml
+/.idea
 # Translations
 *.mo
 *.pot
@@ -118,6 +121,10 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
+
+# VSCode / PyCharm stuff
+.vscode/
+.idea/
 
 # Environments
 .env

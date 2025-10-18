@@ -1,7 +1,8 @@
-from django.test import TestCase
-from django.db import IntegrityError
-from django.contrib.auth import get_user_model
 import uuid
+
+from django.contrib.auth import get_user_model
+from django.db import IntegrityError
+from django.test import TestCase
 
 User = get_user_model()
 
@@ -110,3 +111,9 @@ class UserModelTests(TestCase):
         """Test __str__ method returns email"""
         user = User.objects.create_user(**self.user_data)
         self.assertEqual(str(user), self.user_data['email'])
+
+    def test_user_creation_minimal():
+        user = User.objects.create_user(username="alice", password="secret")
+        assert user.pk is not None
+        assert user.username == "alice"
+        assert user.check_password("secret")

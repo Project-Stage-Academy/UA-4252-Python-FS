@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'phonenumber_field',
+    'django_filters',
 ]
 
 LOCAL_APPS = [
@@ -54,8 +55,13 @@ LOCAL_APPS = [
     'apps.investors',
     'apps.projects',
     'apps.startups',
-    'apps.user_messages',
-    'apps.users',
+    'backend.apps.user_messages',
+    'backend.apps.users',
+    'backend.apps.startups',
+    'backend.apps.investors',
+    'backend.apps.projects',
+    'backend.apps.common',
+    'backend.apps.dashboard',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
