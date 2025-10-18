@@ -2,23 +2,37 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import RegisterInvestor from "./RegisterInvestor";
 
-const mockFetch = jest.fn((url, options) => {
-  const body = options && typeof options === "object" ? JSON.parse((options as any).body) : {};
+const mockFetch: jest.Mock<
+  Promise<{ status: number; json: () => Promise<any> }>,
+  [string, RequestInit?]
+> = jest.fn((url, options) => {
+  const body = options?.body
+    ? typeof options.body === "string"
+      ? JSON.parse(options.body)
+      : options.body
+    : {};
+
   if (body.email === "bob@investor.com") {
     return Promise.resolve({
       status: 400,
       json: () => Promise.resolve({ email: ["Ця електронна пошта вже зареєстрована"] }),
     });
   }
+
   return Promise.resolve({
     status: 201,
     json: () => Promise.resolve({ message: "success" }),
   });
 });
 
+const realFetch = globalThis.fetch; 
+
 beforeEach(() => {
-  jest.clearAllMocks();
-  (globalThis as any).fetch = mockFetch;
+  globalThis.fetch = mockFetch; 
+});
+
+afterAll(() => {
+  globalThis.fetch = realFetch; 
 });
 
 describe("RegisterInvestor Form", () => {

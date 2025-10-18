@@ -48,16 +48,20 @@ const RegisterInvestor: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleCheckboxChange = (field: string, value: string) => {
-    setFormData((prev) => {
-      const updated = prev[field as keyof typeof prev] as string[];
-      if (updated.includes(value)) {
-        return { ...prev, [field]: updated.filter((v) => v !== value) };
-      } else {
-        return { ...prev, [field]: [...updated, value] };
-      }
+type MultiField = "representing" | "entityType";
+
+  const handleCheckboxChange = (field: MultiField, value: string) => {
+    setFormData(prev => {
+      const updated = [...prev[field]];
+      return {
+        ...prev,
+        [field]: updated.includes(value)
+          ? updated.filter(v => v !== value)
+          : [...updated, value],
+      };
     });
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +75,9 @@ const RegisterInvestor: React.FC = () => {
     }
 
     try {
+      const min = Number(formData.minInvestment);
+      const max = Number(formData.maxInvestment);
+
       const response = await fetch("/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,8 +86,8 @@ const RegisterInvestor: React.FC = () => {
           password: formData.password,
           role: formData.role,
           company_name: formData.companyName,
-          investment_range_min: parseFloat(formData.minInvestment),
-          investment_range_max: parseFloat(formData.maxInvestment),
+          investment_range_min: isNaN(min) ? 0 : min,
+          investment_range_max: isNaN(max) ? 0 : max,
         }),
       });
 
@@ -106,7 +113,8 @@ const RegisterInvestor: React.FC = () => {
           role: "investor",
         });
       }
-    } catch {
+    } catch (e) {
+      console.error("Register error:", e);
       setErrors({
         general:
           "Помилка активації. Під час активації сталась помилка. Спробуйте ще раз або зв'яжіться з підтримкою.",
@@ -156,13 +164,13 @@ const RegisterInvestor: React.FC = () => {
 
       <label>
         Електронна пошта
-        <input name="email" value={formData.email} onChange={handleChange} />
+        <input name="email" type="email" value={formData.email} onChange={handleChange} />
       </label>
       {errors.email && <p role="alert">{errors.email}</p>}
 
       <label>
         Пароль
-        <input name="password" type="password" value={formData.password} onChange={handleChange} />
+        <input name="password" type="password" pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}" title="Мінімум 8 символів, має містити літери, цифри та спеціальні символи" value={formData.password} onChange={handleChange} />
       </label>
       {errors.password && <p role="alert">{errors.password}</p>}
 
