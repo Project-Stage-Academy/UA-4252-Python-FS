@@ -50,18 +50,13 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.common',
-    'apps.dashboard',
-    'apps.investors',
-    'apps.projects',
-    'apps.startups',
-    'backend.apps.user_messages',
-    'backend.apps.users',
-    'backend.apps.startups',
-    'backend.apps.investors',
-    'backend.apps.projects',
     'backend.apps.common',
     'backend.apps.dashboard',
+    'backend.apps.investors',
+    'backend.apps.projects',
+    'backend.apps.startups',
+    'backend.apps.user_messages',
+    'backend.apps.users',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -111,6 +106,13 @@ DATABASES = {
     }
 }
 
+if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

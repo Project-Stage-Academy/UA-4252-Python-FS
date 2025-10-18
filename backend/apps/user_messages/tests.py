@@ -1,11 +1,11 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from apps.user_messages.models import Notification
-from apps.investors.models import InvestorProfile
-from apps.users.models import User
-from apps.projects.models import Project
-from apps.startups.models import StartupProfile
+from backend.apps.user_messages.models import Notification
+from backend.apps.investors.models import InvestorProfile
+from backend.apps.users.models import User
+from backend.apps.projects.models import Project
+from backend.apps.startups.models import StartupProfile
 
 
 class NotificationModelTest(TestCase):

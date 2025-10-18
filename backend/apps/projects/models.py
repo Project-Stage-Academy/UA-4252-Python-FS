@@ -1,5 +1,5 @@
 from django.db import models
-from apps.startups.models import StartupProfile
+from backend.apps.startups.models import StartupProfile
 
 STATUS_CHOICES = (
     ('draft', 'Draft'),

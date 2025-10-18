@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from apps.startups.models import StartupProfile, SavedStartup
-from apps.users.models import User
-from apps.investors.models import InvestorProfile
+from backend.apps.startups.models import StartupProfile, SavedStartup
+from backend.apps.users.models import User
+from backend.apps.investors.models import InvestorProfile
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import StartupProfile
+from backend.apps.startups.models import StartupProfile
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

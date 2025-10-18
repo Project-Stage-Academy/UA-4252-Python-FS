@@ -127,7 +127,7 @@ celerybeat.pid
 .idea/
 
 # Environments
-.env
+backend/.env
 .venv
 env/
 venv/
