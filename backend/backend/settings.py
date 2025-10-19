@@ -141,8 +141,8 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_THROTTLE_RATES': {
-        'auth_login': os.environ.get('AUTH_LOGIN_THROTTLE'),
-    }
+        'auth_login': '10/min',   # first 10 attempts allowed; 11th → 429
+    },
 }
 
 SIMPLE_JWT = {

@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,3 +30,7 @@ class GetHealth(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+def health(request):
+    return JsonResponse({"status": "ok"})

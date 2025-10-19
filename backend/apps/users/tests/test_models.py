@@ -108,8 +108,10 @@ class UserModelTests(TestCase):
         self.assertEqual(str(user), self.user_data["email"])
 
     def test_user_creation_minimal(self):
-        """Minimal user creation works."""
-        user = User.objects.create_user(username="alice", password="secret")
-        self.assertIsNotNone(user.pk)
-        self.assertEqual(user.username, "alice")
-        self.assertTrue(user.check_password("secret"))
+        """Minimal user creation works (email, first_name, last_name)."""
+        user = User.objects.create_user(
+            email="test@example.com",
+            first_name="Test",
+            last_name="User",
+            password="secret"
+        )

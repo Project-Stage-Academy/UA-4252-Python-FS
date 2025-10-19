@@ -16,7 +16,6 @@ class NotificationModelTest(TestCase):
 
         # --- Investor user ---
         self.investor_user = User.objects.create(
-            username="investor_user",
             email="investor@example.com",
             password="password123",
             first_name="Investor",
@@ -25,7 +24,6 @@ class NotificationModelTest(TestCase):
 
         # --- Startup user ---
         self.startup_user = User.objects.create(
-            username="startup_user",
             email="startup@example.com",
             password="password456",
             first_name="Startup",

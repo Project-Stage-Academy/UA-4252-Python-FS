@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from backend.apps.startups.models import StartupProfile, SavedStartup
+from backend.apps.startups.models import SavedStartup
 from backend.apps.users.models import User
 from backend.apps.investors.models import InvestorProfile
 from django.urls import reverse

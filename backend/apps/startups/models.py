@@ -5,6 +5,7 @@ from backend.apps.investors.models import InvestorProfile
 User = get_user_model()
 
 class StartupProfile(models.Model):
+    objects = None
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
     description = models.TextField()

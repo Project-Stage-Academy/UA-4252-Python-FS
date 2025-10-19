@@ -34,3 +34,20 @@ class StartupPublicProfileSerializer(serializers.ModelSerializer):
         if obj.partners_brands:
             return [tag.strip() for tag in obj.partners_brands.split(',') if tag.strip()]
         return []
+
+    def get_followers_count(self, obj):
+        val = getattr(obj, "followers_count", None)
+        if val is not None:
+            try:
+                return int(val)
+            except Exception:
+                pass
+
+        for rel in ("followers", "followers_set", "investor_followers"):
+            rel_obj = getattr(obj, rel, None)
+            if rel_obj is not None and hasattr(rel_obj, "count"):
+                try:
+                    return int(rel_obj.count())
+                except Exception:
+                    break
+        return 0
