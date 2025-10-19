@@ -1,5 +1,5 @@
 import pytest
-from backend.apps.startups.models import StartupProfile
+from apps.startups.models import StartupProfile
 from django.contrib.auth import get_user_model
 
 

@@ -50,13 +50,13 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'backend.apps.common',
-    'backend.apps.dashboard',
-    'backend.apps.investors',
-    'backend.apps.projects',
-    'backend.apps.startups',
-    'backend.apps.user_messages',
-    'backend.apps.users',
+    'apps.common',
+    'apps.dashboard',
+    'apps.investors',
+    'apps.projects',
+    'apps.startups',
+    'apps.user_messages',
+    'apps.users',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

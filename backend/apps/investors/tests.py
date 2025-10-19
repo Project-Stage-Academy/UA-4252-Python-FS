@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from backend.apps.investors.models import InvestorProfile
-from backend.apps.users.models import User
+from apps.investors.models import InvestorProfile
+from apps.users.models import User
 
 
 class InvestorProfileModelTest(TestCase):

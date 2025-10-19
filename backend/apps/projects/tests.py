@@ -1,8 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from backend.apps.projects.models import Project
-from backend.apps.startups.models import StartupProfile
-from backend.apps.users.models import User
+from apps.projects.models import Project
+from apps.startups.models import StartupProfile
+from apps.users.models import User
 
 
 class ProjectModelTest(TestCase):

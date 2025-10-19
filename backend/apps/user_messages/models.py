@@ -1,7 +1,7 @@
 from django.db import models
-from backend.apps.investors.models import InvestorProfile
+from apps.investors.models import InvestorProfile
 from django.contrib.auth import get_user_model
-from backend.apps.projects.models import Project
+from apps.projects.models import Project
 
 User = get_user_model()
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from backend.apps.investors.models import InvestorProfile
+from apps.investors.models import InvestorProfile
 from datetime import date
 User = get_user_model()
 

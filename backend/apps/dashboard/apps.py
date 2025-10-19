@@ -3,5 +3,5 @@ from django.apps import AppConfig
 
 class DashboardConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'backend.apps.dashboard'
+    name = 'apps.dashboard'
     label = 'dashboard'
