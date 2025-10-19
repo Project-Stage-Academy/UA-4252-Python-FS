@@ -1,17 +1,17 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.investors.models import InvestorProfile
-from datetime import date
+
 User = get_user_model()
 
+
 class StartupProfile(models.Model):
-    objects = None
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
     description = models.TextField()
-    founded_year = models.PositiveIntegerField(null=True, blank=True,)
+    founded_year = models.IntegerField()
     team_size = models.IntegerField()
-    website  = models.URLField(max_length=200)
+    website = models.URLField(max_length=200)
     email = models.EmailField(max_length=100)
     phone = models.CharField(max_length=20)
     city = models.CharField(max_length=100)
@@ -26,7 +26,7 @@ class StartupProfile(models.Model):
 
     def __str__(self):
         return self.company_name
-    
+
     class Meta:
         verbose_name = "Startup Profile"
         verbose_name_plural = "Startup Profiles"

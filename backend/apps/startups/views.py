@@ -1,11 +1,10 @@
-
+from rest_framework import viewsets, mixins
 from .models import StartupProfile
 from .serializers import StartupPublicProfileSerializer
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from django.db.models import Count
 
-class StartupPublicProfileViewSet(ReadOnlyModelViewSet):
-    queryset = StartupProfile.objects.all()
+class StartupPublicProfileViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    lookup_field = 'id'
+    lookup_url_kwarg = 'id'
+    queryset = StartupProfile.objects.annotate(followers_count=Count('savedstartup'))
     serializer_class = StartupPublicProfileSerializer
-
-    lookup_field = "id"
-    lookup_url_kwarg = "id"
