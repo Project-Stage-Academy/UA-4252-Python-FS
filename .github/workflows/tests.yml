@@ -12,7 +12,7 @@ jobs:
     env:
       USE_SQLITE_FOR_TESTS: "1"
       DJANGO_SETTINGS_MODULE: backend.settings
-      PYTHONPATH: ${{ github.workspace }}
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
 
     steps:
       - uses: actions/checkout@v4
