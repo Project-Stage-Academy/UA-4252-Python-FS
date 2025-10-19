@@ -25,6 +25,17 @@ services:
       - ./backend:/app
     env_file:
       - ./backend/.env
+    environment:
+      # Email settings for MailHog
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=mailhog
+      - EMAIL_PORT=1025
+      - EMAIL_USE_TLS=False
+      - EMAIL_HOST_USER=
+      - EMAIL_HOST_PASSWORD=
+      - DEFAULT_FROM_EMAIL=noreply@siskidomain.com
+      - FRONTEND_URL=http://localhost:3000
+
     depends_on:
       - db
 
@@ -37,6 +48,13 @@ services:
       - dev-db-data:/var/lib/postgresql/data
     env_file:
       - ./backend/.env
+
+#MailHog
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   dev-db-data:
