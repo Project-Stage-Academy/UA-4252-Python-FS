@@ -57,7 +57,17 @@ def _default_for_field(field):
 
 @pytest.mark.django_db
 def test_startup_profile_creation_and_link():
-    user = User.objects.create_user(username="founder", password="secret")
-    profile = StartupProfile.objects.create(user=user)
+    user = User.objects.create_user(
+        email="founder@example.com",
+        first_name="Founder",
+        last_name="User",
+        password="secret",
+    )
+    profile = StartupProfile.objects.create(
+        user=user,
+        founded_year=2024,
+        team_size=1,
+    )
     assert profile.user == user
     assert profile.pk is not None
+

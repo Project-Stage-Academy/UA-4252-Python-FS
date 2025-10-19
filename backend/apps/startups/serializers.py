@@ -4,7 +4,7 @@ from .models import StartupProfile
 class StartupPublicProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-    followers_count = serializers.IntegerField(read_only=True)
+    followers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = StartupProfile
