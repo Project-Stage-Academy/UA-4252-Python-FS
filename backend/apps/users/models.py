@@ -1,3 +1,24 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from .managers import CustomUserManager
+import uuid
 
-# Create your models here.
+
+class User(AbstractUser):
+    """Custom Django User model without username"""
+    username = None
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True, db_index=True)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    class Meta:
+        db_table = 'users'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return self.email
