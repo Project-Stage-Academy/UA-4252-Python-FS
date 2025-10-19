@@ -26,9 +26,58 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pytest pytest-django coverage
 
+      - name: Print env + layout
+        run: |
+          set -eux
+          echo "DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-<unset>}"
+          echo "PYTHONPATH=${PYTHONPATH:-<unset>}"
+          pwd
+          ls -la
+          ls -la backend
+          ls -la backend/apps || true
+
+      - name: Assert required __init__.py exist
+        run: |
+          set -eux
+          test -f backend/__init__.py
+          test -f backend/apps/__init__.py
+          find backend/apps -maxdepth 2 -name "__init__.py" -print
+
+      - name: Search for stray 'backend.apps' imports
+        run: |
+          set -eux
+          git grep -nE '(^|[^A-Za-z0-9_])backend\.apps' || echo "OK: no 'backend.apps' found"
+
+      - name: Show pytest/django config files
+        run: |
+          set -eux
+          sed -n '1,200p' backend/pytest.ini
+          sed -n '1,80p' backend/backend/urls.py || true
+          sed -n '1,120p' backend/backend/settings.py
+
+      - name: Python smoke import check
+        run: |
+          python - <<'PY'
+          import sys, os, importlib
+          print("CWD:", os.getcwd())
+          print("Top sys.path:", sys.path[:5])
+          print("DJANGO_SETTINGS_MODULE:", os.getenv("DJANGO_SETTINGS_MODULE"))
+          m = importlib.import_module("backend")
+          print("backend module file:", getattr(m, "__file__", None))
+          m_apps = importlib.import_module("backend.apps")
+          print("backend.apps module file:", getattr(m_apps, "__file__", None))
+          importlib.import_module("apps.common")
+          print("OK: imports work (backend, backend.apps, apps.common)")
+          PY
+
+      - name: Pytest import/collection dry-run
+        run: |
+          pytest -c backend/pytest.ini backend --collect-only -q -s || true
+
       - name: Run tests + coverage
         run: |
           coverage run --rcfile=backend/.coveragerc -m pytest -c backend/pytest.ini backend -vv
+          coverage xml
           coverage xml --rcfile=backend/.coveragerc -o coverage.xml
           coverage report --rcfile=backend/.coveragerc
 

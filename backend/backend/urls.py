@@ -29,5 +29,4 @@ urlpatterns = [
     path('api/users/', include('apps.users.urls')),
     path('api/messages/', include('apps.user_messages.urls')),
 
-
 ]
