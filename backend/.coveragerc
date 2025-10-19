@@ -1,7 +1,7 @@
 [run]
 branch = True
 source =
-    backend/apps
+    backend
 omit =
     */migrations/*
     */__init__.py

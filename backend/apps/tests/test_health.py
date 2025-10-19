@@ -5,7 +5,7 @@ def test_health_check(client):
     """
     Ensure /api/health/ endpoint works and returns JSON with a 'status' key.
     """
-    response = client.get("/api/health/")
+    response = client.get("/api/common/")
     assert response.status_code == 200
 
     data = response.json()
