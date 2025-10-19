@@ -28,8 +28,7 @@ jobs:
 
       - name: Run smoke + full tests
         working-directory: backend
-        env:
-          PYTHONPATH: ${{ github.workspace }}
+
         run: |
           coverage run --rcfile=.coveragerc -m pytest -vv 
           coverage xml --rcfile=.coveragerc -o ../coverage.xml 
