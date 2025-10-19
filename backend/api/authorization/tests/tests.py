@@ -16,6 +16,7 @@ class JWTAuthTests(APITestCase):
         self.login_url = reverse('login')
         self.refresh_url = reverse('refresh-token')
         self.logout_url = reverse('logout')
+        self.resend_url = reverse('resend-verification')
 
     def test_login_success(self):
         data = {
@@ -121,3 +122,35 @@ class JWTAuthTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
+class ResendVerificationTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.email = "test@email.com"
+        self.password = "test123test"
+        self.user = User.objects.create_user(email=self.email, password=self.password, first_name='Test', last_name='User')
+        self.user.is_active = False
+        self.user.save()
+
+        self.resend_url = reverse('resend-verification')
+
+    def test_resend_success(self):
+        resend_data = {
+            'email': self.email
+        }
+        resend_response = self.client.post(self.resend_url, resend_data, format='json')
+
+        self.assertEqual(resend_response.status_code, status.HTTP_200_OK)
+
+    def test_resend_throttled(self):
+        # Change api/authorization/throttling.py rate.
+        resend_data = {
+            'email': self.email
+        }
+
+        for i in range(6):
+            self.client.post(self.resend_url, resend_data, format='json')
+
+        response = self.client.post(self.resend_url, resend_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)

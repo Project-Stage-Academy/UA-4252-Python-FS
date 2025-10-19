@@ -4,7 +4,6 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -79,27 +78,6 @@ class LogoutView(APIView):
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class VerifyEmailView(APIView):
-    def get(self, request, uid, token):
-        verification_token = token
-
-        try:
-            user_id = urlsafe_base64_decode(uid).decode()
-            user = get_object_or_404(User, id=user_id)
-
-            if user.is_active:
-                return Response({'detail': 'Account already verified.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if not default_token_generator.check_token(user, verification_token):
-                return Response({'detail': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user.is_active = True
-            user.save()
-
-            return Response(status=status.HTTP_200_OK)
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
 class ResendVerificationView(APIView):
     """
     Generates access token for link,
@@ -120,7 +98,7 @@ class ResendVerificationView(APIView):
                 return Response({'detail':'Account was already verified'}, status=status.HTTP_400_BAD_REQUEST)
 
         except User.DoesNotExist:
-            return Response(status=status.HTTP_200_OK) # 404 for test
+            return Response(status=status.HTTP_400_BAD_REQUEST) # 400 for test
 
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.id))
