@@ -1,8 +1,16 @@
+import uuid
+from decimal import Decimal
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 from apps.users.models import User
+
+from django.db import IntegrityError
+from django.utils import timezone
+
+from backend.apps.projects.models import ProjectAttachment
 
 
 class ProjectModelTest(TestCase):
@@ -40,11 +48,11 @@ class ProjectModelTest(TestCase):
             "slug": "ai-pet-tracker",
             "short_description": "A smart AI system to track your pet’s activity.",
             "description": "This project develops an AI-based tracker integrated with IoT devices.",
-            "status": "in_progress",
+            "status": "fundraising",
             "target_amount": 50000.00,
             "raised_amount": 10000.00,
             "currency": "USD",
-            "tags": "AI, Pets, IoT",
+            "tags": ["AI, Pets, IoT"],
             "visibility": "public",
         }
 
@@ -54,13 +62,20 @@ class ProjectModelTest(TestCase):
         self.assertIsInstance(project, Project)
         self.assertEqual(project.title, "AI-driven Pet Tracker")
         self.assertEqual(project.currency, "USD")
+        self.assertEqual(project.status, 'fundraising')
+
+    def test_project_uses_uuid_primary_key(self):
+        project = Project.objects.create(**self.valid_data)
+        self.assertIsInstance(project.id, uuid.UUID)
+        self.assertIsNone(project.id)
+        self.assertFalse(Project._meta.get_field('id').editable)
 
     def test_slug_unique_constraint(self):
         """Slug field must be unique"""
         Project.objects.create(**self.valid_data)
         duplicate = self.valid_data.copy()
         duplicate["slug"] = "ai-pet-tracker"  # duplicate slug
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Project.objects.create(**duplicate)
 
     def test_required_fields_validation(self):
@@ -79,11 +94,68 @@ class ProjectModelTest(TestCase):
         with self.assertRaises(ValidationError):
             project.full_clean()
 
-    def test_target_and_raised_amount_logic(self):
-        """Raised amount should not exceed target amount (business logic placeholder)"""
+    def test_invalid_visibility_choice(self):
+        invalid_data = self.valid_data.copy()
+        invalid_data['visibility'] = 'invalid-visibility'
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
+
+    def test_short_description_max_length(self):
+        invalid_data = self.valid_data.copy()
+        invalid_data['short_description'] = 'A'* 501
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
+
+    def test_title_max_length(self):
+        invalid_data = self.valid_data.copy()
+        invalid_data['title'] = 'A' * 256
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
+
+    def test_currency_max_length(self):
+        invalid_data = self.valid_data.copy()
+        invalid_data['currency'] = 'USDD'
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
+
+    def test_created_at_auto_set(self):
         project = Project.objects.create(**self.valid_data)
-        project.raised_amount = 100000  # greater than target
-        self.assertTrue(project.raised_amount > project.target_amount)
+        self.assertIsNotNone(project.created_at)
+        self.assertLessEqual(
+            project.created_at,
+            timezone.now()
+        )
+
+    def test_update_at_auto_update(self):
+        project = Project.objects.create(**self.valid_data)
+        old_update_at = project.updated_at
+
+        import time
+        time.sleep(0.1)
+
+        project.title = 'Updated Title'
+        project.save()
+
+        self.assertGreater(project.updated_at, old_update_at)
+
+    def test_target_amount_positive(self):
+        """Raised amount should not exceed target amount (business logic placeholder)"""
+        invalid_data = self.valid_data.copy()
+        invalid_data['target_amount'] = Decimal('-1000.00')
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
+
+    def test_raised_amount_cannot_be_negative(self):
+        invalid_data = self.valid_data.copy()
+        invalid_data['raised_amount'] = Decimal('-500.00')
+        project = Project(**invalid_data)
+        with self.assertRaises(ValidationError):
+            project.full_clean()
 
     def test_str_method_returns_title(self):
         """__str__ method should return the project title"""
@@ -103,3 +175,38 @@ class ProjectModelTest(TestCase):
         data["tags"] = long_tags
         project = Project.objects.create(**data)
         self.assertIn("tag99", project.tags)
+
+    def test_tags_field_accepts_list(self):
+        project = Project.objects.create(**self.valid_data)
+        self.assertEqual(project.tags, ['AI', 'Pets', 'IoT'])
+        self.assertIsInstance(project.tags, list)
+
+class ProjectAttachmentModelTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create(
+            email='test@example.com',
+            password='password123'
+        )
+        self.startup = StartupProfile.objects.create(
+            user=self.user,
+            company_name='Test Startup'
+        )
+        self.project = Project.objects.create(
+            startup=self.startup,
+            title='Test Project',
+            slug='test_project',
+            short_discription='Test discription',
+            target_amount=Decimal('10000.00')
+        )
+
+    def test_create_attachment(self):
+        attachment = ProjectAttachment.objects.create(
+            project=self.project,
+            type='image',
+            caption='Test image',
+            order=1
+        )
+        self.assertIsInstance(attachment, ProjectAttachment)
+        self.assertEqual(attachment.project, self.project)
+        self.assertEqual(attachment.type, 'image')

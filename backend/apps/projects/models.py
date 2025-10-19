@@ -43,7 +43,7 @@ class Project(models.Model):
         verbose_name_plural = "Projects"
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['startup', 'status'']),
+            models.Index(fields=['startup', 'status']),
                                  models.Index(fields=['created_at'])
                                  ]
 
