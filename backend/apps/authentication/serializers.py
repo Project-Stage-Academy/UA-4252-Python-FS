@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
 
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
@@ -104,18 +106,62 @@ class RegistrationSerializer(serializers.Serializer):
                 description='',
                 investment_range_min=validated_data.get('investment_range_min'),
                 investment_range_max=validated_data.get('investment_range_max'),
-                preferred_industries = '',
-                website = validated_data.get('website', ''),
-                email = email,
-                phone = validated_data.get('phone', ''),
-                country = 'Ukraine',
-                region = 8,
-                city = '',
-                address = '',
-                postal_code = '',
-                logo = '',
-                partners_brands = '',
-                audit_status = 'Pending'
+                preferred_industries='',
+                website=validated_data.get('website', ''),
+                email=email,
+                phone=validated_data.get('phone', ''),
+                country='Ukraine',
+                region=8,
+                city='',
+                address='',
+                postal_code='',
+                logo='',
+                partners_brands='',
+                audit_status='Pending'
             )
 
+        return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('User with this email does not exist.')
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+    re_new_password = serializers.CharField(min_length=8)
+    
+    @staticmethod
+    def _get_user_from_uid(uid: str) -> User:
+        try:
+            decoded_uid = urlsafe_base64_decode(uid).decode()
+            user = User.objects.get(id=decoded_uid)
+        except (ValueError, User.DoesNotExist):
+            raise serializers.ValidationError('Invalid user ID.')
+
+        return user
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['re_new_password']:
+            raise serializers.ValidationError('Passwords do not match.')
+
+        user = self._get_user_from_uid(attrs['uid'])
+        if not default_token_generator.check_token(user, attrs['token']):
+            raise serializers.ValidationError('Invalid or expired token.')
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs) -> User:
+        user = self.validated_data['user']
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
         return user

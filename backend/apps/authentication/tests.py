@@ -1,17 +1,24 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.core import mail
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import (
+    default_token_generator,
+    PasswordResetTokenGenerator
+)
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.utils import timezone
+from django.urls import reverse
 
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
+
+from datetime import datetime, timedelta
 
 User = get_user_model()
 
@@ -114,7 +121,6 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('last_name', response.data)
 
-
     def test_weak_password_validation(self):
         """Test that weak passwords are rejected"""
         data = {
@@ -194,7 +200,7 @@ class RegistrationTestCase(TestCase):
         response = self.client.post(self.register_url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['detail'],'Verification email sent.')
+        self.assertEqual(response.data['detail'], 'Verification email sent.')
 
         self.assertEqual(User.objects.filter(email='existing@example.com').count(), 1)
 
@@ -248,3 +254,118 @@ class EmailVerificationTestCase(TestCase):
         response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email='user@example.com',
+            first_name='Test',
+            last_name='User',
+            password='OldPassword'
+        )
+        self.uid = urlsafe_base64_encode(force_bytes(self.user.id))
+
+    def get_password_reset_data(self):
+        return {
+            'uid': self.uid,
+            'token': default_token_generator.make_token(self.user),
+            'new_password': 'NewPassword',
+            're_new_password': 'NewPassword',
+        }
+
+    def test_token_generation_successful(self):
+        """Check token is correctly generated"""
+        token = default_token_generator.make_token(self.user)
+        self.assertTrue(default_token_generator.check_token(self.user, token))
+
+    def test_token_invalid_after_login(self):
+        """Check token invalid after user successfully logs in"""
+        token = default_token_generator.make_token(self.user)
+
+        self.user.last_login = timezone.now()
+        self.user.save()
+        self.assertFalse(default_token_generator.check_token(self.user, token))
+
+    def test_token_invalid_after_timeout(self):
+        """Check token invalid after provided TTL value"""
+
+        # make token depend only on TTL
+        self.user.last_login = None
+        self.user.save()
+        token = default_token_generator.make_token(self.user)
+
+        # mocking _now method to return value in the future
+        token_generator = PasswordResetTokenGenerator()
+        timeout_seconds = getattr(settings, 'PASSWORD_RESET_TIMEOUT', 3600)
+        token_generator._now = lambda: datetime.now() + timedelta(seconds=timeout_seconds + 1)
+
+        self.assertFalse(token_generator.check_token(self.user, token))
+
+    def test_password_reset_request_success(self):
+        """
+        Check password reset request endpoint returns 200
+        if provided email exists
+        """
+        response = self.client.post(
+            reverse('password-reset-request'),
+            data={'email': self.user.email}
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_reset_request_invalid_email(self):
+        """
+        Check password reset request endpoint returns 200
+        if provided email does not exist
+        """
+        response = self.client.post(
+            reverse('password-reset-request'),
+            data={'email': 'emaildoesnotexist@example.com'}
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_reset_confirm_success(self):
+        """Test password reset confirm is successful"""
+        data = self.get_password_reset_data()
+        response = self.client.post(
+            reverse('password-reset-confirm'),
+            data=data
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password(data['new_password']))
+
+    def test_password_reset_confirm_invalid_token(self):
+        """Check invalid token returns 400"""
+        data = self.get_password_reset_data()
+        data['token'] = 'invalid-token'
+
+        response = self.client.post(
+            reverse('password-reset-confirm'),
+            data=data
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_invalid_uid(self):
+        """Check invalid token returns 400"""
+        data = self.get_password_reset_data()
+        data['uid'] = 'invalid-uid'
+
+        response = self.client.post(
+            reverse('password-reset-confirm'),
+            data=data
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_passwords_mismatch(self):
+        """Check passwords mismatch returns 400"""
+        data = self.get_password_reset_data()
+        data['re_new_password'] = 'not-matching-password'
+
+        response = self.client.post(
+            reverse('password-reset-confirm'),
+            data=data
+        )
+        self.assertEqual(response.status_code, 400)
