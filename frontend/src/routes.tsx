@@ -10,7 +10,7 @@ export const routes = [
   { path: "/", element: <Home /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
-  { path: "/registerstartup", element: <RegisterStartup /> },
+  { path: "/register-startup", element: <RegisterStartup /> },
   { path: "/startups/:id", element: <StartupView /> },
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },

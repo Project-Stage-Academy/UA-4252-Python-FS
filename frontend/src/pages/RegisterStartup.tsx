@@ -16,6 +16,7 @@ type FormState = {
   startup: boolean;
   entrepreneur: boolean;
   legal: boolean;
+  logoFile?: File | null
 };
 
 type ErrorState = Record<string, string>;
@@ -38,13 +39,19 @@ export default function RegisterStartup() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked, files } = e.target as HTMLInputElement;
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+    const { name, value, type } = target;
+
     if (type === "checkbox") {
-      setForm({ ...form, [name]: checked });
-    } else if (type === "file" && files) {
-      setForm({ ...form, [name]: files[0] });
+      const { checked } = target as HTMLInputElement;
+      setForm(prev => ({ ...prev, [name]: checked }));
+    } else if (type === "file") {
+      const { files } = target as HTMLInputElement;
+      if (files && files[0]) {
+        setForm(prev => ({ ...prev, logoFile: files[0] }));
+      }
     } else {
-      setForm({ ...form, [name]: value });
+      setForm(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -57,9 +64,9 @@ export default function RegisterStartup() {
     if (form.confirmPassword !== form.password)
       newErrors.confirmPassword = "Не ввели пароль ще раз";
     if (!form.company) newErrors.company = "Не ввели назву компанії";
-    if (!form.name) newErrors.name = "Не ввели прізвище";
-    if (!form.surname) newErrors.surname = "Не ввели ім’я";
-    if (!form.registercompany && !form.startup) newErrors.startup = "Виберіть кого ви представляєте";
+    if (!form.name) newErrors.name = "Не ввели ім’я";
+    if (!form.surname) newErrors.surname = "Не ввели прізвище";
+    if (!form.registercompany && !form.startup) newErrors.represent = "Виберіть кого ви представляєте";
     if (!form.entrepreneur && !form.legal) newErrors.person = "Виберіть який суб’єкт господарювання ви представляєте";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,20 +87,49 @@ export default function RegisterStartup() {
   if (status === "success") {
     return (
       <div className="page">
-        <header className="header">
-          <div className="logo">MyCompany</div>
-          <nav>
-            <a href="#">О нас</a>
-            <a href="#">Предприятия</a>
-          </nav>
-            <div className="search-container">
-              <input type="text" placeholder="Поиск..."/>
-              <a href="#"><span className="search-icon">🔍</span></a>
+        <header className="navigation">
+          <div className="nav-container">
+            <div className="nav-logo">
+              <div className="logo-icon">
+                <img src={craftmergelogoblack} alt="CraftMerge logo"/>
+              </div>
+              <span className="logo-text">CraftMerge</span>
             </div>
-          <nav>
-            <a href="#">Войти</a>
-            <a href="#">Регистрация</a>
-          </nav>
+
+            <nav className="nav-menu">
+              <div className="menu-item">
+                <span>Про нас</span>
+                <div className="underline"></div>
+              </div>
+              <div className="menu-item">
+                <span>Підприємства та сектори</span>
+                <div className="underline"></div>
+              </div>
+            </nav>
+
+            <div className="search-box">
+              <div className="wrapper">
+                <input className="search-input" type="text" placeholder="Пошук"/>
+              </div>
+              <div className="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path
+                      d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z"
+                      stroke="#25292C" strokeWidth={2} strokeLinecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div className="nav-actions">
+              <div className="login">
+                <span>Увійти</span>
+                <div className="underline"></div>
+              </div>
+              <button className="register-btn">
+                <span>Зареєструватися</span>
+              </button>
+            </div>
+          </div>
         </header>
 
         <div className="container">
@@ -138,7 +174,7 @@ export default function RegisterStartup() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path
                       d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C13.866 3 17 6.134 17 10Z"
-                      stroke="#25292C" stroke-width="2" stroke-linecap="round"/>
+                      stroke="#25292C" strokeWidth={2} strokeLinecap="round"/>
                 </svg>
               </div>
             </div>
@@ -222,7 +258,7 @@ export default function RegisterStartup() {
                   проєкт,
                   який шукає інвестиції</label>
               </div>
-              {errors.startup && <p className="error-text">{errors.startup}</p>}
+              {errors.represent && <p className="error-text">{errors.represent}</p>}
 
               <div className="field">
                 <label><span style={{color: "red"}}>*</span> Який суб’єкт господарювання ви представляєте?</label>
