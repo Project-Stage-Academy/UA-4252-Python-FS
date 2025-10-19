@@ -8,7 +8,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     env:
       USE_SQLITE_FOR_TESTS: "1"
       DJANGO_SETTINGS_MODULE: backend.settings
@@ -16,6 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -26,13 +26,11 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pytest pytest-django coverage
 
-      - name: Run smoke + full tests
-        working-directory: backend
-
+      - name: Run tests + coverage
         run: |
-          coverage run --rcfile=.coveragerc -m pytest -vv 
-          coverage xml --rcfile=.coveragerc -o ../coverage.xml 
-          coverage report --rcfile=.coveragerc
+          coverage run --rcfile=backend/.coveragerc -m pytest -c backend/pytest.ini backend -vv
+          coverage xml --rcfile=backend/.coveragerc -o coverage.xml
+          coverage report --rcfile=backend/.coveragerc
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
