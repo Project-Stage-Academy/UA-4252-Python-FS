@@ -18,5 +18,5 @@ sqlparse==0.5.3
 tzdata==2025.2
 pytest==8.3.3
 pytest-django==4.9.0
-django-filter==24.3
+django-filter==25.2
 
