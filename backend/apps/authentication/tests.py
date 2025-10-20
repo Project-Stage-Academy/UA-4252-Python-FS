@@ -1,13 +1,12 @@
 import uuid
+from freezegun import freeze_time
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.core import mail
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.contrib.auth.tokens import (
-    default_token_generator,
-    PasswordResetTokenGenerator
-)
+from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth import get_user_model
@@ -18,7 +17,7 @@ from django.urls import reverse
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -271,8 +270,8 @@ class PasswordResetTests(TestCase):
         return {
             'uid': self.uid,
             'token': default_token_generator.make_token(self.user),
-            'new_password': 'NewPassword',
-            're_new_password': 'NewPassword',
+            'new_password': 'SecurePass123!',
+            're_new_password': 'SecurePass123!',
         }
 
     def test_token_generation_successful(self):
@@ -294,16 +293,17 @@ class PasswordResetTests(TestCase):
         # make token depend only on TTL
         self.user.last_login = None
         self.user.save()
+
+        # get PASSWORD_RESET_TIMEOUT. if not provided, 3 days by default
+        timeout = getattr(settings, 'PASSWORD_RESET_TIMEOUT', 259200)
         token = default_token_generator.make_token(self.user)
 
-        # mocking _now method to return value in the future
-        token_generator = PasswordResetTokenGenerator()
-        timeout_seconds = getattr(settings, 'PASSWORD_RESET_TIMEOUT', 3600)
-        token_generator._now = lambda: datetime.now() + timedelta(seconds=timeout_seconds + 1)
+        with freeze_time() as frozen_time:
+            frozen_time.tick(delta=timedelta(seconds=timeout + 1))
+            self.assertFalse(default_token_generator.check_token(self.user, token))
 
-        self.assertFalse(token_generator.check_token(self.user, token))
-
-    def test_password_reset_request_success(self):
+    @patch('apps.authentication.views.send_password_reset_email')
+    def test_password_reset_request_success(self, mock_send_email):
         """
         Check password reset request endpoint returns 200
         if provided email exists
@@ -313,17 +313,31 @@ class PasswordResetTests(TestCase):
             data={'email': self.user.email}
         )
         self.assertEqual(response.status_code, 200)
+        mock_send_email.assert_called_once()
 
     def test_password_reset_request_invalid_email(self):
         """
+        Check password reset request endpoint returns 400
+        if provided email has invalid format
+        """
+        response = self.client.post(
+            reverse('password-reset-request'),
+            data={'email': 'invalid-email'}
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('apps.authentication.views.send_password_reset_email')
+    def test_password_reset_request_email_does_not_exist(self, mock_send_email):
+        """
         Check password reset request endpoint returns 200
-        if provided email does not exist
+        if provided email is valid but does not exist
         """
         response = self.client.post(
             reverse('password-reset-request'),
             data={'email': 'emaildoesnotexist@example.com'}
         )
         self.assertEqual(response.status_code, 200)
+        mock_send_email.assert_not_called()
 
     def test_password_reset_confirm_success(self):
         """Test password reset confirm is successful"""
@@ -368,4 +382,17 @@ class PasswordResetTests(TestCase):
             reverse('password-reset-confirm'),
             data=data
         )
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_insecure_password(self):
+        """Test insecure password returns 400"""
+        data = self.get_password_reset_data()
+        data['new_password'] = 'Password'
+        data['re_new_password'] = 'Password'
+
+        response = self.client.post(
+            reverse('password-reset-confirm'),
+            data=data
+        )
+
         self.assertEqual(response.status_code, 400)
