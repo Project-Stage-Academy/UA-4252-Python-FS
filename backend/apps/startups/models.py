@@ -7,6 +7,7 @@ from apps.investors.models import InvestorProfile
 
 User = get_user_model()
 
+
 class StartupProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='startup_profiles')
     company_name = models.CharField(max_length=255)
@@ -33,7 +34,7 @@ class StartupProfile(models.Model):
 
     def __str__(self):
         return self.company_name
-    
+
     class Meta:
         verbose_name = "Startup Profile"
         verbose_name_plural = "Startup Profiles"
