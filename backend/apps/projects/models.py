@@ -30,6 +30,10 @@ class Project(models.Model):
         if self.raised_amount < 0:
             raise ValidationError('Raised amount cannot be negative.')
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
