@@ -134,25 +134,28 @@ class PasswordResetRequestView(APIView):
     {
         "email": "user@example.com"
     }
-    Sends an email with a link to reset the password if a user with
-    the provided email exists.
-    Always returns 200 with a generic message to prevent account enumeration.
+    Returns:
+        200: Provided email has valid format (enumeration policy).
+             If user with given email exists, sends an email with
+             password reset link.
+        400: Validation errors.
     """
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.is_valid():
-            user = User.objects.get(
-                email=serializer.validated_data['email']
-            )
-
+        email = serializer.validated_data['email']
+        user = User.objects.filter(email=email).first()
+        if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            reset_link = f'{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}'
-
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+            reset_link = f'{frontend_url}/reset-password?uid={uid}&token={token}'
+            
             send_password_reset_email(user, reset_link)
 
         # always return success to avoid account enumeration
@@ -173,8 +176,9 @@ class PasswordResetConfirmView(APIView):
         "new_password": "NewStrongP@ss1",
         "re_new_password": "NewStrongP@ss1"
     }
-    Sets a new password for a user, if provided uid and token are valid
-    and passwords are matching.
+    Returns:
+        200: Sets a new password for a user.
+        400: Validation errors.
     """
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer

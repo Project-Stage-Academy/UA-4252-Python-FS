@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def send_password_reset_email(user, reset_link: str) -> None:
     subject = 'Password Reset Request'
-    from_email = settings.DEFAULT_FROM_EMAIL
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
     recipient_list = [user.email]
 
     context = {
