@@ -3,6 +3,10 @@ from django.contrib.postgres.fields import ArrayField
 from apps.startups.models import StartupProfile
 import uuid
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
+from decimal import Decimal
+from django.utils.text import slugify
+
 
 User = get_user_model()
 
@@ -23,17 +27,33 @@ class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE, related_name='projects', db_index=True)
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
-    short_description = models.TextField(max_length=500)
-    description = models.TextField()
+
+    slug = models.SlugField(unique=True, blank=True, max_length=255)
+
+    short_description = models.CharField(max_length=500, blank=True, default='')
+    description = models.TextField(blank=True, default='')
     status = models.CharField(max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True)
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0'))])
     currency = models.CharField(max_length=3, default="UAH")
     tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Project.objects.filter(slug=slug).exclude(id=self.id).exists():
+                slug = f'{base_slug}-{counter}'
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.title
@@ -62,6 +82,8 @@ class ProjectAttachment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = 'Project Attachment'
+        verbose_name_plural = 'Project Attachments'
         ordering = ['order', 'created_at']
 
 
@@ -76,7 +98,13 @@ class ProjectAudit(models.Model):
 
     user_agent = models.TextField(blank=True)
 
+    def __str__(self):
+        username = self.user.email if self.user else "System"
+        return f"{self.project.title} - {self.action} by {username}"
+
     class Meta:
+        verbose_name = "Project Audit Log"
+        verbose_name_plural = "Project Audit Logs"
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['project', '-timestamp']),
