@@ -6,13 +6,10 @@ const mockFetch: jest.Mock<
   Promise<{ status: number; json: () => Promise<any> }>,
   [string, RequestInit?]
 > = jest.fn((url, options) => {
-  const body = options?.body
-    ? typeof options.body === "string"
-      ? JSON.parse(options.body)
-      : options.body
-    : {};
+  const body = options?.body;
 
-  if (body.email === "bob@investor.com") {
+  // Оновлена логіка для роботи з FormData
+  if (body instanceof FormData && body.get("email") === "bob@investor.com") {
     return Promise.resolve({
       status: 400,
       json: () => Promise.resolve({ email: ["Ця електронна пошта вже зареєстрована"] }),
@@ -92,5 +89,37 @@ describe("RegisterInvestor Form", () => {
     expect(
       await screen.findByText("Ця електронна пошта вже зареєстрована")
     ).toBeInTheDocument();
+  });
+
+  test("додає файл логотипу до FormData при сабміті", async () => {
+    render(<RegisterInvestor />);
+
+    const file = new File(["logo"], "test-logo.png", { type: "image/png" });
+
+    fireEvent.change(screen.getByLabelText("Назва компанії"), { target: { value: "Test Corp" } });
+    fireEvent.change(screen.getByLabelText("Електронна пошта"), { target: { value: "test@corp.com" } });
+    fireEvent.change(screen.getByLabelText("Пароль"), { target: { value: "ValidPass123!" } });
+    fireEvent.change(screen.getByLabelText("Повторіть пароль"), { target: { value: "ValidPass123!" } });
+    fireEvent.change(screen.getByLabelText("Прізвище"), { target: { value: "Тест" } });
+    fireEvent.change(screen.getByLabelText("Ім’я"), { target: { value: "Тестер" } });
+    fireEvent.click(screen.getByLabelText("Зареєстрована компанія"));
+    fireEvent.click(screen.getByLabelText("Фізична особа-підприємець"));
+    fireEvent.change(screen.getByLabelText("Мінімальна інвестиція"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Максимальна інвестиція"), { target: { value: "100" } });
+
+    const fileInput = screen.getByLabelText(/Логотип компанії/i);
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    fireEvent.click(screen.getByText("Зареєструватися"));
+
+    await screen.findByText(/Реєстрація майже завершена/i);
+
+    expect(mockFetch).toHaveBeenCalled();
+    const lastFetchCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+    const formData = lastFetchCall[1]?.body as FormData;
+    
+    const uploadedFile = formData.get("logo") as File;
+    expect(uploadedFile).toBeInstanceOf(File);
+    expect(uploadedFile.name).toBe("test-logo.png");
   });
 });

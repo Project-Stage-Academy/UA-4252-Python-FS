@@ -33,10 +33,12 @@ export default function RegisterStartup() {
     startup: false,
     entrepreneur: false,
     legal: false,
+    logoFile: null,
   });
 
   const [errors, setErrors] = useState<ErrorState>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -49,6 +51,10 @@ export default function RegisterStartup() {
       const { files } = target as HTMLInputElement;
       if (files && files[0]) {
         setForm(prev => ({ ...prev, logoFile: files[0] }));
+        setLogoPreview(URL.createObjectURL(files[0])); // <-- Додаємо прев’ю
+      } else {
+        setForm(prev => ({ ...prev, logoFile: null }));
+        setLogoPreview(null);
       }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
@@ -76,9 +82,29 @@ export default function RegisterStartup() {
     e.preventDefault();
     if (!validate()) return;
     setStatus("loading");
+
+    const formData = new FormData();
+    formData.append("email", form.email);
+    formData.append("password", form.password);
+    formData.append("first_name", form.name);
+    formData.append("last_name", form.surname);
+    formData.append("company_name", form.company);
+    formData.append("role", "startup");
+    if (form.logoFile) {
+      formData.append("logo", form.logoFile);
+    }
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStatus("success");
+      const response = await fetch("http://localhost:8000/api/auth/register/", {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+        // Тут можна обробити помилки з бекенду
+      }
     } catch {
       setStatus("error");
     }
@@ -259,6 +285,18 @@ export default function RegisterStartup() {
                   який шукає інвестиції</label>
               </div>
               {errors.represent && <p className="error-text">{errors.represent}</p>}
+
+              <div className="field">
+                <label>Логотип компанії</label>
+                <input type="file" name="logoFile" accept="image/png, image/jpeg, image/svg+xml" onChange={handleChange}/>
+                {form.logoFile && <p>Вибрано: {form.logoFile.name}</p>}
+                {logoPreview && !errors.logoFile && (
+                  <div style={{marginTop: "8px"}}>
+                    <img src={logoPreview} alt="Logo preview" style={{maxWidth: "120px", maxHeight: "120px", borderRadius: "8px"}} />
+                  </div>
+                )}
+                {errors.logo && <p className="error-text">{errors.logo}</p>}
+              </div>
 
               <div className="field">
                 <label><span style={{color: "red"}}>*</span> Який суб’єкт господарювання ви представляєте?</label>

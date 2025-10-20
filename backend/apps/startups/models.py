@@ -17,7 +17,6 @@ class StartupProfile(models.Model):
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
     postal_code = models.CharField(max_length=20)
-    # We need to craete media folder and set MEDIA_URL and MEDIA_ROOT in settings.py
     logo = models.ImageField(upload_to='media/startup_logos/')
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=100)

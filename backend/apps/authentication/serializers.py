@@ -25,6 +25,7 @@ class RegistrationSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150, required=True)
     last_name = serializers.CharField(max_length=150, required=True)
     role = serializers.ChoiceField(choices=ROLE_CHOICES, required=True)
+    logo = serializers.ImageField(required=False, allow_null=True)
 
     # startup
     company_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
@@ -59,6 +60,17 @@ class RegistrationSerializer(serializers.Serializer):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError('This email is already registered')
         return value
+    
+    def validate_logo(self, value):
+        """ 
+        Validate logo file size and format
+        """
+        if value.size > 10485760:  # 10 MB limit
+         raise serializers.ValidationError("Logo file size cannot exceed 10 MB.")
+        valid_types = ['image/jpeg', 'image/png', 'image/svg+xml']
+        if hasattr(value, 'content_type') and value.content_type not in valid_types:
+            raise serializers.ValidationError("Logo must be JPEG, PNG, or SVG format.")
+        return value
 
     def create(self, validated_data):
         """
@@ -69,6 +81,7 @@ class RegistrationSerializer(serializers.Serializer):
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
         role = validated_data['role']
+        logo_file = validated_data.get('logo', None)
 
         user = User.objects.create_user(
             email=email,
@@ -91,7 +104,7 @@ class RegistrationSerializer(serializers.Serializer):
                 city='',
                 address='',
                 postal_code='',
-                logo='',
+                logo=logo_file,
                 partners_brands='',
                 audit_status='Pending'
             )
@@ -113,7 +126,7 @@ class RegistrationSerializer(serializers.Serializer):
                 city = '',
                 address = '',
                 postal_code = '',
-                logo = '',
+                logo = logo_file,
                 partners_brands = '',
                 audit_status = 'Pending'
             )
