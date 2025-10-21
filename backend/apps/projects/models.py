@@ -24,14 +24,10 @@ VISIBILITY_CHOICES = (
 )
 
 class Project(models.Model):
-    startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE, related_name='projects', db_index=True)
+
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
-    short_desc = models.TextField()
-    description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     slug = models.SlugField(unique=True, blank=True, max_length=255)
 
@@ -49,8 +45,15 @@ class Project(models.Model):
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    def clean(self):
+        if self.target_amount < 0:
+            raise ValidationError('Target amount cannot be negative.')
+        if self.raised_amount < 0:
+            raise ValidationError('Raised amount cannot be negative.')
 
     def save(self, *args, **kwargs):
+        self.full_clean()
+
         if not self.slug:
             base_slug = slugify(self.title)
             slug = base_slug
@@ -61,17 +64,6 @@ class Project(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-
-
-    def clean(self):
-        if self.target_amount < 0:
-            raise ValidationError('Target amount cannot be negative.')
-        if self.raised_amount < 0:
-            raise ValidationError('Raised amount cannot be negative.')
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
