@@ -126,14 +126,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.ScopedRateThrottle',
-    ],
-
-    'DEFAULT_THROTTLE_RATES': {
-        'auth_login': os.environ.get('AUTH_LOGIN_THROTTLE'),
-    }
 }
 
 SIMPLE_JWT = {
@@ -151,13 +143,13 @@ CACHES = {
     }
 }
 
-if 'test' in sys.argv:
+if os.environ.get('DJANGO_TEST', '0') == '1':
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-for-testing',
     }
 
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:8000')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
@@ -166,6 +158,9 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
+
+COMMON_REDIS_THROTTLE_RATE = 50
+COMMON_REDIS_THROTTLE_DURATION = 60
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

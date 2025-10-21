@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,13 +12,13 @@ from apps.users.models import User
 from django.conf import settings
 from .serializers import UserLoginSerializer
 from .throttling import CommonRedisThrottle
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 class LoginView(APIView):
     """ Authenticates user, generates refresh/access tokens.
     Throttle limited in settings.py with throttle_scope. """
-    # throttle_scope = 'auth_login'
     throttle_classes = [CommonRedisThrottle]
 
     def post(self, request):
@@ -89,7 +89,7 @@ class ResendVerificationView(APIView):
         email = request.data.get('email')
 
         if not email:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail':'Necessary fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
@@ -98,20 +98,23 @@ class ResendVerificationView(APIView):
                 return Response({'detail':'Account was already verified'}, status=status.HTTP_400_BAD_REQUEST)
 
         except User.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST) # 400 for test
+            return Response(status=status.HTTP_200_OK) # 400 for test
 
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.id))
 
-        verification_link = f'http://{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/'
+        verification_link = f'{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/'
 
-        send_mail(
-            subject='Verify your email',
-            message=f'Please, verify your email by clicking: {verification_link}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject='Verify your email',
+                message=f'Please, verify your email by clicking: {verification_link}',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            logger.exception("Failed to send verification email")
 
         return Response(status=status.HTTP_200_OK)
 
