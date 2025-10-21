@@ -3,7 +3,6 @@ from django.utils import timezone
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.investors.models import InvestorProfile
 
 User = get_user_model()
 
@@ -47,7 +46,7 @@ class StartupProfile(models.Model):
 
 
 class SavedStartup(models.Model):
-    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='saved_startups')
+    investor = models.ForeignKey('investors.InvestorProfile', on_delete=models.CASCADE, related_name='saved_startups')
     startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE, related_name='saved_by_investors')
     notes = models.TextField(blank=True, default='')
 

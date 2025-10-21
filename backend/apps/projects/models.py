@@ -1,15 +1,14 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from apps.startups.models import StartupProfile
 from django.core.exceptions import ValidationError
 import uuid
-from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django.utils.text import slugify
+from django.conf import settings
 
+from django.db import IntegrityError, transaction
 
-User = get_user_model()
 
 PROJECT_STATUS = (
     ('idea', 'Idea'),
@@ -25,7 +24,7 @@ VISIBILITY_CHOICES = (
 
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE, related_name='projects', db_index=True)
+    startup = models.ForeignKey('startups.StartupProfile', on_delete=models.CASCADE, related_name='projects', db_index=True)
 
     title = models.CharField(max_length=255)
 
@@ -55,15 +54,19 @@ class Project(models.Model):
         self.full_clean()
 
         if not self.slug:
-            base_slug = slugify(self.title)
-            slug = base_slug
-            counter = 1
-            while Project.objects.filter(slug=slug).exclude(id=self.id).exists():
-                slug = f'{base_slug}-{counter}'
-                counter += 1
-            self.slug = slug
-        super().save(*args, **kwargs)
-
+            self.slug = slugify(self.title)
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                break
+            except IntegrityError:
+                if attempt == max_retries -1:
+                    raise
+                base_slug = slugify(self.title)
+                counter = attempt + 2
+                self.slug = f'{base_slug}-{counter}'
 
     def __str__(self):
         return self.title
@@ -101,7 +104,7 @@ class ProjectAudit(models.Model):
     # project FK, user FK, timestamp, changes JSON
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='audit_logs')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=20)
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     changes = models.JSONField()
@@ -117,6 +120,6 @@ class ProjectAudit(models.Model):
         verbose_name_plural = "Project Audit Logs"
         ordering = ['-timestamp']
         indexes = [
-            models.Index(fields=['project', '-timestamp']),
-            models.Index(fields=['user', '-timestamp'])
+            models.Index(fields=['project', 'timestamp']),
+            models.Index(fields=['user', 'timestamp'])
         ]

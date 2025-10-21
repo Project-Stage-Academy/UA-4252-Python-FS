@@ -2,6 +2,8 @@ import uuid
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 from django.test import TestCase
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
@@ -279,6 +281,7 @@ class ProjectAttachmentModelTest(TestCase):
         )
 
     def test_create_attachment(self):
+        file = SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg")
         attachment = ProjectAttachment.objects.create(
             project=self.project,
             type='image',
