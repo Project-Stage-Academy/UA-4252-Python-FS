@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from apps.startups.models import StartupProfile
+from django.core.exceptions import ValidationError
 import uuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
@@ -22,11 +23,15 @@ VISIBILITY_CHOICES = (
     ('unlisted', 'Unlisted')
 )
 
-
 class Project(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE, related_name='projects', db_index=True)
+    startup = models.ForeignKey(StartupProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    short_desc = models.TextField()
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     slug = models.SlugField(unique=True, blank=True, max_length=255)
 
@@ -38,6 +43,8 @@ class Project(models.Model):
 
     raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0'))])
     currency = models.CharField(max_length=3, default="UAH")
+    thumbnail = models.URLField(blank=True, null=True)
+
     tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,6 +61,17 @@ class Project(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
+
+
+    def clean(self):
+        if self.target_amount < 0:
+            raise ValidationError('Target amount cannot be negative.')
+        if self.raised_amount < 0:
+            raise ValidationError('Raised amount cannot be negative.')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
