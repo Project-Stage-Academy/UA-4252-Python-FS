@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.investors.models import InvestorProfile
+from apps.common.utils import logo_upload_to
 
 User = get_user_model()
 
@@ -17,7 +18,7 @@ class StartupProfile(models.Model):
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
     postal_code = models.CharField(max_length=20)
-    logo = models.ImageField(upload_to='media/startup_logos/')
+    logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)

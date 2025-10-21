@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
+from apps.common.validators import validate_file_size, validate_file_type
 
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
@@ -65,11 +66,10 @@ class RegistrationSerializer(serializers.Serializer):
         """ 
         Validate logo file size and format
         """
-        if value.size > 10485760:  # 10 MB limit
-         raise serializers.ValidationError("Logo file size cannot exceed 10 MB.")
-        valid_types = ['image/jpeg', 'image/png', 'image/svg+xml']
-        if hasattr(value, 'content_type') and value.content_type not in valid_types:
-            raise serializers.ValidationError("Logo must be JPEG, PNG, or SVG format.")
+        if value in (None, ''):
+            return value
+        validate_file_size(value, 10)
+        validate_file_type(value, ['image/jpeg', 'image/png'])
         return value
 
     def create(self, validated_data):

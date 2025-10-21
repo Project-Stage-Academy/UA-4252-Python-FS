@@ -41,7 +41,15 @@ const RegisterInvestor: React.FC = () => {
     if (!formData.entityType.length) newErrors.entityType = "Виберіть тип суб’єкта";
     if (!formData.minInvestment) newErrors.minInvestment = "Не ввели мінімальну інвестицію";
     if (!formData.maxInvestment) newErrors.maxInvestment = "Не ввели максимальну інвестицію";
-
+    if (formData.logoFile) {
+      const allowedTypes = ["image/png", "image/jpeg"];
+      if (!allowedTypes.includes(formData.logoFile.type)) {
+        newErrors.logo = "Дозволені лише PNG або JPEG файли.";
+      }
+      if (formData.logoFile.size > 10 * 1024 * 1024) {
+        newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
+      }
+    }
     return newErrors;
   };
 
@@ -91,10 +99,8 @@ type MultiField = "representing" | "entityType";
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/register/", {
-        method: "POST",
-        body: formDataObj, 
-      });
+      const API_BASE = import.meta.env.VITE_API_BASE || '';
+      const response = await fetch(`${API_BASE}/api/auth/register/`, { method: 'POST', body: formDataObj });
 
       const data = await response.json();
 
@@ -173,7 +179,7 @@ type MultiField = "representing" | "entityType";
         <input
           type="file"
           name="logoFile"
-          accept="image/png, image/jpeg, image/svg+xml"
+          accept="image/png, image/jpeg"
           onChange={(e) => {
             const file = e.target.files?.[0];
             const MAX_SIZE = 10485760;

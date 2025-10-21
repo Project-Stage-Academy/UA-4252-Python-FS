@@ -51,7 +51,7 @@ export default function RegisterStartup() {
       const { files } = target as HTMLInputElement;
       if (files && files[0]) {
         setForm(prev => ({ ...prev, logoFile: files[0] }));
-        setLogoPreview(URL.createObjectURL(files[0])); // <-- Додаємо прев’ю
+        setLogoPreview(URL.createObjectURL(files[0]));
       } else {
         setForm(prev => ({ ...prev, logoFile: null }));
         setLogoPreview(null);
@@ -74,6 +74,15 @@ export default function RegisterStartup() {
     if (!form.surname) newErrors.surname = "Не ввели прізвище";
     if (!form.registercompany && !form.startup) newErrors.represent = "Виберіть кого ви представляєте";
     if (!form.entrepreneur && !form.legal) newErrors.person = "Виберіть який суб’єкт господарювання ви представляєте";
+    if (form.logoFile) {
+      const allowedTypes = ["image/png", "image/jpeg"];
+      if (!allowedTypes.includes(form.logoFile.type)) {
+        newErrors.logo = "Дозволені лише PNG або JPEG файли.";
+      }
+      if (form.logoFile.size > 10 * 1024 * 1024) {
+        newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -95,7 +104,8 @@ export default function RegisterStartup() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/register/", {
+      const API_BASE = import.meta.env.VITE_API_BASE || "";
+      const response = await fetch(`${API_BASE}/api/auth/register/`, {
         method: "POST",
         body: formData,
       });
@@ -288,11 +298,20 @@ export default function RegisterStartup() {
 
               <div className="field">
                 <label>Логотип компанії</label>
-                <input type="file" name="logoFile" accept="image/png, image/jpeg, image/svg+xml" onChange={handleChange}/>
+                <input
+                  type="file"
+                  name="logoFile"
+                  accept="image/png, image/jpeg"
+                  onChange={handleChange}
+                />
                 {form.logoFile && <p>Вибрано: {form.logoFile.name}</p>}
-                {logoPreview && !errors.logoFile && (
-                  <div style={{marginTop: "8px"}}>
-                    <img src={logoPreview} alt="Logo preview" style={{maxWidth: "120px", maxHeight: "120px", borderRadius: "8px"}} />
+                {logoPreview && !errors.logo && (
+                  <div style={{ marginTop: "8px" }}>
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      style={{ maxWidth: "120px", maxHeight: "120px", borderRadius: "8px" }}
+                    />
                   </div>
                 )}
                 {errors.logo && <p className="error-text">{errors.logo}</p>}
