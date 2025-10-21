@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import debounce from 'lodash.debounce';
+import React, { useState, useRef, useEffect } from "react";
+import debounce from "lodash.debounce";
 
 interface EmailInputProps {
   value: string;
@@ -7,32 +7,39 @@ interface EmailInputProps {
 }
 
 interface CheckEmailResponse {
-  exists: boolean;
+  available: boolean;
 }
 
 const EmailInput: React.FC<EmailInputProps> = ({ value, onChange }) => {
-  const [status, setStatus] = useState<'checking' | 'available' | 'exists' | null>(null);
+  const [status, setStatus] = useState<"checking" | "available" | "exists" | null>(null);
 
-  const checkEmail = useCallback(
+  const debouncedRef = useRef(
     debounce(async (email: string) => {
       if (!email) return setStatus(null);
-      setStatus('checking');
+      setStatus("checking");
       try {
-      await new Promise((r) => setTimeout(r, 800)); 
-      const exists = email.includes("test") || email.endsWith("@gmail.com"); 
-      setStatus(exists ? "exists" : "available");
+        await new Promise((r) => setTimeout(r, 800));
+
+        // TODO: Replace mock with real API call 
+        const exists = email.includes("test") || email.endsWith("@gmail.com");
+        setStatus(exists ? "exists" : "available");
       } catch (err) {
         console.error(err);
         setStatus(null);
       }
-    }, 500),
-    []
+    }, 500)
   );
+
+  useEffect(() => {
+    return () => {
+      debouncedRef.current.cancel();
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    checkEmail(newValue);
+    debouncedRef.current(newValue); 
   };
 
   return (
@@ -44,11 +51,15 @@ const EmailInput: React.FC<EmailInputProps> = ({ value, onChange }) => {
         placeholder="Enter your email"
       />
       <div>
-        {status === 'checking' && <span>Checking email...</span>}
-        {status === 'available' && <span style={{ color: 'green' }}>Email is available</span>}
-        {status === 'exists' && (
-          <div style={{ color: 'red' }}>
-            If this is your account — try <a href="/login">Login</a> or <a href="/forgot-password">Reset password</a>
+        {status === "checking" && <span>Checking email...</span>}
+        {status === "available" && (
+          <span style={{ color: "green" }}>Email is available</span>
+        )}
+        {status === "exists" && (
+          <div style={{ color: "red" }}>
+            If this is your account — try{" "}
+            <a href="/login">Login</a> or{" "}
+            <a href="/reset-password">Reset password</a>
           </div>
         )}
       </div>

@@ -10,8 +10,9 @@ function useDebounce<T>(value: T, delay = 500): T {
 
   return debounced;
 }
+
 const checkEmailMock = async (email: string) => {
-  await new Promise((r) => setTimeout(r, 600)); 
+  await new Promise((r) => setTimeout(r, 600));
 
   if (email.toLowerCase().includes("test")) {
     return { available: false };
@@ -28,6 +29,8 @@ export default function Register() {
   const debouncedEmail = useDebounce(email, 500);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkEmail = async () => {
       if (!debouncedEmail || !debouncedEmail.includes("@")) {
         setAvailable(null);
@@ -36,20 +39,24 @@ export default function Register() {
 
       setChecking(true);
       try {
-        // Зараз mock
+        // TODO: Replace mock with real API call
         const res = await checkEmailMock(debouncedEmail);
-
-        // Пізніше заміню на:
-        // const res = await axios.get(`/api/auth/check-email/?email=${encodeURIComponent(debouncedEmail)}`);
+        if (!mounted) return;
         setAvailable(res.available);
       } catch (err) {
+        if (!mounted) return;
         setAvailable(null);
       } finally {
+        if (!mounted) return;
         setChecking(false);
       }
     };
 
     checkEmail();
+
+    return () => {
+      mounted = false; 
+    };
   }, [debouncedEmail]);
 
   const handleSubmit = (e: React.FormEvent) => {
