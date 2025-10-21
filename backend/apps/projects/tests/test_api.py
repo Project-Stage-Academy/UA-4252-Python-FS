@@ -35,7 +35,7 @@ class ProjectAPITestCase(APITestCase):
         self.project = Project.objects.create(
             title="Test Project",
             slug="test-project",
-            short_desc="Test project description",
+            short_description="Test project description",
             description="Test description of the project",
             status="in_progress",  # ✅ правильне значення
             target_amount=10000.00,

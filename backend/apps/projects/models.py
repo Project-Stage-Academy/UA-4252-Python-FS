@@ -65,7 +65,7 @@ class Project(models.Model):
                 if attempt == max_retries -1:
                     raise
                 base_slug = slugify(self.title)
-                counter = attempt + 2
+                counter = attempt + 1
                 self.slug = f'{base_slug}-{counter}'
 
     def __str__(self):

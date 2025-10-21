@@ -37,7 +37,7 @@ class ProjectPaginationTestCase(APITestCase):
             Project.objects.create(
                 title=f"Project {i}",
                 slug=f"project-{i}",
-                short_desc=f"Short description of Project {i}",
+                short_description=f"Short description of Project {i}",
                 description=f"Full description of Project {i}",
                 status="in_progress",
                 target_amount=100000.00,

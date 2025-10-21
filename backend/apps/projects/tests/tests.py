@@ -113,7 +113,7 @@ class ProjectModelTest(TestCase):
         Project.objects.create(**self.valid_data)
         duplicate = self.valid_data.copy()
         duplicate["slug"] = "ai-pet-tracker"  # duplicate slug
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(ValidationError):
             Project.objects.create(**duplicate)
 
     def test_required_fields_validation(self):
