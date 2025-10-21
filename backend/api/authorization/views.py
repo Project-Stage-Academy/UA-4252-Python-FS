@@ -46,7 +46,7 @@ class LoginView(APIView):
 
         return response
 
-        
+
 class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
@@ -65,5 +65,3 @@ class LogoutView(APIView):
             return response
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
