@@ -1,6 +1,14 @@
+import binascii
+from uuid import UUID
+
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.core.exceptions import ValidationError
+from django.utils.encoding import force_str
+from django.db.models import UUIDField
 
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
@@ -104,18 +112,102 @@ class RegistrationSerializer(serializers.Serializer):
                 description='',
                 investment_range_min=validated_data.get('investment_range_min'),
                 investment_range_max=validated_data.get('investment_range_max'),
-                preferred_industries = '',
-                website = validated_data.get('website', ''),
-                email = email,
-                phone = validated_data.get('phone', ''),
-                country = 'Ukraine',
-                region = 8,
-                city = '',
-                address = '',
-                postal_code = '',
-                logo = '',
-                partners_brands = '',
-                audit_status = 'Pending'
+                preferred_industries='',
+                website=validated_data.get('website', ''),
+                email=email,
+                phone=validated_data.get('phone', ''),
+                country='Ukraine',
+                region=8,
+                city='',
+                address='',
+                postal_code='',
+                logo='',
+                partners_brands='',
+                audit_status='Pending'
             )
 
+        return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        # Validate format only without revealing existence.
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+    re_new_password = serializers.CharField(min_length=8)
+
+    @staticmethod
+    def _get_user_from_uid(uid: str) -> User:
+        try:
+            decoded_uid = force_str(urlsafe_base64_decode(uid))
+        except (TypeError, ValueError, binascii.Error):
+            raise serializers.ValidationError({'uid': 'Invalid UID.'})
+
+        if isinstance(User._meta.pk, UUIDField):
+            try:
+                decoded_uid = UUID(decoded_uid)
+            except ValueError:
+                raise ValidationError({'uid': 'Invalid UID.'})
+
+        user = User.objects.filter(pk=decoded_uid).first()
+        if not user:
+            raise serializers.ValidationError({'uid': 'Invalid user ID.'})
+
+        return user
+
+    def validate(self, attrs):
+        """
+        Checks performed:
+        1. 'new_password' and 're_new_password' must match.
+           - On mismatch, raises ValidationError:
+             {'re_new_password': 'Passwords do not match.'}
+
+        2. 'uid' must decode to a valid user.
+           - On invalid UID format or non-existent user, raises ValidationError:
+             {'uid': 'Invalid UID.'} or {'uid': 'Invalid user ID.'}
+
+        3. 'token' must be a valid, non-expired password reset token for the user.
+           - On invalid or expired token, raises ValidationError:
+             {'token': 'Invalid or expired token.'}
+        """
+        if attrs['new_password'] != attrs['re_new_password']:
+            raise serializers.ValidationError(
+                {'re_new_password': 'Passwords do not match.'}
+            )
+
+        user = self._get_user_from_uid(attrs['uid'])
+        if not default_token_generator.check_token(user, attrs['token']):
+            raise serializers.ValidationError(
+                {'token': 'Invalid or expired token.'}
+            )
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs) -> User:
+        """
+        Set a new password for the user after validation.
+        Runs Django's password validators (validate_password).
+            - On failure, raises ValidationError:
+            {'new_password': [<list of validation error messages>]}
+        """
+        user = self.validated_data['user']
+        new_password = self.validated_data['new_password']
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            raise serializers.ValidationError(
+                {'new_password': list(e.messages)}
+            )
+
+        user.set_password(new_password)
+        user.save()
         return user
