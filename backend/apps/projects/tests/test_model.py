@@ -38,23 +38,23 @@ class ProjectModelTestCase(TestCase):
             slug="test-project",
             short_description="Test short description",
             description="Test description of the project.",
-            status="draft",
+            status="idea",
             target_amount=10000.00,
             raised_amount=5000.00,
             currency="UAH",
             thumbnail="https://example.com/image.jpg",
-            tags="test, example",
+            tags=["test, example"],
             visibility="public"
         )
 
     def test_project_creation_and_fields(self):
         self.assertEqual(self.project.title, "Test Project")
-        self.assertEqual(self.project.status, "draft")
+        self.assertEqual(self.project.status, "idea")
         self.assertEqual(self.project.target_amount, 10000.00)
         self.assertEqual(self.project.raised_amount, 5000.00)
         self.assertEqual(self.project.currency, "UAH")
         self.assertEqual(self.project.thumbnail, "https://example.com/image.jpg")
-        self.assertEqual(self.project.tags, "test, example")
+        self.assertEqual(self.project.tags, ["test, example"])
         self.assertEqual(self.project.visibility, "public")
         self.assertEqual(self.project.startup, self.startup)
         self.assertEqual(self.project.slug, "test-project")
@@ -62,14 +62,14 @@ class ProjectModelTestCase(TestCase):
     def test_invalid_target_amount_and_raised_amount(self):
         with self.assertRaises(ValidationError):
             self.project.target_amount = -1000.00
-            self.project.clean()
+            self.project.full_clean()
 
         with self.assertRaises(ValidationError):
             self.project.raised_amount = -1000.00
-            self.project.clean()
+            self.project.full_clean()
 
     def test_status_choices(self):
-        valid_statuses = ['draft', 'in_progress', 'completed']
+        valid_statuses = ['idea', 'mvp', 'fundraising', 'closed']
         for status in valid_statuses:
             self.project.status = status
             self.project.save()
@@ -82,12 +82,12 @@ class ProjectModelTestCase(TestCase):
             slug="test-project-without-thumbnail",
             short_description="Test short description",
             description="Test description of the project.",
-            status="draft",
+            status="idea",
             target_amount=10000.00,
             raised_amount=5000.00,
             currency="UAH",
             thumbnail=None,
-            tags="test, example",
+            tags=["test, example"],
             visibility="public"
         )
 

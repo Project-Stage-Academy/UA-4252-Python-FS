@@ -10,7 +10,7 @@ class ProjectReadSerializer(serializers.ModelSerializer):
             'title',
             'status',
             'thumbnail',
-            'short_desc'
+            'short_description'
         ]
 
 
@@ -22,7 +22,7 @@ class ProjectWriteSerializer(serializers.ModelSerializer):
             'startup',
             'title',
             'slug',
-            'short_desc',
+            'short_description',
             'description',
             'status',
             'target_amount',

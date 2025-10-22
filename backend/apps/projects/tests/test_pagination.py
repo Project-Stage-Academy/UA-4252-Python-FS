@@ -39,12 +39,12 @@ class ProjectPaginationTestCase(APITestCase):
                 slug=f"project-{i}",
                 short_description=f"Short description of Project {i}",
                 description=f"Full description of Project {i}",
-                status="in_progress",
+                status="fundraising",
                 target_amount=100000.00,
                 raised_amount=0.00,
                 currency="UAH",
                 thumbnail="https://example.com/image.jpg",
-                tags="test, startup, project",
+                tags=["test, startup, project"],
                 visibility="public",
                 startup=self.startup
             )
