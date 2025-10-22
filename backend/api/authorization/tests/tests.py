@@ -3,7 +3,7 @@ from django.core.cache import cache
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-
+from django.test import override_settings
 User = get_user_model()
 
 class JWTAuthTests(APITestCase):
@@ -122,7 +122,7 @@ class JWTAuthTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-
+@override_settings(COMMON_REDIS_THROTTLE_RATE=6)
 class ResendVerificationTests(APITestCase):
     def setUp(self):
         cache.clear()
