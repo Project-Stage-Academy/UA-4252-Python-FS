@@ -1,10 +1,17 @@
-from django.core.exceptions import ValidationError
+import os
+from rest_framework import serializers
+from PIL import Image, UnidentifiedImageError
 
-def validate_file_size(file, max_size_mb):
+def drf_validate_file_size(file, max_size_mb):
     max_size = max_size_mb * 1024 * 1024
     if getattr(file, "size", 0) > max_size:
-        raise ValidationError(f"Розмір файлу не може перевищувати {max_size_mb} MБ.")
+        raise serializers.ValidationError(f"Розмір файлу не може перевищувати {max_size_mb} MБ.")
 
-def validate_file_type(file, allowed_types):
-    if hasattr(file, 'content_type') and file.content_type not in allowed_types:
-        raise ValidationError(f"Файл повинен бути одним з: {', '.join(allowed_types)}.")
+def drf_validate_file_type(file, allowed_types):
+    ext = os.path.splitext(file.name)[1].lower()
+    if ext not in allowed_types:
+        raise serializers.ValidationError(f"Дозволені розширення: {', '.join(allowed_types)}.")
+    try:
+        Image.open(file).verify()
+    except UnidentifiedImageError:
+        raise serializers.ValidationError("Invalid image file.")

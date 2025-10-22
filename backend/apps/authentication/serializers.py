@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
-from apps.common.validators import validate_file_size, validate_file_type
-
+from apps.common.validators import drf_validate_file_size, drf_validate_file_type
 from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -68,8 +68,8 @@ class RegistrationSerializer(serializers.Serializer):
         """
         if value in (None, ''):
             return value
-        validate_file_size(value, 10)
-        validate_file_type(value, ['image/jpeg', 'image/png'])
+        drf_validate_file_size(value, 10)
+        drf_validate_file_type(value, ['.jpg','.jpeg','.png'])
         return value
 
     def create(self, validated_data):

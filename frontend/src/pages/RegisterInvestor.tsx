@@ -42,9 +42,9 @@ const RegisterInvestor: React.FC = () => {
     if (!formData.minInvestment) newErrors.minInvestment = "Не ввели мінімальну інвестицію";
     if (!formData.maxInvestment) newErrors.maxInvestment = "Не ввели максимальну інвестицію";
     if (formData.logoFile) {
-      const allowedTypes = ["image/png", "image/jpeg"];
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
       if (!allowedTypes.includes(formData.logoFile.type)) {
-        newErrors.logo = "Дозволені лише PNG або JPEG файли.";
+        newErrors.logo = "Дозволені лише PNG, JPEG або JPG файли.";
       }
       if (formData.logoFile.size > 10 * 1024 * 1024) {
         newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
@@ -179,7 +179,7 @@ type MultiField = "representing" | "entityType";
         <input
           type="file"
           name="logoFile"
-          accept="image/png, image/jpeg"
+          accept="image/png, image/jpeg, image/jpg"
           onChange={(e) => {
             const file = e.target.files?.[0];
             const MAX_SIZE = 10485760;

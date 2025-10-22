@@ -75,9 +75,9 @@ export default function RegisterStartup() {
     if (!form.registercompany && !form.startup) newErrors.represent = "Виберіть кого ви представляєте";
     if (!form.entrepreneur && !form.legal) newErrors.person = "Виберіть який суб’єкт господарювання ви представляєте";
     if (form.logoFile) {
-      const allowedTypes = ["image/png", "image/jpeg"];
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
       if (!allowedTypes.includes(form.logoFile.type)) {
-        newErrors.logo = "Дозволені лише PNG або JPEG файли.";
+        newErrors.logo = "Дозволені лише PNG, JPEG або JPG файли.";
       }
       if (form.logoFile.size > 10 * 1024 * 1024) {
         newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
@@ -105,7 +105,7 @@ export default function RegisterStartup() {
 
     try {
       const API_BASE = import.meta.env.VITE_API_BASE || "";
-      const response = await fetch(`${API_BASE}/api/auth/register/`, {
+      const response = await fetch(API_BASE + `/api/auth/register/`, {
         method: "POST",
         body: formData,
       });
