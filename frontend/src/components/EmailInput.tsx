@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import debounce from "lodash.debounce";
+import React, { useState, useEffect } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 
 interface EmailInputProps {
   value: string;
@@ -13,33 +13,47 @@ interface CheckEmailResponse {
 const EmailInput: React.FC<EmailInputProps> = ({ value, onChange }) => {
   const [status, setStatus] = useState<"checking" | "available" | "exists" | null>(null);
 
-  const debouncedRef = useRef(
-    debounce(async (email: string) => {
-      if (!email) return setStatus(null);
+  const debouncedEmail = useDebounce(value, 500);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkEmail = async (email: string) => {
+      if (!email) {
+        if (!mounted) return;
+        setStatus(null);
+        return;
+      }
+
+      if (!mounted) return;
       setStatus("checking");
+
       try {
         await new Promise((r) => setTimeout(r, 800));
 
-        // TODO: Replace mock with real API call 
+        // TODO: Replace mock with real API call
         const exists = email.includes("test") || email.endsWith("@gmail.com");
+
+        if (!mounted) return;
         setStatus(exists ? "exists" : "available");
       } catch (err) {
         console.error(err);
+        if (!mounted) return;
         setStatus(null);
       }
-    }, 500)
-  );
-
-  useEffect(() => {
-    return () => {
-      debouncedRef.current.cancel();
     };
-  }, []);
+
+    if (debouncedEmail) {
+      checkEmail(debouncedEmail);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [debouncedEmail]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    onChange(newValue);
-    debouncedRef.current(newValue); 
+    onChange(e.target.value);
   };
 
   return (
@@ -48,19 +62,19 @@ const EmailInput: React.FC<EmailInputProps> = ({ value, onChange }) => {
         type="email"
         value={value}
         onChange={handleChange}
-        placeholder="Enter your email"
+        placeholder="Введіть свою електронну пошту"
       />
       <div>
-        {status === "checking" && <span>Checking email...</span>}
+        {status === "checking" && <span>Перевірка електронної пошти......</span>}
         {status === "available" && (
-          <span style={{ color: "green" }}>Email is available</span>
+          <span style={{ color: "green" }}>Елекронна пошта доступна</span>
         )}
         {status === "exists" && (
-          <div style={{ color: "red" }}>
-            If this is your account — try{" "}
-            <a href="/login">Login</a> or{" "}
-            <a href="/reset-password">Reset password</a>
-          </div>
+        <div style={{ color: "red" }}>
+          Ця електронна пошта вже використовується. Якщо це ваш акаунт —{" "}
+          <a href="/login">увійдіть</a> або{" "}
+          <a href="/reset-password">відновіть пароль</a>.
+        </div>
         )}
       </div>
     </div>
