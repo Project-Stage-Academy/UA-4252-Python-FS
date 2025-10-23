@@ -153,3 +153,88 @@ This project uses GitHub Actions for Continuous Integration. The workflow runs f
 3.  If the workflow fails, you will see a red 'X'. Click on the **Details** link next to the failing job (e.g., `backend` or `frontend`).
 4.  This will open the logs. Expand the step that failed (e.g., `Lint (flake8)` or `Tests`) to see the detailed error message.
 5.  To view build artifacts, go to the 'Artifacts' section under the job summary. (available only for frontend)
+
+#### How to test emails locally (console backend) and how to set provider credentials in env.
+
+You can test the email functionality (such as password reset, verification, or notifications) directly using Postman.
+
+### 1.Start the backend server (via Docker or locally):
+
+- `docker-compose up --build -d --remove-orphans`
+or
+- `python manage.py runserver`
+
+### 2.Use Console Email Backend for local testing
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
+
+### 3.Configuring Postman for user registration
+
+1.Select POST method.
+Enter the URL for registration. This could be something like:
+http://127.0.0.1:8000/api/auth/register/
+
+2.Adding Headers:
+In Headers, you need to add Content-Type to specify the request format:
+Content-Type: application/json
+
+3.Adding data to the Body:
+In Body, select raw format and JSON type. Then insert the query with the required data for user registration:
+
+Example of data for registration:
+
+{
+    "email": "testuser@example.com",
+    "password": "SecurePassword123!",
+    "first_name": "Test",
+    "last_name": "User",
+    "role": "startup",
+    "company_name": "Test Startup",
+    "description": "A description of the startup.",
+    "website": "https://teststartup.com",
+    "phone": "+380123456789"
+}
+
+Sending a request
+
+After configuring the request, you click Send in Postman, and if everything is configured correctly on the server, you should receive a response from the API.
+
+### 4.Check the response
+
+If the registration was successful, you will receive responses like:
+
+{ 
+   "id": "1b82f49d-a54d-423c-8363-683c5d38ffc6",
+   "email": "testuser@example.com",
+   "detail": "Verification email sent." 
+}
+
+### 5.Configuring Postman for password reset
+
+1.Open Postman and create a new request
+Method: POST
+URL: http://127.0.0.1:8000/api/auth/password-reset/request/
+
+2.In the Body tab, select:
+raw/JSON
+And paste your user's email:
+{
+"email": "**your user's email**"
+}
+
+3.Click Send
+If everything is correct, you will receive a response from the API - for example:
+
+{
+    "detail": "Password reset link sent."
+}
+
+Check the user's mailbox (in this case testuser@example.com) to make sure the confirmation email has arrived.
+
+If you have configured the Django email backend on the console for testing, you will see this email in the console, not in the actual mailbox.
