@@ -35,14 +35,14 @@ class ProjectAPITestCase(APITestCase):
         self.project = Project.objects.create(
             title="Test Project",
             slug="test-project",
-            short_desc="Test project description",
+            short_description="Test project description",
             description="Test description of the project",
-            status="in_progress",  # ✅ правильне значення
+            status="fundraising",
             target_amount=10000.00,
             raised_amount=0.00,
             currency="UAH",
             thumbnail="https://example.com/image.jpg",
-            tags="test, project",
+            tags=["test, project"],
             visibility="public",
             startup=self.startup
         )
