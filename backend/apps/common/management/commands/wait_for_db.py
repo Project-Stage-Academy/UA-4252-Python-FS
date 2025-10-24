@@ -1,9 +1,11 @@
-from django.db.utils import OperationalError
-from django.core.management.base import BaseCommand
-from psycopg2 import connect, OperationalError as Psycopg2OpError
-import time
-import sys
 import os
+import sys
+import time
+
+from django.core.management.base import BaseCommand
+from django.db.utils import OperationalError
+from psycopg2 import OperationalError as Psycopg2OpError
+from psycopg2 import connect
 
 
 class Command(BaseCommand):
@@ -21,7 +23,7 @@ class Command(BaseCommand):
                     user=os.environ.get('POSTGRES_USER'),
                     password=os.environ.get('POSTGRES_PASSWORD'),
                     host=os.environ.get('POSTGRES_HOST'),
-                    port=os.environ.get('POSTGRES_PORT')
+                    port=os.environ.get('POSTGRES_PORT'),
                 )
                 db_up = True
             except (Psycopg2OpError, OperationalError) as e:

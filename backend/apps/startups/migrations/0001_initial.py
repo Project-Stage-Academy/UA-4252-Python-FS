@@ -16,7 +16,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='StartupProfile',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('company_name', models.CharField(max_length=255)),
                 ('description', models.TextField()),
                 ('founded_year', models.IntegerField()),
@@ -41,9 +49,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SavedStartup',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('notes', models.TextField()),
-                ('investor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='investors.investorprofile')),
+                (
+                    'investor',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='investors.investorprofile',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Saved Startup',

@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import StartupProfile
+
 
 class StartupPublicProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
@@ -32,5 +34,7 @@ class StartupPublicProfileSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj):
         if obj.partners_brands:
-            return [tag.strip() for tag in obj.partners_brands.split(',') if tag.strip()]
+            return [
+                tag.strip() for tag in obj.partners_brands.split(',') if tag.strip()
+            ]
         return []

@@ -1,11 +1,14 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from .managers import CustomUserManager
 import uuid
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+from .managers import CustomUserManager
 
 
 class User(AbstractUser):
     """Custom Django User model without username"""
+
     username = None
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, db_index=True)

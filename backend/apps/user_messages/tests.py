@@ -1,11 +1,12 @@
-from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.test import TestCase
 from django.utils import timezone
-from apps.user_messages.models import Notification
+
 from apps.investors.models import InvestorProfile
-from apps.users.models import User
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
+from apps.user_messages.models import Notification
+from apps.users.models import User
 
 
 class NotificationModelTest(TestCase):
@@ -16,20 +17,18 @@ class NotificationModelTest(TestCase):
 
         # --- Investor user ---
         self.investor_user = User.objects.create(
-            username="investor_user",
             email="investor@example.com",
             password="password123",
             first_name="Investor",
-            last_name="User"
+            last_name="User",
         )
 
         # --- Startup user ---
         self.startup_user = User.objects.create(
-            username="startup_user",
             email="startup@example.com",
             password="password456",
             first_name="Startup",
-            last_name="Owner"
+            last_name="Owner",
         )
 
         # --- Startup profile ---
@@ -84,7 +83,7 @@ class NotificationModelTest(TestCase):
             raised_amount=10000.00,
             currency="USD",
             tags="AI, Data, Analytics",
-            visibility="public"
+            visibility="public",
         )
 
         self.valid_data = {

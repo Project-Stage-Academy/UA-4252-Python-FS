@@ -7,21 +7,41 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='Project',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('title', models.CharField(max_length=255)),
                 ('slug', models.SlugField(unique=True)),
                 ('short_description', models.TextField()),
                 ('description', models.TextField()),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('in_progress', 'In Progress'), ('completed', 'Completed')], max_length=20)),
+                (
+                    'status',
+                    models.CharField(
+                        choices=[
+                            ('draft', 'Draft'),
+                            ('in_progress', 'In Progress'),
+                            ('completed', 'Completed'),
+                        ],
+                        max_length=20,
+                    ),
+                ),
                 ('target_amount', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('raised_amount', models.DecimalField(decimal_places=2, default=0, max_digits=12)),
+                (
+                    'raised_amount',
+                    models.DecimalField(decimal_places=2, default=0, max_digits=12),
+                ),
                 ('currency', models.CharField(default='UAH', max_length=3)),
                 ('tags', models.TextField()),
                 ('visibility', models.CharField(default='public', max_length=20)),

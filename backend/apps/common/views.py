@@ -1,8 +1,9 @@
+from django.db import connections
+from django.db.utils import OperationalError
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import connections
-from django.db.utils import OperationalError
 
 
 class GetHealth(APIView):
@@ -19,7 +20,7 @@ class GetHealth(APIView):
                     'status': 'unhealthy',
                     'db': 'unreachable',
                 },
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
         return Response(
@@ -27,5 +28,9 @@ class GetHealth(APIView):
                 'status': 'ok',
                 'db': 'connected',
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
+
+
+def health(request):
+    return JsonResponse({"status": "ok"})

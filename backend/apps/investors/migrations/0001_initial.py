@@ -8,25 +8,74 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='InvestorProfile',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('company_name', models.CharField(max_length=200)),
                 ('full_name', models.CharField(max_length=200)),
                 ('description', models.TextField()),
-                ('investment_range_min', models.DecimalField(decimal_places=2, max_digits=12)),
-                ('investment_range_max', models.DecimalField(decimal_places=2, max_digits=12)),
+                (
+                    'investment_range_min',
+                    models.DecimalField(decimal_places=2, max_digits=12),
+                ),
+                (
+                    'investment_range_max',
+                    models.DecimalField(decimal_places=2, max_digits=12),
+                ),
                 ('preferred_industries', models.CharField(max_length=200)),
                 ('website', models.URLField()),
                 ('email', models.EmailField(max_length=100, unique=True)),
-                ('phone', phonenumber_field.modelfields.PhoneNumberField(max_length=128, region='UA')),
+                (
+                    'phone',
+                    phonenumber_field.modelfields.PhoneNumberField(
+                        max_length=128, region='UA'
+                    ),
+                ),
                 ('country', models.CharField(max_length=100)),
-                ('region', models.IntegerField(choices=[(0, 'Cherkasy'), (1, 'Chernihiv'), (2, 'Chernivtsi'), (3, 'Dnipropetrovsk'), (4, 'Donetsk'), (5, 'Ivano-Frankivsk'), (6, 'Kherson'), (7, 'Kharkiv'), (8, 'Kyiv'), (9, 'Kirovohrad'), (10, 'Lviv'), (11, 'Mykolaiv'), (12, 'Odesa'), (13, 'Poltava'), (14, 'Rivne'), (15, 'Sumy'), (16, 'Ternopil'), (17, 'Vinnytsia'), (18, 'Volyn'), (19, 'Khmelnytskyi'), (20, 'Zhytomyr'), (21, 'Zakarpattia'), (22, 'Zaporizhzhia'), (23, 'Luhansk')], default=8)),
+                (
+                    'region',
+                    models.IntegerField(
+                        choices=[
+                            (0, 'Cherkasy'),
+                            (1, 'Chernihiv'),
+                            (2, 'Chernivtsi'),
+                            (3, 'Dnipropetrovsk'),
+                            (4, 'Donetsk'),
+                            (5, 'Ivano-Frankivsk'),
+                            (6, 'Kherson'),
+                            (7, 'Kharkiv'),
+                            (8, 'Kyiv'),
+                            (9, 'Kirovohrad'),
+                            (10, 'Lviv'),
+                            (11, 'Mykolaiv'),
+                            (12, 'Odesa'),
+                            (13, 'Poltava'),
+                            (14, 'Rivne'),
+                            (15, 'Sumy'),
+                            (16, 'Ternopil'),
+                            (17, 'Vinnytsia'),
+                            (18, 'Volyn'),
+                            (19, 'Khmelnytskyi'),
+                            (20, 'Zhytomyr'),
+                            (21, 'Zakarpattia'),
+                            (22, 'Zaporizhzhia'),
+                            (23, 'Luhansk'),
+                        ],
+                        default=8,
+                    ),
+                ),
                 ('city', models.CharField(max_length=100)),
                 ('address', models.CharField(max_length=200)),
                 ('postal_code', models.CharField(max_length=20)),

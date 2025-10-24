@@ -16,7 +16,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Notification',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('notification_type', models.CharField(max_length=50)),
                 ('title', models.CharField(max_length=200)),
                 ('message', models.TextField()),
@@ -24,7 +32,15 @@ class Migration(migrations.Migration):
                 ('is_read', models.BooleanField(default=False)),
                 ('read_at', models.DateTimeField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('related_project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='projects.project')),
+                (
+                    'related_project',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='projects.project',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Notification',

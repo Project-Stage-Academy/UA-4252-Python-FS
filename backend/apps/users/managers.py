@@ -4,8 +4,14 @@ from django.contrib.auth.models import BaseUserManager
 class CustomUserManager(BaseUserManager):
     """Manager for custom Django User model without username"""
 
-    def _create_user(self, email: str, first_name: str, last_name: str,
-                     password: str | None = None, **extra_fields):
+    def _create_user(
+        self,
+        email: str,
+        first_name: str,
+        last_name: str,
+        password: str | None = None,
+        **extra_fields,
+    ):
         if not first_name:
             raise ValueError('Users must have a first name.')
         if not last_name:
@@ -16,18 +22,21 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
 
         user = self.model(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            **extra_fields
+            first_name=first_name, last_name=last_name, email=email, **extra_fields
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email: str, first_name: str, last_name: str,
-                    password: str | None = None, **extra_fields):
+    def create_user(
+        self,
+        email: str,
+        first_name: str,
+        last_name: str,
+        password: str | None = None,
+        **extra_fields,
+    ):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 
@@ -36,11 +45,17 @@ class CustomUserManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             password=password,
-            **extra_fields
+            **extra_fields,
         )
 
-    def create_superuser(self, email: str, first_name: str, last_name: str,
-                         password: str | None = None, **extra_fields):
+    def create_superuser(
+        self,
+        email: str,
+        first_name: str,
+        last_name: str,
+        password: str | None = None,
+        **extra_fields,
+    ):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -55,5 +70,5 @@ class CustomUserManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
             password=password,
-            **extra_fields
+            **extra_fields,
         )

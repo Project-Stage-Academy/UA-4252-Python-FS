@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 User = get_user_model()
@@ -40,7 +40,9 @@ class InvestorProfile(models.Model):
     description = models.TextField()
     investment_range_min = models.DecimalField(max_digits=12, decimal_places=2)
     investment_range_max = models.DecimalField(max_digits=12, decimal_places=2)
-    preferred_industries = models.CharField(max_length=200) # In the future, consider using other table for statuses
+    preferred_industries = models.CharField(
+        max_length=200
+    )  # In the future, consider using other table for statuses
     website = models.URLField(max_length=200)
     email = models.EmailField(max_length=100, unique=True)
     phone = PhoneNumberField(region='UA')
@@ -60,8 +62,9 @@ class InvestorProfile(models.Model):
 
     def clean(self):
         if self.investment_range_max < self.investment_range_min:
-            raise ValidationError("Maximum investment must be greater than minimum investment.")
-
+            raise ValidationError(
+                "Maximum investment must be greater than minimum investment."
+            )
 
     def __str__(self):
         return self.company_name

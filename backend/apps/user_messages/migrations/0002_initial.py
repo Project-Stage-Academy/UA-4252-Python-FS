@@ -19,11 +19,20 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notification',
             name='related_user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='related_user', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='related_user',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
             model_name='notification',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='investors.investorprofile'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to='investors.investorprofile',
+            ),
         ),
     ]

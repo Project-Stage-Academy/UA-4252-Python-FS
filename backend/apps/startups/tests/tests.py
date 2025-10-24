@@ -1,15 +1,15 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from apps.startups.models import StartupProfile, SavedStartup
-from apps.users.models import User
-from apps.investors.models import InvestorProfile
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import StartupProfile
-from django.contrib.auth import get_user_model
+from rest_framework.test import APITestCase
+
+from apps.investors.models import InvestorProfile
+from apps.startups.models import SavedStartup, StartupProfile
 
 User = get_user_model()
+
 
 class StartupProfileModelTest(TestCase):
     """Unit tests for the StartupProfile model"""
@@ -20,7 +20,7 @@ class StartupProfileModelTest(TestCase):
             email="startup@example.com",
             password="securepassword",
             first_name="Startup",
-            last_name="Owner"
+            last_name="Owner",
         )
 
         self.valid_data = {
@@ -91,7 +91,7 @@ class SavedStartupModelTest(TestCase):
             email="investor@example.com",
             password="password123",
             first_name="Investor",
-            last_name="User"
+            last_name="User",
         )
 
         self.investor = InvestorProfile.objects.create(
@@ -119,7 +119,7 @@ class SavedStartupModelTest(TestCase):
             email="owner@smartvision.ai",
             password="password321",
             first_name="Owner",
-            last_name="Smart"
+            last_name="Smart",
         )
 
         self.startup = StartupProfile.objects.create(
@@ -155,7 +155,7 @@ class SavedStartupModelTest(TestCase):
     def test_str_method_returns_readable_text(self):
         """__str__ should return readable text with both company names"""
         saved = SavedStartup.objects.create(**self.valid_data)
-        expected_str = f"Saved SmartVision by Global Ventures"
+        expected_str = "Saved SmartVision by Global Ventures"
         self.assertEqual(str(saved), expected_str)
 
     def test_missing_required_fields(self):
@@ -179,7 +179,7 @@ class StartupPublicProfileAPITest(APITestCase):
             email='user1@example.com',
             password='password123',
             first_name='Test',
-            last_name='User1'
+            last_name='User1',
         )
         self.startup1 = StartupProfile.objects.create(
             user=self.user1,
@@ -192,14 +192,14 @@ class StartupPublicProfileAPITest(APITestCase):
             phone="1111111111",
             city="Test City One",
             partners_brands="tech, innovation",
-            audit_status="approved"
+            audit_status="approved",
         )
 
         self.user2 = User.objects.create_user(
             email='user2@example.com',
             password='password123',
             first_name='Test',
-            last_name='User2'
+            last_name='User2',
         )
         self.startup2 = StartupProfile.objects.create(
             user=self.user2,
@@ -212,7 +212,7 @@ class StartupPublicProfileAPITest(APITestCase):
             phone="2222222222",
             city="Test City Two",
             partners_brands="saas, finance",
-            audit_status="pending"
+            audit_status="pending",
         )
 
     def test_get_existing_startup_profile(self):
@@ -247,13 +247,23 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         url = reverse('startup-detail', kwargs={'id': self.startup1.id})
         response = self.client.get(url)
-        
+
         expected_keys = [
-            'id', 'company_name', 'description', 'founded_year', 'team_size',
-            'website', 'email', 'phone', 'city', 'logo_url', 'tags',
-            'followers_count', 'created_at'
+            'id',
+            'company_name',
+            'description',
+            'founded_year',
+            'team_size',
+            'website',
+            'email',
+            'phone',
+            'city',
+            'logo_url',
+            'tags',
+            'followers_count',
+            'created_at',
         ]
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertCountEqual(response.data.keys(), expected_keys)
 

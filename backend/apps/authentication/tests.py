@@ -1,17 +1,22 @@
 import uuid
+from datetime import timedelta
+from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.core import mail
-from rest_framework.test import APIClient
-from rest_framework import status
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
+from django.core import mail
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.encoding import force_bytes
-from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode
+from freezegun import freeze_time
+from rest_framework import status
+from rest_framework.test import APIClient
 
-from apps.startups.models import StartupProfile
 from apps.investors.models import InvestorProfile
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
@@ -35,7 +40,7 @@ class RegistrationTestCase(TestCase):
             'company_name': 'Test name',
             'description': 'Great startup',
             'website': 'https://test.com',
-            'phone': '+380123456789'
+            'phone': '+380123456789',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -68,7 +73,7 @@ class RegistrationTestCase(TestCase):
             'last_name': 'Doe',
             'role': 'investor',
             'investment_range_min': 10000,
-            'investment_range_max': 100000
+            'investment_range_max': 100000,
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -92,7 +97,7 @@ class RegistrationTestCase(TestCase):
             'password': 'SecurePass123!',
             'last_name': 'Doe',
             'role': 'startup',
-            'company_name': 'Test'
+            'company_name': 'Test',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -106,14 +111,13 @@ class RegistrationTestCase(TestCase):
             'password': 'SecurePass123!',
             'first_name': 'John',
             'role': 'startup',
-            'company_name': 'Test'
+            'company_name': 'Test',
         }
 
         response = self.client.post(self.register_url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('last_name', response.data)
-
 
     def test_weak_password_validation(self):
         """Test that weak passwords are rejected"""
@@ -123,7 +127,7 @@ class RegistrationTestCase(TestCase):
             'first_name': 'John',
             'last_name': 'Doe',
             'role': 'startup',
-            'company_name': 'Test'
+            'company_name': 'Test',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -138,7 +142,7 @@ class RegistrationTestCase(TestCase):
             'first_name': 'John',
             'last_name': 'Doe',
             'role': 'startup',
-            'company_name': 'Test'
+            'company_name': 'Test',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -152,7 +156,7 @@ class RegistrationTestCase(TestCase):
             'password': 'SecurePass123!',
             'first_name': 'John',
             'last_name': 'Doe',
-            'role': 'startup'
+            'role': 'startup',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -166,7 +170,7 @@ class RegistrationTestCase(TestCase):
             'password': 'SecurePass123!',
             'first_name': 'John',
             'last_name': 'Doe',
-            'role': 'investor'
+            'role': 'investor',
         }
 
         response = self.client.post(self.register_url, data, format='json')
@@ -188,13 +192,13 @@ class RegistrationTestCase(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'role': 'startup',
-            'company_name': 'Another Company'
+            'company_name': 'Another Company',
         }
 
         response = self.client.post(self.register_url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['detail'],'Verification email sent.')
+        self.assertEqual(response.data['detail'], 'Verification email sent.')
 
         self.assertEqual(User.objects.filter(email='existing@example.com').count(), 1)
 
@@ -248,3 +252,129 @@ class EmailVerificationTestCase(TestCase):
         response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email='user@example.com',
+            first_name='Test',
+            last_name='User',
+            password='OldPassword',
+        )
+        self.uid = urlsafe_base64_encode(force_bytes(self.user.id))
+
+    def get_password_reset_data(self):
+        return {
+            'uid': self.uid,
+            'token': default_token_generator.make_token(self.user),
+            'new_password': 'SecurePass123!',
+            're_new_password': 'SecurePass123!',
+        }
+
+    def test_token_generation_successful(self):
+        """Check token is correctly generated"""
+        token = default_token_generator.make_token(self.user)
+        self.assertTrue(default_token_generator.check_token(self.user, token))
+
+    def test_token_invalid_after_login(self):
+        """Check token invalid after user successfully logs in"""
+        token = default_token_generator.make_token(self.user)
+
+        self.user.last_login = timezone.now()
+        self.user.save()
+        self.assertFalse(default_token_generator.check_token(self.user, token))
+
+    def test_token_invalid_after_timeout(self):
+        """Check token invalid after provided TTL value"""
+
+        # make token depend only on TTL
+        self.user.last_login = None
+        self.user.save()
+
+        # get PASSWORD_RESET_TIMEOUT. if not provided, 3 days by default
+        timeout = getattr(settings, 'PASSWORD_RESET_TIMEOUT', 259200)
+        token = default_token_generator.make_token(self.user)
+
+        with freeze_time() as frozen_time:
+            frozen_time.tick(delta=timedelta(seconds=timeout + 1))
+            self.assertFalse(default_token_generator.check_token(self.user, token))
+
+    @patch('apps.authentication.views.send_password_reset_email')
+    def test_password_reset_request_success(self, mock_send_email):
+        """
+        Check password reset request endpoint returns 200
+        if provided email exists
+        """
+        response = self.client.post(
+            reverse('password-reset-request'), data={'email': self.user.email}
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_send_email.assert_called_once()
+
+    def test_password_reset_request_invalid_email(self):
+        """
+        Check password reset request endpoint returns 400
+        if provided email has invalid format
+        """
+        response = self.client.post(
+            reverse('password-reset-request'), data={'email': 'invalid-email'}
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('apps.authentication.views.send_password_reset_email')
+    def test_password_reset_request_email_does_not_exist(self, mock_send_email):
+        """
+        Check password reset request endpoint returns 200
+        if provided email is valid but does not exist
+        """
+        response = self.client.post(
+            reverse('password-reset-request'),
+            data={'email': 'emaildoesnotexist@example.com'},
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_send_email.assert_not_called()
+
+    def test_password_reset_confirm_success(self):
+        """Test password reset confirm is successful"""
+        data = self.get_password_reset_data()
+        response = self.client.post(reverse('password-reset-confirm'), data=data)
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password(data['new_password']))
+
+    def test_password_reset_confirm_invalid_token(self):
+        """Check invalid token returns 400"""
+        data = self.get_password_reset_data()
+        data['token'] = 'invalid-token'
+
+        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_invalid_uid(self):
+        """Check invalid token returns 400"""
+        data = self.get_password_reset_data()
+        data['uid'] = 'invalid-uid'
+
+        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_passwords_mismatch(self):
+        """Check passwords mismatch returns 400"""
+        data = self.get_password_reset_data()
+        data['re_new_password'] = 'not-matching-password'
+
+        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_insecure_password(self):
+        """Test insecure password returns 400"""
+        data = self.get_password_reset_data()
+        data['new_password'] = 'Password'
+        data['re_new_password'] = 'Password'
+
+        response = self.client.post(reverse('password-reset-confirm'), data=data)
+
+        self.assertEqual(response.status_code, 400)
