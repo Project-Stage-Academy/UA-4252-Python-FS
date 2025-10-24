@@ -4,5 +4,8 @@ from .serializers import StartupPublicProfileSerializer
 from django.db.models import Count
 
 class StartupPublicProfileViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = StartupProfile.objects.annotate(followers_count=Count('savedstartup'))
+    lookup_field = 'id'
+    lookup_url_kwarg = 'id'
+    queryset = StartupProfile.objects.annotate(followers_count=Count('saved_by_investors'))
+    
     serializer_class = StartupPublicProfileSerializer

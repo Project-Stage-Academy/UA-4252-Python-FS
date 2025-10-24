@@ -55,7 +55,7 @@ class LoginView(APIView):
 
         return response
 
-        
+
 class LogoutView(APIView):
     """
     Gets token from cookies, blacklisting it, deleting token from cookies.
