@@ -8,6 +8,7 @@ from django.utils.text import slugify
 from django.conf import settings
 
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
 
 PROJECT_STATUS = (
@@ -44,11 +45,23 @@ class Project(models.Model):
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deleted_projects'
+    )
     def clean(self):
         if self.target_amount < 0:
             raise ValidationError('Target amount cannot be negative.')
         if self.raised_amount < 0:
             raise ValidationError('Raised amount cannot be negative.')
+        if self.raised_amount > self.target_amount:
+            raise ValidationError('Raised amount cannot exceed target amount.')
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -68,6 +81,18 @@ class Project(models.Model):
                 counter = attempt + 1
                 self.slug = f'{base_slug}-{counter}'
 
+    def soft_delete(self, user=None):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.deleted_by = user
+        self.save(update_fields=['is_deletes', 'deleted_at', 'deleted_by'])
+
+    @property
+    def progress_percentage(self):
+        if self.target_amount > 0:
+            return round((self.raised_amount / self.target_amount) * 100, 2)
+        return 0.0
+
     def __str__(self):
         return self.title
 
@@ -77,8 +102,9 @@ class Project(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['startup', 'status']),
-                                 models.Index(fields=['created_at'])
-                                 ]
+            models.Index(fields=['created_at']),
+            models.Index(fields=['is_deleted'])
+        ]
 
 
 class ProjectAttachment(models.Model):
