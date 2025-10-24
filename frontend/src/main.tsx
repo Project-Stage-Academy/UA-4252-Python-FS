@@ -25,5 +25,3 @@ if (rootElement) {
     "Root element not found. Make sure index.html contains <div id='root'></div>"
   );
 }
-
-
