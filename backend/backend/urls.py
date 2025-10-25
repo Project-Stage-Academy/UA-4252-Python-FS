@@ -26,11 +26,14 @@ urlpatterns = [
 
     path('api/startups/', include('apps.startups.urls')),
     path('api/', include('api.authorization.urls')),
+
+    path('common/', include('apps.common.urls')),
+    path('api/', include('apps.projects.urls')),
+
     path('api/projects/', include('apps.projects.urls')),
     path('api/investors/', include('apps.investors.urls')),
     path('api/users/', include('apps.users.urls')),
     path('api/messages/', include('apps.user_messages.urls')),
-
 ]
 
 if settings.DEBUG:
