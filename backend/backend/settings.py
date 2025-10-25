@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+import sys
 from dotenv import load_dotenv
 import os
 
@@ -134,20 +135,41 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.ScopedRateThrottle',
-    ],
-
-    'DEFAULT_THROTTLE_RATES': {
-        'auth_login': os.environ.get('AUTH_LOGIN_THROTTLE'),
-    }
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=int(os.environ.get('ACCESS_TOKEN_LIFETIME', '1'))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get('REFRESH_TOKEN_LIFETIME', '1'))),
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        }
+    }
+}
+
+if os.environ.get('DJANGO_TEST', '0') == '1':
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-for-testing',
+    }
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
+
+COMMON_REDIS_THROTTLE_RATE = 5
+COMMON_REDIS_THROTTLE_DURATION = 60
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -179,6 +201,7 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@siskidomain.com')
+EMAIL_REPLY_TO = os.environ.get('EMAIL_REPLY_TO', 'support@yourdomain.com')
 
 AUTH_USER_MODEL = 'users.User'
 MEDIA_URL = '/media/'
