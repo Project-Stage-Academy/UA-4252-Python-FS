@@ -42,20 +42,39 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
     if (!v) return setError(t.required);
     if (!EMAIL_RE.test(v)) return setError(t.invalid);
 
-    setLoading(true);
+   setLoading(true);
     try {
-      const r = await fetch("/api/auth/password-reset/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: v }),
-      });
+        const getCookie = (name: string) => {
+            const row = document.cookie.split("; ").find(r => r.startsWith(name + "="));
+            return row ? decodeURIComponent(row.split("=")[1]) : undefined;
+  };
+        const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+        const csrftoken = getCookie("csrftoken") ?? meta?.content;
+
+        const r = await fetch("/api/auth/password-reset/", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                ...(csrftoken ? { "X-CSRFToken": csrftoken } : {}),
+            },
+            body: JSON.stringify({ email: v }),
+  });
       setMsg(r.status === 429 ? t.throttled : t.success);
-    } catch {
-      setMsg(t.success);
-    } finally {
-      setLoading(false);
+    if (!r.ok) {
+      if (r.status >= 500) {
+        console.error("password-reset server error", { status: r.status });
+      } else {
+        console.warn("password-reset client error", { status: r.status });
+      }
     }
+  } catch (err) {
+    setMsg(t.success);
+    console.error("password-reset network/fetch error", err);
+  } finally {
+    setLoading(false);
   }
+};
 
   const invalid = !!error;
 

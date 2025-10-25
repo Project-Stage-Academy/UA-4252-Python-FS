@@ -1,26 +1,35 @@
-import { describe, it, beforeEach, expect, jest } from "@jest/globals";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, beforeAll, beforeEach, afterEach, expect, jest } from "@jest/globals";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import PasswordResetRequest from "./PasswordResetRequest";
+
+let originalFetch: typeof global.fetch;
 
 function mockFetchOnce(status = 200, body?: any) {
   const payload = body ?? null;
   const ok = status >= 200 && status < 300;
 
-  global.fetch = jest.fn().mockResolvedValueOnce({
+  (global.fetch as jest.Mock).mockResolvedValueOnce({
     ok,
     status,
     json: async () => payload,
     text: async () => (payload !== null ? JSON.stringify(payload) : ""),
-    headers: {
-      get: () => "application/json",
-    },
+    headers: { get: () => "application/json" },
   } as any);
 }
 
 describe("PasswordResetRequest (UA)", () => {
+  beforeAll(() => {
+    originalFetch = global.fetch;
+  });
+
   beforeEach(() => {
+    global.fetch = jest.fn() as any;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
     jest.resetAllMocks();
   });
 
@@ -94,7 +103,7 @@ describe("PasswordResetRequest (UA)", () => {
 
   it("рендерить повідомлення про успіх при помилці мережі (fetch reject)", async () => {
     const user = userEvent.setup();
-    global.fetch = jest.fn().mockRejectedValueOnce(new Error("network down")) as any;
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("network down"));
     render(<PasswordResetRequest lang="uk" />);
 
     await user.type(screen.getByLabelText("Електронна пошта"), "test@example.com");
