@@ -13,5 +13,6 @@ def drf_validate_file_type(file, allowed_types):
         raise serializers.ValidationError(f"Дозволені розширення: {', '.join(allowed_types)}.")
     try:
         Image.open(file).verify()
-    except UnidentifiedImageError:
-        raise serializers.ValidationError("Invalid image file.")
+        file.seek(0)
+    except (UnidentifiedImageError, OSError, ValueError) as e:
+        raise serializers.ValidationError("Invalid image file.") from e

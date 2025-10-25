@@ -14,12 +14,12 @@ def logo_upload_to(instance, filename):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('investors', '0002_initial'),
+        ('startups', '0003_alter_savedstartup_options_and_more'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='investorprofile',
+            model_name='startupprofile',
             name='logo',
             field=models.ImageField(blank=True, null=True, upload_to=logo_upload_to),
         ),
