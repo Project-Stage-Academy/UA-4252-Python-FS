@@ -15,4 +15,5 @@ export const routes = [
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
   { path: "*", element: <div>404 Not Found</div> },
+  { path: "/register", element: <Register /> }
 ];
