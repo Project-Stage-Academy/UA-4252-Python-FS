@@ -22,20 +22,8 @@ export default function Login() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-    const { name, value, type } = target;
-
-    if (type === "checkbox") {
-      const { checked } = target as HTMLInputElement;
-      setForm(prev => ({ ...prev, [name]: checked }));
-    } else if (type === "file") {
-      const { files } = target as HTMLInputElement;
-      if (files && files[0]) {
-        setForm(prev => ({ ...prev, logoFile: files[0] }));
-      }
-    } else {
-      setForm(prev => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const validate = (): boolean => {
@@ -49,7 +37,19 @@ export default function Login() {
     if (!form.password) {
       newErrors.password = "Не ввели пароль";
     } else if (form.password.length < 8) {
-      newErrors.password = "Пароль дуже малий";
+      newErrors.password = "Пароль занадто короткий (мінімум 8 символів)";
+    } else {
+      const hasUpperCase = /[A-ZА-Я]/.test(form.password);
+      const hasNumber = /\d/.test(form.password);
+      const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(form.password);
+
+      if (!hasUpperCase) {
+        newErrors.password = "Пароль повинен містити хоча б одну велику літеру";
+      } else if (!hasNumber) {
+        newErrors.password = "Пароль повинен містити хоча б одну цифру";
+      } else if (!hasSpecial) {
+        newErrors.password = "Пароль повинен містити хоча б один спеціальний символ";
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,7 +74,7 @@ export default function Login() {
           <div className="nav-container">
             <div className="nav-logo">
               <div className="logo-icon">
-                <img src={craftmergelogoblack} alt="CraftMerge logo"/>
+                <img src={craftmergelogoblack} alt="CraftMerge logo" onError={(e) => (e.currentTarget.src = craftmergelogo)}/>
               </div>
               <span className="logo-text">CraftMerge</span>
             </div>
@@ -132,7 +132,7 @@ export default function Login() {
           <div className="nav-container">
             <div className="nav-logo">
               <div className="logo-icon">
-                <img src={craftmergelogoblack} alt="CraftMerge logo"/>
+                <img src={craftmergelogoblack} alt="CraftMerge logo" onError={(e) => (e.currentTarget.src = craftmergelogo)}/>
               </div>
               <span className="logo-text">CraftMerge</span>
             </div>
@@ -220,7 +220,7 @@ export default function Login() {
 
             <div className="footer-col company-info">
               <div className="logo">
-                <img src={craftmergelogo} alt="CraftMerge logo"/>
+                <img src={craftmergelogo} alt="CraftMerge logo" onError={(e) => (e.currentTarget.src = craftmergelogoblack)}/>
                 <span className="logo-text-white">CRAFTMERGE</span>
               </div>
               <div className="contact-block">
