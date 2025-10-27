@@ -1,11 +1,12 @@
 import uuid
-from django.db import migrations, models
+
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('projects', '0006_prepare_fk_for_uuid'),
+        ("projects", "0006_prepare_fk_for_uuid"),
     ]
 
     operations = [
@@ -16,14 +17,14 @@ class Migration(migrations.Migration):
                 DECLARE
                     constraint_record RECORD;
                 BEGIN
-                    FOR constraint_record IN 
+                    FOR constraint_record IN
                         SELECT conname, conrelid::regclass AS table_name
                         FROM pg_constraint
                         WHERE confrelid = 'projects_project'::regclass
                         AND contype = 'f'
                     LOOP
-                        EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I CASCADE', 
-                                     constraint_record.table_name, 
+                        EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I CASCADE',
+                                     constraint_record.table_name,
                                      constraint_record.conname);
                     END LOOP;
                 END $$;
@@ -56,11 +57,11 @@ class Migration(migrations.Migration):
 
                 -- КРОК 7: Додати FK constraints
                 ALTER TABLE projects_projectattachment
-                ADD CONSTRAINT projects_projectattachment_project_fk 
+                ADD CONSTRAINT projects_projectattachment_project_fk
                 FOREIGN KEY (project_id) REFERENCES projects_project(id) ON DELETE CASCADE;
 
                 ALTER TABLE projects_projectaudit
-                ADD CONSTRAINT projects_projectaudit_project_fk 
+                ADD CONSTRAINT projects_projectaudit_project_fk
                 FOREIGN KEY (project_id) REFERENCES projects_project(id) ON DELETE CASCADE;
             """,
             reverse_sql="SELECT 1;",
