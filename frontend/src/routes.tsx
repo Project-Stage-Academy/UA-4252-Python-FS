@@ -5,6 +5,7 @@ import StartupView from "./pages/StartupView";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import Inbox from "./pages/Inbox";
 import RegisterStartup from "./pages/RegisterStartup";
+import PasswordResetRequest from "./pages/PasswordResetRequest";
 
 export const routes = [
   { path: "/", element: <Home /> },
@@ -14,5 +15,7 @@ export const routes = [
   { path: "/startups/:id", element: <StartupView /> },
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
+  { path: "/forgot-password", element: <PasswordResetRequest /> },
   { path: "*", element: <div>404 Not Found</div> },
+
 ];
