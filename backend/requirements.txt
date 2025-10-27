@@ -12,7 +12,7 @@ flake8==7.3.0
 iniconfig==2.3.0
 mccabe==0.7.0
 packaging==25.0
-phonenumberslite==9.0.16
+phonenumberslite==9.0.17
 pillow==11.3.0
 pluggy==1.6.0
 psycopg2==2.9.11
