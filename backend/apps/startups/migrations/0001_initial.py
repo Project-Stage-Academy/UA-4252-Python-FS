@@ -9,67 +9,67 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('investors', '0001_initial'),
+        ("investors", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StartupProfile',
+            name="StartupProfile",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
-                ('company_name', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('founded_year', models.IntegerField()),
-                ('team_size', models.IntegerField()),
-                ('website', models.URLField()),
-                ('email', models.EmailField(max_length=100)),
-                ('phone', models.CharField(max_length=20)),
-                ('city', models.CharField(max_length=100)),
-                ('address', models.CharField(max_length=255)),
-                ('postal_code', models.CharField(max_length=20)),
-                ('logo', models.ImageField(upload_to='media/startup_logos/')),
-                ('partners_brands', models.TextField()),
-                ('audit_status', models.CharField(max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("company_name", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                ("founded_year", models.IntegerField()),
+                ("team_size", models.IntegerField()),
+                ("website", models.URLField()),
+                ("email", models.EmailField(max_length=100)),
+                ("phone", models.CharField(max_length=20)),
+                ("city", models.CharField(max_length=100)),
+                ("address", models.CharField(max_length=255)),
+                ("postal_code", models.CharField(max_length=20)),
+                ("logo", models.ImageField(upload_to="media/startup_logos/")),
+                ("partners_brands", models.TextField()),
+                ("audit_status", models.CharField(max_length=100)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Startup Profile',
-                'verbose_name_plural': 'Startup Profiles',
+                "verbose_name": "Startup Profile",
+                "verbose_name_plural": "Startup Profiles",
             },
         ),
         migrations.CreateModel(
-            name='SavedStartup',
+            name="SavedStartup",
             fields=[
                 (
-                    'id',
+                    "id",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name='ID',
+                        verbose_name="ID",
                     ),
                 ),
-                ('notes', models.TextField()),
+                ("notes", models.TextField()),
                 (
-                    'investor',
+                    "investor",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        to='investors.investorprofile',
+                        to="investors.investorprofile",
                     ),
                 ),
             ],
             options={
-                'verbose_name': 'Saved Startup',
-                'verbose_name_plural': 'Saved Startups',
+                "verbose_name": "Saved Startup",
+                "verbose_name_plural": "Saved Startups",
             },
         ),
     ]

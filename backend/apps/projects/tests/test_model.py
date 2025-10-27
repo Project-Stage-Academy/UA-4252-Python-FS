@@ -71,7 +71,7 @@ class ProjectModelTestCase(TestCase):
             self.project.full_clean()
 
     def test_status_choices(self):
-        valid_statuses = ['idea', 'mvp', 'fundraising', 'closed']
+        valid_statuses = ["idea", "mvp", "fundraising", "closed"]
         for status in valid_statuses:
             self.project.status = status
             self.project.save()

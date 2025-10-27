@@ -13,11 +13,11 @@ class CustomUserManager(BaseUserManager):
         **extra_fields,
     ):
         if not first_name:
-            raise ValueError('Users must have a first name.')
+            raise ValueError("Users must have a first name.")
         if not last_name:
-            raise ValueError('Users must have a last name.')
+            raise ValueError("Users must have a last name.")
         if not email:
-            raise ValueError('Users must have an email address.')
+            raise ValueError("Users must have an email address.")
 
         email = self.normalize_email(email)
 
@@ -37,8 +37,8 @@ class CustomUserManager(BaseUserManager):
         password: str | None = None,
         **extra_fields,
     ):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
 
         return self._create_user(
             email=email,
@@ -56,14 +56,14 @@ class CustomUserManager(BaseUserManager):
         password: str | None = None,
         **extra_fields,
     ):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
 
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(
             email=email,

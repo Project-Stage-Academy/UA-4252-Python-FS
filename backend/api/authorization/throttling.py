@@ -2,8 +2,8 @@ from django.conf import settings
 from django.core.cache import cache
 from rest_framework.throttling import BaseThrottle
 
-RATE = getattr(settings, 'COMMON_REDIS_THROTTLE_RATE', 6)
-DURATION = getattr(settings, 'COMMON_REDIS_THROTTLE_DURATION', 60)
+RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 6)
+DURATION = getattr(settings, "COMMON_REDIS_THROTTLE_DURATION", 60)
 
 
 class CommonRedisThrottle(BaseThrottle):

@@ -10,82 +10,82 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('investors', '0002_initial'),
-        ('startups', '0002_initial'),
+        ("investors", "0002_initial"),
+        ("startups", "0002_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='savedstartup',
+            name="savedstartup",
             options={
-                'ordering': ['-created_at'],
-                'verbose_name': 'Saved Startup',
-                'verbose_name_plural': 'Saved Startups',
+                "ordering": ["-created_at"],
+                "verbose_name": "Saved Startup",
+                "verbose_name_plural": "Saved Startups",
             },
         ),
         migrations.AlterModelOptions(
-            name='startupprofile',
+            name="startupprofile",
             options={
-                'ordering': ['-created_at'],
-                'verbose_name': 'Startup Profile',
-                'verbose_name_plural': 'Startup Profiles',
+                "ordering": ["-created_at"],
+                "verbose_name": "Startup Profile",
+                "verbose_name_plural": "Startup Profiles",
             },
         ),
         migrations.AddField(
-            model_name='savedstartup',
-            name='created_at',
+            model_name="savedstartup",
+            name="created_at",
             field=models.DateTimeField(
                 auto_now_add=True, default=django.utils.timezone.now
             ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='savedstartup',
-            name='investor',
+            model_name="savedstartup",
+            name="investor",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='saved_startups',
-                to='investors.investorprofile',
+                related_name="saved_startups",
+                to="investors.investorprofile",
             ),
         ),
         migrations.AlterField(
-            model_name='savedstartup',
-            name='notes',
-            field=models.TextField(blank=True, default=''),
+            model_name="savedstartup",
+            name="notes",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AlterField(
-            model_name='savedstartup',
-            name='startup',
+            model_name="savedstartup",
+            name="startup",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='saved_by_investors',
-                to='startups.startupprofile',
+                related_name="saved_by_investors",
+                to="startups.startupprofile",
             ),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='address',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="startupprofile",
+            name="address",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='audit_status',
-            field=models.CharField(blank=True, default='', max_length=100),
+            model_name="startupprofile",
+            name="audit_status",
+            field=models.CharField(blank=True, default="", max_length=100),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='city',
-            field=models.CharField(blank=True, default='', max_length=100),
+            model_name="startupprofile",
+            name="city",
+            field=models.CharField(blank=True, default="", max_length=100),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='description',
-            field=models.TextField(blank=True, default=''),
+            model_name="startupprofile",
+            name="description",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='founded_year',
+            model_name="startupprofile",
+            name="founded_year",
             field=models.IntegerField(
                 blank=True,
                 null=True,
@@ -93,64 +93,64 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='logo',
+            model_name="startupprofile",
+            name="logo",
             field=models.ImageField(
-                blank=True, null=True, upload_to='startup_logos/%Y/%m/'
+                blank=True, null=True, upload_to="startup_logos/%Y/%m/"
             ),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='partners_brands',
-            field=models.TextField(blank=True, default=''),
+            model_name="startupprofile",
+            name="partners_brands",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='phone',
-            field=models.CharField(blank=True, default='', max_length=20),
+            model_name="startupprofile",
+            name="phone",
+            field=models.CharField(blank=True, default="", max_length=20),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='postal_code',
-            field=models.CharField(blank=True, default='', max_length=20),
+            model_name="startupprofile",
+            name="postal_code",
+            field=models.CharField(blank=True, default="", max_length=20),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='team_size',
+            model_name="startupprofile",
+            name="team_size",
             field=models.IntegerField(blank=True, default=1, null=True),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='user',
+            model_name="startupprofile",
+            name="user",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='startup_profiles',
+                related_name="startup_profiles",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
         migrations.AlterField(
-            model_name='startupprofile',
-            name='website',
+            model_name="startupprofile",
+            name="website",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AlterUniqueTogether(
-            name='savedstartup',
-            unique_together={('investor', 'startup')},
+            name="savedstartup",
+            unique_together={("investor", "startup")},
         ),
         migrations.AddIndex(
-            model_name='startupprofile',
-            index=models.Index(fields=['user'], name='startups_st_user_id_0e7c16_idx'),
+            model_name="startupprofile",
+            index=models.Index(fields=["user"], name="startups_st_user_id_0e7c16_idx"),
         ),
         migrations.AddIndex(
-            model_name='startupprofile',
+            model_name="startupprofile",
             index=models.Index(
-                fields=['company_name'], name='startups_st_company_7bb0ef_idx'
+                fields=["company_name"], name="startups_st_company_7bb0ef_idx"
             ),
         ),
         migrations.AddIndex(
-            model_name='startupprofile',
+            model_name="startupprofile",
             index=models.Index(
-                fields=['-created_at'], name='startups_st_created_dab4a1_idx'
+                fields=["-created_at"], name="startups_st_created_dab4a1_idx"
             ),
         ),
     ]

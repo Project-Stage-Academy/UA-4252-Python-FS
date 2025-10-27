@@ -16,7 +16,7 @@ class Notification(models.Model):
     related_user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='related_user',
+        related_name="related_user",
         null=True,
         blank=True,
     )

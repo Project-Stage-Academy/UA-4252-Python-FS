@@ -176,10 +176,10 @@ class SavedStartupModelTest(TestCase):
 class StartupPublicProfileAPITest(APITestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(
-            email='user1@example.com',
-            password='password123',
-            first_name='Test',
-            last_name='User1',
+            email="user1@example.com",
+            password="password123",
+            first_name="Test",
+            last_name="User1",
         )
         self.startup1 = StartupProfile.objects.create(
             user=self.user1,
@@ -196,10 +196,10 @@ class StartupPublicProfileAPITest(APITestCase):
         )
 
         self.user2 = User.objects.create_user(
-            email='user2@example.com',
-            password='password123',
-            first_name='Test',
-            last_name='User2',
+            email="user2@example.com",
+            password="password123",
+            first_name="Test",
+            last_name="User2",
         )
         self.startup2 = StartupProfile.objects.create(
             user=self.user2,
@@ -219,49 +219,49 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that an existing startup profile can be retrieved.
         """
-        url = reverse('startup-detail', kwargs={'id': self.startup1.id})
+        url = reverse("startup-detail", kwargs={"id": self.startup1.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['company_name'], self.startup1.company_name)
-        self.assertIn('logo_url', response.data)
-        self.assertEqual(response.data['tags'], ['tech', 'innovation'])
-        self.assertEqual(response.data['followers_count'], 0)
+        self.assertEqual(response.data["company_name"], self.startup1.company_name)
+        self.assertIn("logo_url", response.data)
+        self.assertEqual(response.data["tags"], ["tech", "innovation"])
+        self.assertEqual(response.data["followers_count"], 0)
 
     def test_get_correct_startup_profile_when_multiple_exist(self):
         """
         Check that the correct profile is returned when multiple exist.
         """
-        url = reverse('startup-detail', kwargs={'id': self.startup2.id})
+        url = reverse("startup-detail", kwargs={"id": self.startup2.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['company_name'], "Test Startup Two")
-        self.assertNotEqual(response.data['company_name'], "Test Startup One")
-        self.assertEqual(response.data['founded_year'], 2025)
-        self.assertEqual(response.data['tags'], ['saas', 'finance'])
+        self.assertEqual(response.data["company_name"], "Test Startup Two")
+        self.assertNotEqual(response.data["company_name"], "Test Startup One")
+        self.assertEqual(response.data["founded_year"], 2025)
+        self.assertEqual(response.data["tags"], ["saas", "finance"])
 
     def test_response_schema_is_correct(self):
         """
         Check that the API response contains all expected fields.
         """
-        url = reverse('startup-detail', kwargs={'id': self.startup1.id})
+        url = reverse("startup-detail", kwargs={"id": self.startup1.id})
         response = self.client.get(url)
 
         expected_keys = [
-            'id',
-            'company_name',
-            'description',
-            'founded_year',
-            'team_size',
-            'website',
-            'email',
-            'phone',
-            'city',
-            'logo_url',
-            'tags',
-            'followers_count',
-            'created_at',
+            "id",
+            "company_name",
+            "description",
+            "founded_year",
+            "team_size",
+            "website",
+            "email",
+            "phone",
+            "city",
+            "logo_url",
+            "tags",
+            "followers_count",
+            "created_at",
         ]
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -271,6 +271,6 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that a 404 is returned for a non-existent startup.
         """
-        url = reverse('startup-detail', kwargs={'id': 999})
+        url = reverse("startup-detail", kwargs={"id": 999})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

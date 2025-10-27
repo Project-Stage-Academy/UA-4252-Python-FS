@@ -41,13 +41,13 @@ class RegisterView(APIView):
             201: User created, verification email sent
             400: Validation errors
         """
-        email = request.data.get('email')
+        email = request.data.get("email")
         if email:
             existing_user = User.objects.filter(email=email).first()
             if existing_user:
                 # just return 201 without creating a new user
                 return Response(
-                    {'detail': 'Verification email sent.'},
+                    {"detail": "Verification email sent."},
                     status=status.HTTP_201_CREATED,
                 )
 
@@ -62,23 +62,23 @@ class RegisterView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
         if settings.DEBUG:
-            verification_link = f'http://localhost:8000/api/auth/verify/{uid}/{token}/'
+            verification_link = f"http://localhost:8000/api/auth/verify/{uid}/{token}/"
         else:
-            verification_link = f'{settings.FRONTEND_URL}/verify/{uid}/{token}/'
+            verification_link = f"{settings.FRONTEND_URL}/verify/{uid}/{token}/"
 
         try:
             send_mail(
-                subject='Verify your email',
-                message=f'Please, verify your email by clicking: {verification_link}',
+                subject="Verify your email",
+                message=f"Please, verify your email by clicking: {verification_link}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,
             )
         except Exception as e:
-            logger.error(f'Email sending failed for user {user.email}: {e}')
+            logger.error(f"Email sending failed for user {user.email}: {e}")
 
         return Response(
-            {'id': user.id, 'email': user.email, 'detail': 'Verification email sent.'},
+            {"id": user.id, "email": user.email, "detail": "Verification email sent."},
             status=status.HTTP_201_CREATED,
         )
 
@@ -103,7 +103,7 @@ class VerifyEmailView(APIView):
 
             if user.is_active:
                 return Response(
-                    {'detail': 'Email already verified. You can log in.'},
+                    {"detail": "Email already verified. You can log in."},
                     status=status.HTTP_200_OK,
                 )
 
@@ -112,18 +112,18 @@ class VerifyEmailView(APIView):
                 user.save()
 
                 return Response(
-                    {'detail': 'Email verified successfully.'},
+                    {"detail": "Email verified successfully."},
                     status=status.HTTP_200_OK,
                 )
             else:
                 return Response(
-                    {'detail': 'Invalid or expired token.'},
+                    {"detail": "Invalid or expired token."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         except (User.DoesNotExist, ValueError, TypeError):
             return Response(
-                {'detail': 'Invalid verification link.'},
+                {"detail": "Invalid verification link."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -151,19 +151,19 @@ class PasswordResetRequestView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        email = serializer.validated_data['email']
+        email = serializer.validated_data["email"]
         user = User.objects.filter(email=email).first()
         if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-            reset_link = f'{frontend_url}/reset-password?uid={uid}&token={token}'
+            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+            reset_link = f"{frontend_url}/reset-password?uid={uid}&token={token}"
 
             send_password_reset_email(user, reset_link)
 
         # always return success to avoid account enumeration
         return Response(
-            {'detail': 'Password reset link sent.'}, status=status.HTTP_200_OK
+            {"detail": "Password reset link sent."}, status=status.HTTP_200_OK
         )
 
 
@@ -193,6 +193,6 @@ class PasswordResetConfirmView(APIView):
         serializer.save()
 
         return Response(
-            {'detail': 'Password has been reset successfully.'},
+            {"detail": "Password has been reset successfully."},
             status=status.HTTP_200_OK,
         )

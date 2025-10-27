@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('projects', '0006_prepare_fk_for_uuid'),
+        ("projects", "0006_prepare_fk_for_uuid"),
     ]
 
     operations = [

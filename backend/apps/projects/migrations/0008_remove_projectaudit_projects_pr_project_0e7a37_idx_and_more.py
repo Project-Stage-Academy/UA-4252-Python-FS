@@ -8,50 +8,50 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('projects', '0007_switch_to_uuid_pk'),
+        ("projects", "0007_switch_to_uuid_pk"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='projectaudit',
-            name='projects_pr_project_0e7a37_idx',
+            model_name="projectaudit",
+            name="projects_pr_project_0e7a37_idx",
         ),
         migrations.RemoveIndex(
-            model_name='projectaudit',
-            name='projects_pr_user_id_cdadf2_idx',
+            model_name="projectaudit",
+            name="projects_pr_user_id_cdadf2_idx",
         ),
         migrations.AlterField(
-            model_name='project',
-            name='id',
+            model_name="project",
+            name="id",
             field=models.UUIDField(
                 default=uuid.uuid4, editable=False, primary_key=True, serialize=False
             ),
         ),
         migrations.AlterField(
-            model_name='projectattachment',
-            name='id',
+            model_name="projectattachment",
+            name="id",
             field=models.UUIDField(
                 default=uuid.uuid4, editable=False, primary_key=True, serialize=False
             ),
         ),
         migrations.AlterField(
-            model_name='projectaudit',
-            name='id',
+            model_name="projectaudit",
+            name="id",
             field=models.UUIDField(
                 default=uuid.uuid4, editable=False, primary_key=True, serialize=False
             ),
         ),
         migrations.AddIndex(
-            model_name='projectaudit',
+            model_name="projectaudit",
             index=models.Index(
-                fields=['project', 'timestamp'], name='projects_pr_project_e8b5b1_idx'
+                fields=["project", "timestamp"], name="projects_pr_project_e8b5b1_idx"
             ),
         ),
         migrations.AddIndex(
-            model_name='projectaudit',
+            model_name="projectaudit",
             index=models.Index(
-                fields=['user', 'timestamp'], name='projects_pr_user_id_a7e7a8_idx'
+                fields=["user", "timestamp"], name="projects_pr_user_id_a7e7a8_idx"
             ),
         ),
     ]

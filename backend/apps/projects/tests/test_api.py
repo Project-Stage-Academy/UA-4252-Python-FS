@@ -50,7 +50,7 @@ class ProjectAPITestCase(APITestCase):
         )
 
     def test_project_api(self):
-        url = f'/api/startups/{self.startup.id}/projects/'
+        url = f"/api/startups/{self.startup.id}/projects/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data["results"]), 1)

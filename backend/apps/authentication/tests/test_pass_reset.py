@@ -28,179 +28,179 @@ class RegistrationTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.register_url = '/api/auth/register/'
+        self.register_url = "/api/auth/register/"
 
     def test_successful_startup_registration(self):
         data = {
-            'email': 'startup@example.com',
-            'password': 'SecurePass123!',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'role': 'startup',
-            'company_name': 'Test name',
-            'description': 'Great startup',
-            'website': 'https://test.com',
-            'phone': '+380123456789',
+            "email": "startup@example.com",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "startup",
+            "company_name": "Test name",
+            "description": "Great startup",
+            "website": "https://test.com",
+            "phone": "+380123456789",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('id', response.data)
-        self.assertEqual(response.data['email'], 'startup@example.com')
-        self.assertEqual(response.data['detail'], 'Verification email sent.')
+        self.assertIn("id", response.data)
+        self.assertEqual(response.data["email"], "startup@example.com")
+        self.assertEqual(response.data["detail"], "Verification email sent.")
 
-        user = User.objects.get(email='startup@example.com')
+        user = User.objects.get(email="startup@example.com")
         self.assertFalse(user.is_active)
-        self.assertEqual(user.first_name, 'John')
-        self.assertEqual(user.last_name, 'Doe')
+        self.assertEqual(user.first_name, "John")
+        self.assertEqual(user.last_name, "Doe")
 
         startup_profile = StartupProfile.objects.get(user=user)
-        self.assertEqual(startup_profile.company_name, 'Test name')
-        self.assertEqual(startup_profile.email, 'startup@example.com')
+        self.assertEqual(startup_profile.company_name, "Test name")
+        self.assertEqual(startup_profile.email, "startup@example.com")
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Verify', mail.outbox[0].subject)
+        self.assertIn("Verify", mail.outbox[0].subject)
 
     def test_successful_investor_registration(self):
         """
         Test successful registration of an investor user
         """
         data = {
-            'email': 'investor@example.com',
-            'password': 'SecurePass123!',
-            'first_name': 'Jane',
-            'last_name': 'Doe',
-            'role': 'investor',
-            'investment_range_min': 10000,
-            'investment_range_max': 100000,
+            "email": "investor@example.com",
+            "password": "SecurePass123!",
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "role": "investor",
+            "investment_range_min": 10000,
+            "investment_range_max": 100000,
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        user = User.objects.get(email='investor@example.com')
-        self.assertEqual(user.first_name, 'Jane')
-        self.assertEqual(user.last_name, 'Doe')
+        user = User.objects.get(email="investor@example.com")
+        self.assertEqual(user.first_name, "Jane")
+        self.assertEqual(user.last_name, "Doe")
 
         investor_profile = InvestorProfile.objects.get(user=user)
         self.assertEqual(investor_profile.investment_range_min, 10000)
-        self.assertEqual(investor_profile.email, 'investor@example.com')
-        self.assertEqual(investor_profile.full_name, 'Jane Doe')
+        self.assertEqual(investor_profile.email, "investor@example.com")
+        self.assertEqual(investor_profile.full_name, "Jane Doe")
 
         self.assertEqual(len(mail.outbox), 1)
 
     def test_missing_first_name(self):
         data = {
-            'email': 'test@example.com',
-            'password': 'SecurePass123!',
-            'last_name': 'Doe',
-            'role': 'startup',
-            'company_name': 'Test',
+            "email": "test@example.com",
+            "password": "SecurePass123!",
+            "last_name": "Doe",
+            "role": "startup",
+            "company_name": "Test",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('first_name', response.data)
+        self.assertIn("first_name", response.data)
 
     def test_missing_last_name(self):
         data = {
-            'email': 'test@example.com',
-            'password': 'SecurePass123!',
-            'first_name': 'John',
-            'role': 'startup',
-            'company_name': 'Test',
+            "email": "test@example.com",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "role": "startup",
+            "company_name": "Test",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('last_name', response.data)
+        self.assertIn("last_name", response.data)
 
     def test_weak_password_validation(self):
         """Test that weak passwords are rejected"""
         data = {
-            'email': 'test@example.com',
-            'password': '123',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'role': 'startup',
-            'company_name': 'Test',
+            "email": "test@example.com",
+            "password": "123",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "startup",
+            "company_name": "Test",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('password', response.data)
+        self.assertIn("password", response.data)
 
     def test_invalid_email_format(self):
         data = {
-            'email': 'not-an-email',
-            'password': 'SecurePass123!',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'role': 'startup',
-            'company_name': 'Test',
+            "email": "not-an-email",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "startup",
+            "company_name": "Test",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', response.data)
+        self.assertIn("email", response.data)
 
     def test_missing_required_field(self):
         data = {
-            'email': 'test@example.com',
-            'password': 'SecurePass123!',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'role': 'startup',
+            "email": "test@example.com",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "startup",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('company_name', response.data)
+        self.assertIn("company_name", response.data)
 
     def test_investor_missing_investment_range(self):
         data = {
-            'email': 'investor@example.com',
-            'password': 'SecurePass123!',
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'role': 'investor',
+            "email": "investor@example.com",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "investor",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('investment_range_min', response.data)
+        self.assertIn("investment_range_min", response.data)
 
     def test_duplicate_email_anti_enumeration(self):
         User.objects.create_user(
-            email='existing@example.com',
-            first_name='Existing',
-            last_name='User',
-            password='Pass123!',
+            email="existing@example.com",
+            first_name="Existing",
+            last_name="User",
+            password="Pass123!",
         )
 
         data = {
-            'email': 'existing@example.com',
-            'password': 'NewPass123!',
-            'first_name': 'New',
-            'last_name': 'User',
-            'role': 'startup',
-            'company_name': 'Another Company',
+            "email": "existing@example.com",
+            "password": "NewPass123!",
+            "first_name": "New",
+            "last_name": "User",
+            "role": "startup",
+            "company_name": "Another Company",
         }
 
-        response = self.client.post(self.register_url, data, format='json')
+        response = self.client.post(self.register_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['detail'], 'Verification email sent.')
+        self.assertEqual(response.data["detail"], "Verification email sent.")
 
-        self.assertEqual(User.objects.filter(email='existing@example.com').count(), 1)
+        self.assertEqual(User.objects.filter(email="existing@example.com").count(), 1)
 
         self.assertEqual(len(mail.outbox), 0)
 
@@ -211,44 +211,44 @@ class EmailVerificationTestCase(TestCase):
         self.client = APIClient()
 
         self.user = User.objects.create_user(
-            email='test@example.com',
-            first_name='Test',
-            last_name='User',
-            password='Pass123!',
+            email="test@example.com",
+            first_name="Test",
+            last_name="User",
+            password="Pass123!",
             is_active=False,
         )
 
         self.token = default_token_generator.make_token(self.user)
         self.uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        self.verify_url = f'/api/auth/verify/{self.uid}/{self.token}/'
+        self.verify_url = f"/api/auth/verify/{self.uid}/{self.token}/"
 
     def test_successful_email_verification(self):
         response = self.client.get(self.verify_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['detail'], 'Email verified successfully.')
+        self.assertEqual(response.data["detail"], "Email verified successfully.")
 
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_active)
 
     def test_invalid_token(self):
-        invalid_url = f'/api/auth/verify/{self.uid}/invalid-token-123/'
+        invalid_url = f"/api/auth/verify/{self.uid}/invalid-token-123/"
         response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('Invalid', response.data['detail'])
+        self.assertIn("Invalid", response.data["detail"])
 
     def test_invalid_uid(self):
-        invalid_url = f'/api/auth/verify/invalid-uid/{self.token}/'
+        invalid_url = f"/api/auth/verify/invalid-uid/{self.token}/"
         response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('Invalid', response.data['detail'])
+        self.assertIn("Invalid", response.data["detail"])
 
     def test_nonexistent_user(self):
         fake_uuid = uuid.uuid4()
         fake_uid = urlsafe_base64_encode(force_bytes(fake_uuid))
-        invalid_url = f'/api/auth/verify/{fake_uid}/{self.token}/'
+        invalid_url = f"/api/auth/verify/{fake_uid}/{self.token}/"
         response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -258,19 +258,19 @@ class PasswordResetTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            email='user@example.com',
-            first_name='Test',
-            last_name='User',
-            password='OldPassword',
+            email="user@example.com",
+            first_name="Test",
+            last_name="User",
+            password="OldPassword",
         )
         self.uid = urlsafe_base64_encode(force_bytes(self.user.id))
 
     def get_password_reset_data(self):
         return {
-            'uid': self.uid,
-            'token': default_token_generator.make_token(self.user),
-            'new_password': 'SecurePass123!',
-            're_new_password': 'SecurePass123!',
+            "uid": self.uid,
+            "token": default_token_generator.make_token(self.user),
+            "new_password": "SecurePass123!",
+            "re_new_password": "SecurePass123!",
         }
 
     def test_token_generation_successful(self):
@@ -294,21 +294,21 @@ class PasswordResetTests(TestCase):
         self.user.save()
 
         # get PASSWORD_RESET_TIMEOUT. if not provided, 3 days by default
-        timeout = getattr(settings, 'PASSWORD_RESET_TIMEOUT', 259200)
+        timeout = getattr(settings, "PASSWORD_RESET_TIMEOUT", 259200)
         token = default_token_generator.make_token(self.user)
 
         with freeze_time() as frozen_time:
             frozen_time.tick(delta=timedelta(seconds=timeout + 1))
             self.assertFalse(default_token_generator.check_token(self.user, token))
 
-    @patch('apps.authentication.views.send_password_reset_email')
+    @patch("apps.authentication.views.send_password_reset_email")
     def test_password_reset_request_success(self, mock_send_email):
         """
         Check password reset request endpoint returns 200
         if provided email exists
         """
         response = self.client.post(
-            reverse('password-reset-request'), data={'email': self.user.email}
+            reverse("password-reset-request"), data={"email": self.user.email}
         )
         self.assertEqual(response.status_code, 200)
         mock_send_email.assert_called_once()
@@ -319,19 +319,19 @@ class PasswordResetTests(TestCase):
         if provided email has invalid format
         """
         response = self.client.post(
-            reverse('password-reset-request'), data={'email': 'invalid-email'}
+            reverse("password-reset-request"), data={"email": "invalid-email"}
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch('apps.authentication.views.send_password_reset_email')
+    @patch("apps.authentication.views.send_password_reset_email")
     def test_password_reset_request_email_does_not_exist(self, mock_send_email):
         """
         Check password reset request endpoint returns 200
         if provided email is valid but does not exist
         """
         response = self.client.post(
-            reverse('password-reset-request'),
-            data={'email': 'emaildoesnotexist@example.com'},
+            reverse("password-reset-request"),
+            data={"email": "emaildoesnotexist@example.com"},
         )
         self.assertEqual(response.status_code, 200)
         mock_send_email.assert_not_called()
@@ -339,42 +339,42 @@ class PasswordResetTests(TestCase):
     def test_password_reset_confirm_success(self):
         """Test password reset confirm is successful"""
         data = self.get_password_reset_data()
-        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        response = self.client.post(reverse("password-reset-confirm"), data=data)
 
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password(data['new_password']))
+        self.assertTrue(self.user.check_password(data["new_password"]))
 
     def test_password_reset_confirm_invalid_token(self):
         """Check invalid token returns 400"""
         data = self.get_password_reset_data()
-        data['token'] = 'invalid-token'
+        data["token"] = "invalid-token"
 
-        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        response = self.client.post(reverse("password-reset-confirm"), data=data)
         self.assertEqual(response.status_code, 400)
 
     def test_password_reset_confirm_invalid_uid(self):
         """Check invalid token returns 400"""
         data = self.get_password_reset_data()
-        data['uid'] = 'invalid-uid'
+        data["uid"] = "invalid-uid"
 
-        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        response = self.client.post(reverse("password-reset-confirm"), data=data)
         self.assertEqual(response.status_code, 400)
 
     def test_password_reset_confirm_passwords_mismatch(self):
         """Check passwords mismatch returns 400"""
         data = self.get_password_reset_data()
-        data['re_new_password'] = 'not-matching-password'
+        data["re_new_password"] = "not-matching-password"
 
-        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        response = self.client.post(reverse("password-reset-confirm"), data=data)
         self.assertEqual(response.status_code, 400)
 
     def test_password_reset_insecure_password(self):
         """Test insecure password returns 400"""
         data = self.get_password_reset_data()
-        data['new_password'] = 'Password'
-        data['re_new_password'] = 'Password'
+        data["new_password"] = "Password"
+        data["re_new_password"] = "Password"
 
-        response = self.client.post(reverse('password-reset-confirm'), data=data)
+        response = self.client.post(reverse("password-reset-confirm"), data=data)
 
         self.assertEqual(response.status_code, 400)

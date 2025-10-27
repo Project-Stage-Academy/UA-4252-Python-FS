@@ -52,31 +52,31 @@ class ProjectPaginationTestCase(APITestCase):
             )
 
     def test_project_list_pagination_page_1(self):
-        url = f'/api/startups/{self.startup.id}/projects/?page=1&page_size=6'
+        url = f"/api/startups/{self.startup.id}/projects/?page=1&page_size=6"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 6)
-        self.assertEqual(response.data['count'], 15)
+        self.assertEqual(len(response.data["results"]), 6)
+        self.assertEqual(response.data["count"], 15)
 
     def test_project_list_pagination_page_2(self):
-        url = f'/api/startups/{self.startup.id}/projects/?page=2&page_size=6'
+        url = f"/api/startups/{self.startup.id}/projects/?page=2&page_size=6"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 6)
-        self.assertEqual(response.data['count'], 15)
+        self.assertEqual(len(response.data["results"]), 6)
+        self.assertEqual(response.data["count"], 15)
 
     def test_project_list_pagination_page_3(self):
-        url = f'/api/startups/{self.startup.id}/projects/?page=3&page_size=6'
+        url = f"/api/startups/{self.startup.id}/projects/?page=3&page_size=6"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 3)
-        self.assertEqual(response.data['count'], 15)
+        self.assertEqual(len(response.data["results"]), 3)
+        self.assertEqual(response.data["count"], 15)
 
     def test_project_list_pagination_invalid_page(self):
-        url = f'/api/startups/{self.startup.id}/projects/?page=4&page_size=6'
+        url = f"/api/startups/{self.startup.id}/projects/?page=4&page_size=6"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

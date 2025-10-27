@@ -4,36 +4,36 @@ from django.db import migrations, models
 
 
 def copy_fk_to_uuid(apps, schema_editor):
-    ProjectAttachment = apps.get_model('projects', 'ProjectAttachment')
-    ProjectAudit = apps.get_model('projects', 'ProjectAudit')
-    Project = apps.get_model('projects', 'Project')
+    ProjectAttachment = apps.get_model("projects", "ProjectAttachment")
+    ProjectAudit = apps.get_model("projects", "ProjectAudit")
+    Project = apps.get_model("projects", "Project")
 
     for attachment in ProjectAttachment.objects.all():
         project = Project.objects.get(id=attachment.project_id)
         attachment.project_uuid = project.uuid
-        attachment.save(update_fields=['project_uuid'])
+        attachment.save(update_fields=["project_uuid"])
 
     for audit in ProjectAudit.objects.all():
         project = Project.objects.get(id=audit.project_id)
         audit.project_uuid = project.uuid
-        audit.save(update_fields=['project_uuid'])
+        audit.save(update_fields=["project_uuid"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0005_add_uuid_fields'),
+        ("projects", "0005_add_uuid_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='projectattachment',
-            name='project_uuid',
+            model_name="projectattachment",
+            name="project_uuid",
             field=models.UUIDField(null=True),
         ),
         migrations.AddField(
-            model_name='projectaudit',
-            name='project_uuid',
+            model_name="projectaudit",
+            name="project_uuid",
             field=models.UUIDField(null=True),
         ),
         migrations.RunPython(copy_fk_to_uuid, reverse_code=migrations.RunPython.noop),

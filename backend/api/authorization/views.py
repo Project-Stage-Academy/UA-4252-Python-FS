@@ -31,17 +31,17 @@ class LoginView(APIView):
 
         if not serializer.is_valid():
             return Response(
-                {'error': 'Invalid data.'}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         user = authenticate(
-            email=serializer.validated_data['email'],
-            password=serializer.validated_data['password'],
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
         )
 
         if user is None:
             return Response(
-                {'error': 'Wrong email or password.'},
+                {"error": "Wrong email or password."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -60,19 +60,19 @@ class LoginView(APIView):
         )
 
         response.set_cookie(
-            key='access_token',
+            key="access_token",
             value=str(tokens.access_token),
             httponly=True,
             secure=False,  # While still in development, True when in prod.
-            samesite='Strict',
+            samesite="Strict",
         )
 
         response.set_cookie(
-            key='refresh_token',
+            key="refresh_token",
             value=str(tokens),
             httponly=True,
             secure=False,  # While still in development, True when in prod.
-            samesite='Strict',
+            samesite="Strict",
         )
 
         return response
@@ -84,7 +84,7 @@ class LogoutView(APIView):
     """
 
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -94,8 +94,8 @@ class LogoutView(APIView):
             token.blacklist()
             response = Response(status=status.HTTP_204_NO_CONTENT)
 
-            response.delete_cookie('refresh_token')
-            response.delete_cookie('access_token')
+            response.delete_cookie("refresh_token")
+            response.delete_cookie("access_token")
 
             return response
         except Exception:
@@ -111,11 +111,11 @@ class ResendVerificationView(APIView):
     throttle_classes = [CommonRedisThrottle]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = request.data.get("email")
 
         if not email:
             return Response(
-                {'detail': 'Necessary fields are missing.'},
+                {"detail": "Necessary fields are missing."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -124,7 +124,7 @@ class ResendVerificationView(APIView):
 
             if user.is_active:
                 return Response(
-                    {'detail': 'Account was already verified'},
+                    {"detail": "Account was already verified"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -135,13 +135,13 @@ class ResendVerificationView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.id))
 
         verification_link = (
-            f'{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/'
+            f"{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/"
         )
 
         try:
             send_mail(
-                subject='Verify your email',
-                message=f'Please, verify your email by clicking: {verification_link}',
+                subject="Verify your email",
+                message=f"Please, verify your email by clicking: {verification_link}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,

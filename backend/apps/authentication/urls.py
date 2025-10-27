@@ -8,18 +8,18 @@ from .views import (
 )
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
+    path("register/", RegisterView.as_view(), name="register"),
     path(
-        'verify/<str:uid>/<str:token>/', VerifyEmailView.as_view(), name='verify-email'
+        "verify/<str:uid>/<str:token>/", VerifyEmailView.as_view(), name="verify-email"
     ),
     path(
-        'password-reset/request/',
+        "password-reset/request/",
         PasswordResetRequestView.as_view(),
-        name='password-reset-request',
+        name="password-reset-request",
     ),
     path(
-        'password-reset/confirm/',
+        "password-reset/confirm/",
         PasswordResetConfirmView.as_view(),
-        name='password-reset-confirm',
+        name="password-reset-confirm",
     ),
 ]
