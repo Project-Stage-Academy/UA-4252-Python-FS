@@ -20,12 +20,13 @@ $color-border-light: #000;
   &__logo {
     display: flex;
     align-items: center;
+    gap: 8px;
     cursor: pointer;
 
     svg {
       width: 31px;
       height: 30px;
-      margin-right: 8px;
+      margin-right: 0;
     }
 
     &-text {

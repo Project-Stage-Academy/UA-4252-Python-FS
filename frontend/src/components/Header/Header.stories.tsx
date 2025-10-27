@@ -1,9 +1,8 @@
-import React from "react";
+import { MemoryRouter } from "react-router-dom";
 import Header from "./Header";
 
-export default {
-  title: "Components/Header",
-  component: Header,
-};
-
-export const Default = () => <Header />;
+export const Default = () => (
+  <MemoryRouter>
+    <Header />
+  </MemoryRouter>
+);
