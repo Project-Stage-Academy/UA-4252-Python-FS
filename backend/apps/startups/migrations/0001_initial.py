@@ -10,13 +10,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('investors', '0001_initial'),
+        ("investors", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StartupProfile',
+            name="StartupProfile",
             fields=[
+
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('company_name', models.CharField(max_length=255)),
                 ('email', models.EmailField(max_length=100)),
@@ -38,10 +39,11 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Startup Profile',
                 'verbose_name_plural': 'Startup Profiles',
                 'ordering': ['-created_at'],
+
             },
         ),
         migrations.CreateModel(
-            name='SavedStartup',
+            name="SavedStartup",
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('notes', models.TextField(blank=True, default='')),
@@ -52,6 +54,7 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Saved Startup',
                 'verbose_name_plural': 'Saved Startups',
                 'ordering': ['-created_at'],
+
             },
         ),
     ]

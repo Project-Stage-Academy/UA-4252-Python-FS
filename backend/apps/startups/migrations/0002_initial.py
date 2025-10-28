@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('startups', '0001_initial'),
+        ("startups", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -40,5 +40,6 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='savedstartup',
             unique_together={('investor', 'startup')},
+
         ),
     ]

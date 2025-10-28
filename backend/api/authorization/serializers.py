@@ -1,5 +1,6 @@
-from apps.users.models import User
 from rest_framework import serializers
+
+from apps.users.models import User
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
@@ -8,4 +9,4 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'password')
+        fields = ("email", "password")

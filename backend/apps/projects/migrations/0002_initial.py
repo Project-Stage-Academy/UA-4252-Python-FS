@@ -9,8 +9,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('projects', '0001_initial'),
-        ('startups', '0001_initial'),
+        ("projects", "0001_initial"),
+        ("startups", "0001_initial"),
     ]
 
     operations = [
@@ -28,5 +28,6 @@ class Migration(migrations.Migration):
             model_name='projectaudit',
             name='project',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='audit_logs', to='projects.project'),
+
         ),
     ]
