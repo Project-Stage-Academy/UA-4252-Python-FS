@@ -15,5 +15,3 @@ class StartupPublicProfileViewSet(viewsets.ModelViewSet):
     serializer_class = StartupPublicProfileSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
-        return StartupProfile.objects.all().order_by('-created_at')
