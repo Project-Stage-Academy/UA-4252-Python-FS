@@ -1,22 +1,22 @@
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-
-from django.contrib.auth import get_user_model
-from django.conf import settings
-from .serializers import (
-    RegistrationSerializer,
-    PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer,
-)
-from .emails import send_password_reset_email
-
 import logging
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .emails import send_password_reset_email
+from .serializers import (
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +25,14 @@ User = get_user_model()
 
 class RegisterView(APIView):
     """
-        User registration endpoint supporting both startup and investor roles.
-        POST /api/auth/register/
+    User registration endpoint supporting both startup and investor roles.
+    POST /api/auth/register/
 
-        Anti-enumeration Policy:
-        - Returns HTTP 201 for all registration attempts (success or duplicate)
-        - Prevents attackers from discovering registered emails
-        - Duplicate emails are handled in serializer validation
-     """
+    Anti-enumeration Policy:
+    - Returns HTTP 201 for all registration attempts (success or duplicate)
+    - Prevents attackers from discovering registered emails
+    - Duplicate emails are handled in serializer validation
+    """
 
     def post(self, request):
         """
@@ -41,14 +41,15 @@ class RegisterView(APIView):
             201: User created, verification email sent
             400: Validation errors
         """
-        email = request.data.get('email')
+        email = request.data.get("email")
         if email:
             existing_user = User.objects.filter(email=email).first()
             if existing_user:
                 # just return 201 without creating a new user
-                return Response({
-                    'detail': 'Verification email sent.'
-                }, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"detail": "Verification email sent."},
+                    status=status.HTTP_201_CREATED,
+                )
 
         serializer = RegistrationSerializer(data=request.data)
 
@@ -61,27 +62,24 @@ class RegisterView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
         if settings.DEBUG:
-            verification_link = f'http://localhost:8000/api/auth/verify/{uid}/{token}/'
+            verification_link = f"http://localhost:8000/api/auth/verify/{uid}/{token}/"
         else:
-            verification_link = f'{settings.FRONTEND_URL}/verify/{uid}/{token}/'
+            verification_link = f"{settings.FRONTEND_URL}/verify/{uid}/{token}/"
 
         try:
             send_mail(
-                subject='Verify your email',
-                message=f'Please, verify your email by clicking: {verification_link}',
+                subject="Verify your email",
+                message=f"Please, verify your email by clicking: {verification_link}",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,
             )
         except Exception as e:
-            logger.error(f'Email sending failed for user {user.email}: {e}')
+            logger.error(f"Email sending failed for user {user.email}: {e}")
 
-        return Response({
-            'id': user.id,
-            'email': user.email,
-            'detail': 'Verification email sent.'
-        },
-            status=status.HTTP_201_CREATED
+        return Response(
+            {"id": user.id, "email": user.email, "detail": "Verification email sent."},
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -104,26 +102,30 @@ class VerifyEmailView(APIView):
             user = User.objects.get(pk=user_id)
 
             if user.is_active:
-                return Response({
-                    'detail': 'Email already verified. You can log in.'
-                }, status=status.HTTP_200_OK)
+                return Response(
+                    {"detail": "Email already verified. You can log in."},
+                    status=status.HTTP_200_OK,
+                )
 
             if default_token_generator.check_token(user, token):
                 user.is_active = True
                 user.save()
 
-                return Response({
-                    'detail': 'Email verified successfully.'
-                }, status=status.HTTP_200_OK)
+                return Response(
+                    {"detail": "Email verified successfully."},
+                    status=status.HTTP_200_OK,
+                )
             else:
-                return Response({
-                    'detail': 'Invalid or expired token.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "Invalid or expired token."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except (User.DoesNotExist, ValueError, TypeError):
-            return Response({
-                'detail': 'Invalid verification link.'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid verification link."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class PasswordResetRequestView(APIView):
@@ -140,6 +142,7 @@ class PasswordResetRequestView(APIView):
              password reset link.
         400: Validation errors.
     """
+
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
@@ -148,20 +151,19 @@ class PasswordResetRequestView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        email = serializer.validated_data['email']
+        email = serializer.validated_data["email"]
         user = User.objects.filter(email=email).first()
         if user:
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-            reset_link = f'{frontend_url}/reset-password?uid={uid}&token={token}'
-            
+            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+            reset_link = f"{frontend_url}/reset-password?uid={uid}&token={token}"
+
             send_password_reset_email(user, reset_link)
 
         # always return success to avoid account enumeration
         return Response(
-            {'detail': 'Password reset link sent.'},
-            status=status.HTTP_200_OK
+            {"detail": "Password reset link sent."}, status=status.HTTP_200_OK
         )
 
 
@@ -180,6 +182,7 @@ class PasswordResetConfirmView(APIView):
         200: Sets a new password for a user.
         400: Validation errors.
     """
+
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer
 
@@ -190,6 +193,6 @@ class PasswordResetConfirmView(APIView):
         serializer.save()
 
         return Response(
-            {'detail': 'Password has been reset successfully.'},
-            status=status.HTTP_200_OK
+            {"detail": "Password has been reset successfully."},
+            status=status.HTTP_200_OK,
         )

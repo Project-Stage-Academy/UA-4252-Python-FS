@@ -23,7 +23,7 @@ jobs:
       - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip 
+          path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
@@ -60,7 +60,7 @@ jobs:
           node-version: '20.11.1'
 
       - name: Cache node modules
-        uses: actions/cache@v4 
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -74,7 +74,7 @@ jobs:
       - name: "Build frontend"
         run: npm run build
         working-directory: frontend
-      
+
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v4
         with:
