@@ -2,8 +2,8 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from apps.startups.models import StartupProfile
-
-from . import apps, models
+from apps.startups import models
+from apps.startups import apps
 
 User = get_user_model()
 
