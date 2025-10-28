@@ -10,19 +10,24 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('startups', '0001_initial'),
+        ("startups", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='startupprofile',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="startupprofile",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='savedstartup',
-            name='startup',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='startups.startupprofile'),
+            model_name="savedstartup",
+            name="startup",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="startups.startupprofile",
+            ),
         ),
     ]

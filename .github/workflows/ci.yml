@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11, 3.12, 3.13]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v5
 
@@ -23,7 +23,7 @@ jobs:
       - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip 
+          path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
@@ -46,6 +46,8 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/coverage.xml
+          flags: backend
 
   frontend:
     runs-on: ubuntu-latest
@@ -58,7 +60,7 @@ jobs:
           node-version: '20.11.1'
 
       - name: Cache node modules
-        uses: actions/cache@v4 
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -72,7 +74,7 @@ jobs:
       - name: "Build frontend"
         run: npm run build
         working-directory: frontend
-      
+
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v4
         with:

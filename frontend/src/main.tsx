@@ -1,23 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-import { routes } from "./routes";
-
-const rootElement = document.getElementById('root')
+const rootElement = document.getElementById('root');
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <Routes>
-            {routes.map(({ path, element }) => (
-              <Route key={path} path={path} element={element} />
-            ))}
-          </Routes>
-        </React.Suspense>
-      </BrowserRouter>
+      <App />
     </React.StrictMode>
   );
 } else {
@@ -25,5 +15,3 @@ if (rootElement) {
     "Root element not found. Make sure index.html contains <div id='root'></div>"
   );
 }
-
-
