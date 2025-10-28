@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 class StartupPublicProfileViewSet(viewsets.ModelViewSet):
     # lookup_field = 'id'
     # lookup_url_kwarg = 'id'
-    queryset = StartupProfile.objects.all
+    queryset = StartupProfile.objects.annotate(
+        followers_count=Count("saved_by_investors")
+    )
     
     serializer_class = StartupPublicProfileSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
