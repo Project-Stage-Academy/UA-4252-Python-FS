@@ -188,7 +188,7 @@ type MultiField = "representing" | "entityType";
               setErrors(prev => ({ ...prev, logo: `Розмір файлу не повинен перевищувати 10 МБ.` }));
               setLogoPreview(null);
               setFormData(prev => ({ ...prev, logoFile: null }));
-              e.target.value = ''; 
+              e.target.value = '';
             } else {
               setErrors(prev => {
                 const { logo, ...rest } = prev;

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { routes } from "./routes";
 import Footer from "./components/Footer/Footer";
-import "./App.css"; 
+import "./App.css";
 
 function App() {
   return (
@@ -21,5 +21,3 @@ function App() {
 }
 
 export default App;
-
-

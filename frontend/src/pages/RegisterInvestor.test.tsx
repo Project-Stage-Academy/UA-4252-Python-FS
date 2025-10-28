@@ -117,7 +117,7 @@ describe("RegisterInvestor Form", () => {
     expect(mockFetch).toHaveBeenCalled();
     const lastFetchCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
     const formData = lastFetchCall[1]?.body as FormData;
-    
+
     const uploadedFile = formData.get("logo") as File;
     expect(uploadedFile).toBeInstanceOf(File);
     expect(uploadedFile.name).toBe("test-logo.png");

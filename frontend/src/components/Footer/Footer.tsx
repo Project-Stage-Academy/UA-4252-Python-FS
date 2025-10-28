@@ -37,7 +37,7 @@ export default function Footer() {
           <div className="footer-column">
             <h4>Підприємства</h4>
             <ul className="inline-list">
-              {/* TODO: Replace with fetch from /api/content/landing/ */}  
+              {/* TODO: Replace with fetch from /api/content/landing/ */}
               <li>Компанії</li>
               <li>Стартапи</li>
             </ul>
