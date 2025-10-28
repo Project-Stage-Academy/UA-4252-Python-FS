@@ -1,10 +1,12 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
-from apps.startups.models import StartupProfile
-from apps.projects.models import Project
 from django.core.exceptions import ValidationError
+from django.test import TestCase
+
+from apps.projects.models import Project
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
+
 
 class ProjectModelTestCase(TestCase):
     def setUp(self):
@@ -12,7 +14,7 @@ class ProjectModelTestCase(TestCase):
             email="testuser@example.com",
             first_name="Test",
             last_name="User",
-            password="testpassword"
+            password="testpassword",
         )
 
         self.startup = StartupProfile.objects.create(
@@ -29,9 +31,9 @@ class ProjectModelTestCase(TestCase):
             postal_code="12345",
             logo="https://example.com/logo.jpg",
             partners_brands="Test Partners",
-            audit_status="active"
+            audit_status="active",
         )
-        
+
         self.project = Project.objects.create(
             startup=self.startup,
             title="Test Project",
@@ -44,7 +46,7 @@ class ProjectModelTestCase(TestCase):
             currency="UAH",
             thumbnail="https://example.com/image.jpg",
             tags=["test, example"],
-            visibility="public"
+            visibility="public",
         )
 
     def test_project_creation_and_fields(self):
@@ -69,7 +71,7 @@ class ProjectModelTestCase(TestCase):
             self.project.full_clean()
 
     def test_status_choices(self):
-        valid_statuses = ['idea', 'mvp', 'fundraising', 'closed']
+        valid_statuses = ["idea", "mvp", "fundraising", "closed"]
         for status in valid_statuses:
             self.project.status = status
             self.project.save()
@@ -88,7 +90,7 @@ class ProjectModelTestCase(TestCase):
             currency="UAH",
             thumbnail=None,
             tags=["test, example"],
-            visibility="public"
+            visibility="public",
         )
 
         self.assertIsNone(project_without_thumbnail.thumbnail)

@@ -1,4 +1,5 @@
 import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.test import TestCase
@@ -109,9 +110,9 @@ class UserModelTests(TestCase):
 
     def test_user_creation_minimal(self):
         """Minimal user creation works (email, first_name, last_name)."""
-        user = User.objects.create_user(
+        User.objects.create_user(
             email="test@example.com",
             first_name="Test",
             last_name="User",
-            password="secret"
+            password="secret",
         )
