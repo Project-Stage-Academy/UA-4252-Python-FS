@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.contrib.auth import get_user_model
+from apps.investors.models import InvestorProfile
 from apps.common.utils import logo_upload_to
 
 User = get_user_model()
@@ -25,9 +27,8 @@ class StartupProfile(models.Model):
     address = models.CharField(max_length=255, blank=True, default="")
     postal_code = models.CharField(max_length=20, blank=True, default="")
 
-    # We need to craete media folder and set MEDIA_URL and MEDIA_ROOT in settings.py
     logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
-    partners_brands = models.TextField(blank=True, default="")
+    partners_brands = models.TextField(blank=True, default='')
 
     audit_status = models.CharField(max_length=100, blank=True, default="")
 

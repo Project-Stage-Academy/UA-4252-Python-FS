@@ -5,8 +5,8 @@ import StartupView from "./pages/StartupView";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import Inbox from "./pages/Inbox";
 import RegisterStartup from "./pages/RegisterStartup";
-import PasswordResetRequest from "./pages/PasswordResetRequest";
 import RegisterInvestor from "./pages/RegisterInvestor";
+import PasswordResetRequest from "./pages/PasswordResetRequest";
 
 export const routes = [
   { path: "/", element: <Home /> },

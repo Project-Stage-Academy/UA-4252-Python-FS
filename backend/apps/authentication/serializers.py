@@ -2,6 +2,7 @@ import binascii
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
+from apps.common.validators import drf_validate_file_size, drf_validate_file_type
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
@@ -9,10 +10,10 @@ from django.db.models import UUIDField
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
-from apps.common.validators import drf_validate_file_size, drf_validate_file_type
+
 from apps.investors.models import InvestorProfile
-from apps.startups.models import StartupProfile
 from django.core.exceptions import ValidationError
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
@@ -90,16 +91,6 @@ class RegistrationSerializer(serializers.Serializer):
         drf_validate_file_size(value, 10)
         drf_validate_file_type(value, ['.jpg','.jpeg','.png'])
         return value
-    
-    def validate_logo(self, value):
-        """ 
-        Validate logo file size and format
-        """
-        if value in (None, ''):
-            return value
-        drf_validate_file_size(value, 10)
-        drf_validate_file_type(value, ['.jpg','.jpeg','.png'])
-        return value
 
     def create(self, validated_data):
         """
@@ -130,12 +121,12 @@ class RegistrationSerializer(serializers.Serializer):
                 email=email,
                 founded_year=2024,
                 team_size=1,
-                city="",
-                address="",
-                postal_code="",
+                city='',
+                address='',
+                postal_code='',
                 logo=logo_file,
-                partners_brands="",
-                audit_status="Pending",
+                partners_brands='',
+                audit_status='Pending'
             )
 
         elif role == "investor":
@@ -155,7 +146,7 @@ class RegistrationSerializer(serializers.Serializer):
                 city="",
                 address="",
                 postal_code="",
-                logo=logo_file,
+                logo="",
                 partners_brands="",
                 audit_status="Pending",
             )
