@@ -60,8 +60,6 @@ class Project(models.Model):
             raise ValidationError('Target amount cannot be negative.')
         if self.raised_amount < 0:
             raise ValidationError('Raised amount cannot be negative.')
-        if self.raised_amount > self.target_amount:
-            raise ValidationError('Raised amount cannot exceed target amount.')
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -85,7 +83,7 @@ class Project(models.Model):
         self.is_deleted = True
         self.deleted_at = timezone.now()
         self.deleted_by = user
-        self.save(update_fields=['is_deletes', 'deleted_at', 'deleted_by'])
+        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
 
     @property
     def progress_percentage(self):

@@ -4,9 +4,9 @@ from .models import Project
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Serializer for listing projects"""
-    startup_name = serializers.CharField(source='startup.name', read_only=True)
+    startup_name = serializers.CharField(source='startup.company_name', read_only=True)
     startup_slug = serializers.CharField(source='startup.slug', read_only=True)
-    progress_percentage = serializers.ReadOnlyField()
+    progress_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -28,14 +28,20 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'raised_amount', 'created_at']
 
+    def get_progress_percentage(self, obj):
+        if obj.target_amount and obj.target_amount > 0:
+            return round((float(obj.raised_amount) / float(obj.target_amount)) * 100, 2)
+        return 0.0
+
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed project"""
     startup_id = serializers.UUIDField(source='startup.id', read_only=True)
-    startup_name = serializers.CharField(source='startup.name', read_only=True)
+    startup_name = serializers.CharField(source='startup.company_name', read_only=True)
     startup_slug = serializers.CharField(source='startup.slug', read_only=True)
-    owner_email = serializers.CharField(source='startup.owner.email', read_only=True)
-    progress_percentage = serializers.ReadOnlyField()
+    email = serializers.CharField(source='startup.user.email', read_only=True)
+    progress_percentage = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
         fields = [
@@ -43,7 +49,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'startup_id',
             'startup_name',
             'startup_slug',
-            'owner_email'
+            'email',
             'title',
             'slug',
             'short_description',
@@ -54,20 +60,27 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'currency',
             'thumbnail',
             'tags',
-            'progress_percentage'
+            'progress_percentage',
             'visibility',
             'created_at',
-            'update_at'
+            'updated_at',
         ]
         read_only_fields = [
             'id',
             'raised_amount',
             'created_at',
-            'update_at'
+            'updated_at',
         ]
+
+    def get_progress_percentage(self, obj):
+        if obj.target_amount and obj.target_amount > 0:
+            return round((float(obj.raised_amount) / float(obj.target_amount)) * 100, 2)
+        return 0.0
+
 
 class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
     """Serializer for creating and updating projects"""
+
     class Meta:
         model = Project
         fields = [
@@ -81,6 +94,7 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
             'tags',
             'visibility',
         ]
+
     def validate_target_amount(self, value):
         if value <= 0:
             raise serializers.ValidationError("Target amount must be greater than 0")
@@ -103,7 +117,6 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
             raise serializers.ValidationError('Startup is required')
         validated_data['startup'] = startup
         return super().create(validated_data)
-
 
     def to_representation(self, instance):
         """Return detailed representation after create/update"""
