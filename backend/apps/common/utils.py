@@ -1,5 +1,5 @@
-import uuid
 import os
+import uuid
 
 
 def logo_upload_to(instance, filename):

@@ -1,9 +1,12 @@
-import os
-from django.test import TestCase
-from rest_framework.serializers import ValidationError
-from PIL import Image
 import io
+import os
+
+from django.test import TestCase
+from PIL import Image
+from rest_framework.serializers import ValidationError
+
 from apps.common.validators import drf_validate_file_size, drf_validate_file_type
+
 
 class FileValidatorTest(TestCase):
     """Unit tests for file validators"""

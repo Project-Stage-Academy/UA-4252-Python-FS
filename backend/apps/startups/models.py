@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth import get_user_model
-from apps.investors.models import InvestorProfile
+
 from apps.common.utils import logo_upload_to
 
 User = get_user_model()

@@ -2,9 +2,11 @@
 
 import os
 import uuid
-from django.db import migrations
-from django.core.files.storage import default_storage
+
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.db import migrations
+
 
 def consolidate_and_fix_logo_paths(apps, schema_editor):
     """
@@ -18,7 +20,11 @@ def consolidate_and_fix_logo_paths(apps, schema_editor):
 
     def process_model(Model):
         print(f"\nProcessing model: {Model.__name__}")
-        profiles_to_update = Model.objects.exclude(logo__isnull=True).exclude(logo='').exclude(logo__startswith='logos/')
+        profiles_to_update = (
+            Model.objects.exclude(logo__isnull=True)
+            .exclude(logo='')
+            .exclude(logo__startswith='logos/')
+        )
 
         for profile in profiles_to_update:
             old_name = profile.logo.name
@@ -59,5 +65,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(consolidate_and_fix_logo_paths, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            consolidate_and_fix_logo_paths, reverse_code=migrations.RunPython.noop
+        ),
     ]
