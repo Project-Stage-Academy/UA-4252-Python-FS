@@ -1,14 +1,13 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-import uuid
 from django.core.validators import MinValueValidator
-from decimal import Decimal
 from django.utils.text import slugify
 from django.conf import settings
-
 from django.db import IntegrityError, transaction
-
+from apps.common.models import TimeStampedModel
+from decimal import Decimal
+import uuid
 
 PROJECT_STATUS = (
     ('idea', 'Idea'),
@@ -22,9 +21,10 @@ VISIBILITY_CHOICES = (
     ('unlisted', 'Unlisted')
 )
 
-class Project(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    startup = models.ForeignKey('startups.StartupProfile', on_delete=models.CASCADE, related_name='projects', db_index=True)
+
+class Project(TimeStampedModel):
+    startup = models.ForeignKey('startups.StartupProfile', on_delete=models.CASCADE, related_name='projects',
+                                db_index=True)
 
     title = models.CharField(max_length=255)
 
@@ -34,16 +34,17 @@ class Project(models.Model):
     description = models.TextField(blank=True, default='')
     status = models.CharField(max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True)
 
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2,
+                                        validators=[MinValueValidator(Decimal('0.01'))])
 
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0'))])
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0,
+                                        validators=[MinValueValidator(Decimal('0'))])
     currency = models.CharField(max_length=3, default="UAH")
     thumbnail = models.URLField(blank=True, null=True)
 
     tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
     def clean(self):
         if self.target_amount < 0:
             raise ValidationError('Target amount cannot be negative.')
@@ -62,7 +63,7 @@ class Project(models.Model):
                     super().save(*args, **kwargs)
                 break
             except IntegrityError:
-                if attempt == max_retries -1:
+                if attempt == max_retries - 1:
                     raise
                 base_slug = slugify(self.title)
                 counter = attempt + 1
@@ -71,18 +72,16 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = "Project"
         verbose_name_plural = "Projects"
-        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['startup', 'status']),
-                                 models.Index(fields=['created_at'])
-                                 ]
+            models.Index(fields=['created_at'])
+        ]
 
 
-class ProjectAttachment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class ProjectAttachment(TimeStampedModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='attachments')
 
     # When will be ready Upload models
@@ -92,12 +91,11 @@ class ProjectAttachment(models.Model):
     type = models.CharField(max_length=20)
     caption = models.CharField(max_length=255, blank=True)
     order = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Project Attachment'
         verbose_name_plural = 'Project Attachments'
-        ordering = ['order', 'created_at']
+        ordering = ['order', '-created_at']
 
 
 class ProjectAudit(models.Model):
