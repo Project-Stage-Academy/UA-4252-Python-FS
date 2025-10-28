@@ -107,7 +107,7 @@ class Migration(migrations.Migration):
                 'verbose_name': 'User',
                 'verbose_name_plural': 'Users',
                 'db_table': 'users',
-1
+
             },
         ),
     ]
