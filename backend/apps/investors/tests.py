@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+
 from apps.investors.models import InvestorProfile
 from apps.users.models import User
 
@@ -13,7 +14,7 @@ class InvestorProfileModelTest(TestCase):
             email="investor@example.com",
             password="plainpassword123",
             first_name="Investor",
-            last_name="User"
+            last_name="User",
         )
 
         self.valid_data = {

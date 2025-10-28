@@ -25,14 +25,14 @@ const mockFetch: jest.Mock<
   });
 });
 
-const realFetch = globalThis.fetch; 
+const realFetch = globalThis.fetch;
 
 beforeEach(() => {
-  globalThis.fetch = mockFetch; 
+  globalThis.fetch = mockFetch;
 });
 
 afterAll(() => {
-  globalThis.fetch = realFetch; 
+  globalThis.fetch = realFetch;
 });
 
 describe("RegisterInvestor Form", () => {
