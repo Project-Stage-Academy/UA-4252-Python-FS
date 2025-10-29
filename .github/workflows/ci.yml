@@ -10,14 +10,19 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     container: python:3.10
-    
+    env:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
     services:
       db:
         image: postgres:14
         env:
           POSTGRES_DB: testdb
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
           --health-cmd "pg_isready --username postgres"
           --health-interval 10s
@@ -40,21 +45,16 @@ jobs:
       - name: Lint (flake8)
         run: pip install flake8==7.0.0 && flake8 --config=backend/.flake8 backend/
 
-      - name: Check DB connection
-        env:
-          PGPASSWORD: password
-        run: psql -h db -U postgres -d testdb -c "SELECT 1;"
+      - name: Check DB connection (no secrets in logs)
+        run: |
+          echo "${POSTGRES_HOST}:${POSTGRES_PORT}:${POSTGRES_DB}:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
+          chmod 600 ~/.pgpass
+          psql -h "${POSTGRES_HOST}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "SELECT 1;"
 
       - name: Tests with coverage
-        env:
-          POSTGRES_DB: testdb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_HOST: db
-          POSTGRES_PORT: 5432
         working-directory: backend
         run: |
-          coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups apps.projects apps.dashboard apps.user_messages apps.users
+          coverage run --source='.' manage.py test
           coverage xml
 
       - name: Upload coverage to Codecov
