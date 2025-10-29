@@ -80,7 +80,16 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "--- Debugging file system ---"
+          echo "Current directory: $(pwd)"
+          echo "--- Files in current directory (should be 'frontend'):"
+          ls -la
+          echo "--- Files in root directory:"
+          ls -la ..
+          echo "--- End of debugging ---"
+          
+          npm ci
 
       - name: Build frontend
         run: npm run build
