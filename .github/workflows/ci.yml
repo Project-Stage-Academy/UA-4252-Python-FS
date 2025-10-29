@@ -54,7 +54,7 @@ jobs:
           POSTGRES_PORT: 5432
         working-directory: backend
         run: |
-          coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups
+          coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups apps.projects apps.dashboard apps.user_messages apps.users
           coverage xml
 
       - name: Upload coverage to Codecov
