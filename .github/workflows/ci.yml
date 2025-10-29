@@ -81,14 +81,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "--- Debugging file system ---"
-          echo "Current directory: $(pwd)"
-          echo "--- Files in current directory (should be 'frontend'):"
-          ls -la
-          echo "--- Files in root directory:"
-          ls -la ..
-          echo "--- End of debugging ---"
-          
+          npm cache clean --force
           npm ci
 
       - name: Build frontend
