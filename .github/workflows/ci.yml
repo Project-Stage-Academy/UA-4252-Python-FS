@@ -17,6 +17,8 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -52,8 +54,8 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-          POSTGRES_HOST: localhost  
-          POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }} 
+          POSTGRES_HOST: postgres  
+          POSTGRES_PORT: 5432 
         run: |
           coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups
           coverage xml
