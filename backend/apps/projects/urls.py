@@ -1,15 +1,18 @@
 from django.urls import path, include
 from rest_framework_nested import routers
-
+from rest_framework.routers import SimpleRouter
 from apps.startups.views import StartupPublicProfileViewSet
 
 from .views import ProjectViewSet
 
-router = routers.SimpleRouter(trailing_slash=False)
+router = routers.SimpleRouter()
 router.register(r"startups", StartupPublicProfileViewSet, basename="startups")
-router.register(r"projects", ProjectViewSet, basename="startup-projects")
+router.register(r"projects", ProjectViewSet, basename="projects")
+
+projects_router = routers.NestedSimpleRouter(router, r"startups", lookup="startup")
+projects_router.register(r"projects", ProjectViewSet, basename="startup-projects")
 
 urlpatterns = [
-    path('', include(projects_router.urls)),
     path('', include(router.urls)),
+    path('', include(projects_router.urls)),
 ]
