@@ -48,3 +48,4 @@ tomlkit==0.13.3
 tzdata==2025.2
 urllib3==2.5.0
 virtualenv==20.35.3
+coverage==7.11.0
