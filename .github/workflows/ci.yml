@@ -54,7 +54,13 @@ jobs:
       - name: Tests with coverage
         working-directory: backend
         run: |
-          coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups apps.projects apps.dashboard apps.user_messages apps.users
+          PROJECT_APPS=$(python manage.py shell -c "from django.conf import settings; print(' '.join(app for app in settings.INSTALLED_APPS if app.startswith('apps.') or app.startswith('api.')))")
+          echo "--- Running tests for the following apps ---"
+          echo "$PROJECT_APPS"
+          echo "--------------------------------------------"
+          
+          # Запускаємо тести для знайдених додатків
+          coverage run --source='.' manage.py test $PROJECT_APPS
           coverage xml
 
       - name: Upload coverage to Codecov
