@@ -23,7 +23,6 @@ User = get_user_model()
 
 class InvestorProfileModelTest(TestCase):
     def setUp(self):
-
         self.user = User.objects.create_user(
             email='profile@example.com', 
             password='test',
@@ -75,13 +74,11 @@ class InvestorProfileModelTest(TestCase):
 class InvestmentModelTest(TestCase):
     
     def setUp(self): 
-
         self.user = User.objects.create_user(
             email='invest@example.com', 
             password='test',
             first_name='Test', 
             last_name='Investor'
-
         )
 
         self.investor_profile = InvestorProfile.objects.create(
@@ -92,7 +89,6 @@ class InvestmentModelTest(TestCase):
             description='desc', partners_brands='none'
         )
         
-
         self.startup_user = User.objects.create_user(
             email='startup@example.com', password='test', first_name='Startup', last_name='Owner'
         )
@@ -112,20 +108,18 @@ class InvestmentModelTest(TestCase):
         self.assertEqual(self.investment.amount_committed, Decimal('150000.00'))
 
     def test_str_representation(self):
-
         investor_name = f"{self.user.first_name} {self.user.last_name}" 
         expected_str = f"Investment in {self.project.title} by {investor_name}"
         self.assertEqual(str(self.investment), expected_str)
 
     def test_unique_investment_constraints(self):
-
         Investment.objects.create(
             investor=User.objects.create_user(email='new_invest@ex.com', password='t', first_name='New', last_name='Inv'),
             project=self.project,
             status='committed',
             amount_committed=200000.00
         )
-        self.assertEqual(Investment.objects.count(), 2) 
+        self.assertEqual(Investment.objects.count(), 2)
 
 # ======================================================================
 # TrackingModelTest
@@ -153,13 +147,11 @@ class TrackingModelTest(TestCase):
         self.assertEqual(self.tracking.target_type, 'project')
 
     def test_str_representation(self):
-
         investor_name = f"{self.user.first_name} {self.user.last_name}" 
         expected_str = f"Tracking {self.tracking.target_type} for {investor_name}"
         self.assertEqual(str(self.tracking), expected_str)
 
     def test_unique_tracking_constraints(self):
-
         with self.assertRaises(IntegrityError):
             Tracking.objects.create(**self.tracking_data)
 
@@ -189,14 +181,11 @@ class PortfolioSnapshotModelTest(TestCase):
         self.assertEqual(self.snapshot.projects_count, 5)
 
     def test_str_representation(self):
-
         investor_name = f"{self.user.first_name} {self.user.last_name}"
-
         expected_str = f"Snapshot for {investor_name} at {str(self.computed_at)}"
         self.assertEqual(str(self.snapshot), expected_str)
 
     def test_unique_portfolio_snapshot_constraints(self):
-
         with self.assertRaises(IntegrityError):
             PortfolioSnapshot.objects.create(
                 investor=self.user, 

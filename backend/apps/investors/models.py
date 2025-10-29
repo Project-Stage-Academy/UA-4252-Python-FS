@@ -81,12 +81,10 @@ class InvestorProfile(TimeStampedModel):
         verbose_name_plural = "Investor Profiles"
 
 # Tracking Model
-class Tracking(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Tracking(TimeStampedModel):
     investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tracking')
     target_type = models.CharField(choices=[('startup', 'startup'), ('project', 'project')], max_length=32)
     target_id = models.UUIDField()  # FK via generic relation or separate FK fields
-    created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=32, null=True, choices=[('manual', 'manual'), ('suggestion', 'suggestion'), ('import', 'import')])
     meta = models.JSONField(null=True)  # optional metadata
 
@@ -96,24 +94,26 @@ class Tracking(models.Model):
             models.Index(fields=['investor']),
             models.Index(fields=['target_type', 'target_id']),
         ]
+        verbose_name = "Tracking"
+        verbose_name_plural = "Trackings"
 
     def __str__(self):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
-        
         return f"Tracking {self.target_type} for {investor_name}"
 
 # Investment Model
-class Investment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Investment(TimeStampedModel):
     investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investments')
-    project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name='investments')
+    project = models.ForeignKey('projects.Project', on_delete=models.PROTECT, related_name='investments')
     status = models.CharField(choices=[('committed', 'committed'), ('transferred', 'transferred'), ('returned', 'returned'), ('cancelled', 'cancelled')], default='committed', max_length=50)
     amount_committed = models.DecimalField(max_digits=18, decimal_places=2)
     amount_invested = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default='UAH')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     meta = models.JSONField(null=True)  # notes, terms, round info
+
+    class Meta:
+        verbose_name = "Investment"
+        verbose_name_plural = "Investments"
 
     def __str__(self):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
@@ -121,7 +121,7 @@ class Investment(models.Model):
         return f"Investment in {self.project.title} by {investor_name}"
 
 # PortfolioSnapshot Model
-class PortfolioSnapshot(models.Model):
+class PortfolioSnapshot(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     investor = models.ForeignKey(User, on_delete=models.CASCADE)
     computed_at = models.DateTimeField()
@@ -132,7 +132,6 @@ class PortfolioSnapshot(models.Model):
 
     def __str__(self):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
-            
         return f"Snapshot for {investor_name} at {self.computed_at}"
 
     class Meta:
