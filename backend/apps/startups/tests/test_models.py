@@ -30,7 +30,8 @@ def _guess_user_fk_field(model_cls):
         except Exception:
             pass
     for field in model_cls._meta.get_fields():
-        if isinstance(field, (dj_models.ForeignKey, dj_models.OneToOneField)) and issubclass(
+        if isinstance(field, (dj_models.ForeignKey, dj_models.OneToOneField)) \
+                                                              and issubclass(
             field.related_model, User
         ):
             return field.name
