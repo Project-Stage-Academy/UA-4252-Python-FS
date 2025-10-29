@@ -1,10 +1,9 @@
 import pytest
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.db import models as dj_models
 
 from apps.startups.models import StartupProfile
-
-from django.apps import apps
-from django.db import models as dj_models
 
 User = get_user_model()
 
@@ -30,10 +29,9 @@ def _guess_user_fk_field(model_cls):
         except Exception:
             pass
     for field in model_cls._meta.get_fields():
-        if isinstance(field, (dj_models.ForeignKey, dj_models.OneToOneField)) \
-                                                              and issubclass(
-            field.related_model, User
-        ):
+        if isinstance(
+            field, (dj_models.ForeignKey, dj_models.OneToOneField)
+        ) and issubclass(field.related_model, User):
             return field.name
     pytest.skip("No FK/OneToOne relation to User found on StartupProfile")
 
@@ -60,9 +58,11 @@ def _default_for_field(field):
         return {}
     if isinstance(field, dj_models.DateField):
         from datetime import date
+
         return date.today()
     if isinstance(field, dj_models.DateTimeField):
         from django.utils import timezone
+
         return timezone.now()
     if isinstance(field, dj_models.EmailField):
         return "test@example.com"
