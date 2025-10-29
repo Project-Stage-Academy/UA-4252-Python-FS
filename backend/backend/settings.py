@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
-import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -111,20 +110,13 @@ DATABASES = {
     }
 }
 
-if 'test' in sys.argv or os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
-    DATABASES["default"] = {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",  
+if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-
-    class DisableMigrations:
-        def __contains__(self, item):
-            return True
-        def __getitem__(self, item):
-            return None
-
-    MIGRATION_MODULES = DisableMigrations()
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

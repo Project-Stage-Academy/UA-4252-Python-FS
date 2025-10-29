@@ -9,8 +9,20 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    env:
-      USE_SQLITE_FOR_TESTS: '1'
+    
+    services:
+      postgres:
+        image: postgres:13  
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v5
 
@@ -36,6 +48,12 @@ jobs:
         run: pip install flake8==7.0.0 && flake8 --config=backend/.flake8 backend/
 
       - name: 'Tests with coverage'
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: postgres  
+          POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }} 
         run: |
           coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups
           coverage xml
