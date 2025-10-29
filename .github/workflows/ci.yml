@@ -37,7 +37,7 @@ jobs:
 
       - name: 'Tests with coverage'
         run: |
-          coverage run --source='.' manage.py test
+          coverage run --source='.' manage.py test apps.authentication apps.common apps.investors apps.startups
           coverage xml
         working-directory: backend
 
