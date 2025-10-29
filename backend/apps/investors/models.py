@@ -3,37 +3,42 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from apps.common.models import TimeStampedModel
+
 User = get_user_model()
 
 REGION_CHOICES = (
-    (0, "Cherkasy"),
-    (1, "Chernihiv"),
-    (2, "Chernivtsi"),
-    (3, "Dnipropetrovsk"),
-    (4, "Donetsk"),
-    (5, "Ivano-Frankivsk"),
-    (6, "Kherson"),
-    (7, "Kharkiv"),
-    (8, "Kyiv"),
-    (9, "Kirovohrad"),
-    (10, "Lviv"),
-    (11, "Mykolaiv"),
-    (12, "Odesa"),
-    (13, "Poltava"),
-    (14, "Rivne"),
-    (15, "Sumy"),
-    (16, "Ternopil"),
-    (17, "Vinnytsia"),
-    (18, "Volyn"),
-    (19, "Khmelnytskyi"),
-    (20, "Zhytomyr"),
-    (21, "Zakarpattia"),
-    (22, "Zaporizhzhia"),
-    (23, "Luhansk"),
+    (0, 'Vinnytsia Region'),
+    (1, 'Volyn Region'),
+    (2, 'Luhansk Region'),
+    (3, 'Dnipropetrovsk Region'),
+    (4, 'Donetsk Region'),
+    (5, 'Zhytomyr Region'),
+    (6, 'Zakarpattia Region'),
+    (7, 'Zaporizhzhia Region'),
+    (8, 'Ivano-Frankivsk Region'),
+    (9, 'Kyiv City'),
+    (10, 'Kyiv Region'),
+    (11, 'Kirovohrad Region'),
+    (12, 'Sevastopol City'),
+    (13, 'Autonomous Republic of Crimea'),
+    (14, 'Lviv Region'),
+    (15, 'Mykolaiv Region'),
+    (16, 'Odesa Region'),
+    (17, 'Poltava Region'),
+    (18, 'Rivne Region'),
+    (19, 'Sumy Region'),
+    (20, 'Ternopil Region'),
+    (21, 'Kharkiv Region'),
+    (22, 'Kherson Region'),
+    (23, 'Khmelnytskyi Region'),
+    (24, 'Cherkasy Region'),
+    (25, 'Chernihiv Region'),
+    (26, 'Chernivtsi Region'),
 )
 
 
-class InvestorProfile(models.Model):
+class InvestorProfile(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=200)
     full_name = models.CharField(max_length=200)
@@ -57,8 +62,6 @@ class InvestorProfile(models.Model):
     logo = models.ImageField(upload_to="media/Investor_logos/")
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=50, default="Pending")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def clean(self):
         if self.investment_range_max < self.investment_range_min:
@@ -69,6 +72,6 @@ class InvestorProfile(models.Model):
     def __str__(self):
         return self.company_name
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = "Investor Profile"
         verbose_name_plural = "Investor Profiles"
