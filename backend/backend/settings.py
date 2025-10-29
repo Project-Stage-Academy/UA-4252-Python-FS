@@ -111,22 +111,18 @@ DATABASES = {
 }
 
 if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",  
     }
-    MIGRATION_MODULES = {
-    "apps.common": None,
-    "apps.dashboard": None,
-    "apps.investors": None,
-    "apps.projects": None,
-    "apps.startups": None,
-    "apps.user_messages": None,
-    "apps.users": None,
-    "apps.authentication": None,
-}
+
+    class DisableMigrations:
+        def __contains__(self, item):
+            return True
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
