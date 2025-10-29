@@ -9,6 +9,8 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    env:
+      USE_SQLITE_FOR_TESTS: '1'
     steps:
       - uses: actions/checkout@v5
 
