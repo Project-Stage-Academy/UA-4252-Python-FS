@@ -54,7 +54,7 @@ jobs:
       - name: Tests with coverage
         working-directory: backend
         run: |
-          PROJECT_APPS=$(python manage.py shell -c "from django.conf import settings; print(' '.join(app for app in settings.INSTALLED_APPS if app.startswith('apps.') or app.startswith('api.')))")
+          PROJECT_APPS=$(python manage.py shell --no-startup -c "from django.conf import settings; print(' '.join(app for app in settings.INSTALLED_APPS if app.startswith('apps.') or app.startswith('api.')))")
           echo "--- Running tests for the following apps ---"
           echo "$PROJECT_APPS"
           echo "--------------------------------------------"
