@@ -117,6 +117,17 @@ if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+    MIGRATION_MODULES = {
+    "apps.common": None,
+    "apps.dashboard": None,
+    "apps.investors": None,
+    "apps.projects": None,
+    "apps.startups": None,
+    "apps.user_messages": None,
+    "apps.users": None,
+    "apps.authentication": None,
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
