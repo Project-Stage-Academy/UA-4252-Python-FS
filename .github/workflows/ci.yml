@@ -54,6 +54,8 @@ jobs:
       - name: Tests with coverage
         working-directory: backend
         run: |
+          export PYTHONPATH=$(pwd)/backend
+          cd backend
           coverage run --source='.' manage.py test
           coverage xml
 
