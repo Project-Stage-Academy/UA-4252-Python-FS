@@ -36,19 +36,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
                     startup = StartupProfile.objects.get(pk=startup_pk)
                     if startup.user != self.request.user:
                         queryset = queryset.filter(visibility__in=['public', 'unlisted'])
-                except StartupProfile.DoesNotExit:
+                except StartupProfile.DoesNotExist:
                     queryset = queryset.none()
             else:
                 queryset = queryset.filter(visibility__in=['public', 'unlisted'])
 
         return queryset.order_by('-created_at')
-
-    # Move to def create
-    # def perform_create(self, serializer):
-    #     startup_id = self.kwargs.get('startup_pk')
-    #     if not startup_id:
-    #         raise NotFound("Startup ID missing from URL.")
-    #     serializer.save(startup_id=startup_id)
 
     def get_permissions(self):
         if self.action == 'create':
