@@ -82,7 +82,7 @@ class NotificationModelTest(TestCase):
             target_amount=50000.00,
             raised_amount=10000.00,
             currency="USD",
-            tags="AI, Data, Analytics",
+            tags=["AI", "Data", "Analytics"],
             visibility="public",
         )
 
