@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-from apps.projects.models import Project
 import uuid
 
 from apps.common.models import TimeStampedModel
