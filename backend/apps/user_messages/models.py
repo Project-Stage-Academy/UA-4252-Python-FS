@@ -1,8 +1,9 @@
-from django.db import models
-from apps.investors.models import InvestorProfile
 from django.contrib.auth import get_user_model
-from apps.projects.models import Project
+from django.db import models
+
 from apps.common.models import TimeStampedModel
+from apps.investors.models import InvestorProfile
+from apps.projects.models import Project
 
 User = get_user_model()
 
@@ -13,8 +14,16 @@ class Notification(TimeStampedModel):
     title = models.CharField(max_length=200)
     message = models.TextField()
     link_url = models.URLField(max_length=200)
-    related_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='related_user', null=True, blank=True)
-    related_project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    related_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="related_user",
+        null=True,
+        blank=True,
+    )
+    related_project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, null=True, blank=True
+    )
     is_read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
 

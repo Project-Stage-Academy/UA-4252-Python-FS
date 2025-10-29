@@ -14,22 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/common/', include('apps.common.urls')),
-    path('api/auth/', include('apps.authentication.urls')),
-
-    path('api/startups/', include('apps.startups.urls')),
-    path('api/', include('api.authorization.urls')),
-
-    path('common/', include('apps.common.urls')),
-    path('api/', include('apps.projects.urls')),
-
-    path('api/projects/', include('apps.projects.urls')),
-    path('api/investors/', include('apps.investors.urls')),
-    path('api/users/', include('apps.users.urls')),
-    path('api/messages/', include('apps.user_messages.urls')),
+    path("admin/", admin.site.urls),
+    path("api/common/", include("apps.common.urls")),
+    path("api/auth/", include("apps.authentication.urls")),
+    path("api/startups/", include("apps.startups.urls")),
+    path("api/", include("api.authorization.urls")),
+    path("common/", include("apps.common.urls")),
+    path("api/", include("apps.projects.urls")),
+    path("api/projects/", include("apps.projects.urls")),
+    path("api/investors/", include("apps.investors.urls")),
+    path("api/users/", include("apps.users.urls")),
+    path("api/messages/", include("apps.user_messages.urls")),
 ]

@@ -1,10 +1,12 @@
-from rest_framework.test import APITestCase
-from rest_framework import status
 from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 
 User = get_user_model()
+
 
 class ProjectAPITestCase(APITestCase):
     def setUp(self):
@@ -12,7 +14,7 @@ class ProjectAPITestCase(APITestCase):
             email="test@test.com",
             password="testpassword",
             first_name="Test",
-            last_name="User"
+            last_name="User",
         )
 
         self.startup = StartupProfile.objects.create(
@@ -29,7 +31,7 @@ class ProjectAPITestCase(APITestCase):
             postal_code="12345",
             logo="https://example.com/logo.jpg",
             partners_brands="Test Partners",
-            audit_status="active"
+            audit_status="active",
         )
 
         self.project = Project.objects.create(
@@ -44,11 +46,11 @@ class ProjectAPITestCase(APITestCase):
             thumbnail="https://example.com/image.jpg",
             tags=["test, project"],
             visibility="public",
-            startup=self.startup
+            startup=self.startup,
         )
 
     def test_project_api(self):
-        url = f'/api/startups/{self.startup.id}/projects/'
+        url = f"/api/startups/{self.startup.id}/projects/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data["results"]), 1)
