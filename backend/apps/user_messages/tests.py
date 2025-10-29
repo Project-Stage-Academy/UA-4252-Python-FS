@@ -70,7 +70,12 @@ class NotificationModelTest(TestCase):
             partners_brands="Google, Amazon",
             audit_status="Verified",
         )
+        status_field = Project._meta.get_field("status")
+        currency_field = Project._meta.get_field("currency")
+        visibility_field = Project._meta.get_field("visibility")
 
+        def pick(field, fallback):
+            return field.choices[0][0] if getattr(field, "choices", None) else fallback
         # --- Project ---
         self.project = Project.objects.create(
             startup=self.startup,
@@ -78,12 +83,12 @@ class NotificationModelTest(TestCase):
             slug="ai-analytics-system",
             short_description="AI-powered data analytics tool.",
             description="A scalable data platform using ML algorithms.",
-            status="in_progress",
+            status=pick(status_field, "fundraising"),
             target_amount=50000.00,
             raised_amount=10000.00,
-            currency="USD",
+            currency=pick(currency_field, "USD"),
             tags=["AI", "Data", "Analytics"],
-            visibility="public",
+            visibility=pick(visibility_field, "public"),
         )
 
         self.valid_data = {
