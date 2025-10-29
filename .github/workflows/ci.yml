@@ -37,9 +37,9 @@ jobs:
 
       - name: 'Tests with coverage'
         run: |
-          export PYTHONPATH=$(pwd)
-          coverage run --source='backend/apps,backend/api' --rcfile=backend/.coveragerc backend/manage.py test backend.apps backend.api
-          coverage xml -o backend/coverage.xml
+          coverage run --source='.' manage.py test
+          coverage xml
+        working-directory: backend
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
