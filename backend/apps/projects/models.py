@@ -6,49 +6,50 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models, transaction
+from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.common.models import TimeStampedModel
+
 PROJECT_STATUS = (
-    ("idea", "Idea"),
-    ("mvp", "MVP"),
-    ("fundraising", "Fundraising"),
-    ("closed", "Closed"),
+    ('idea', 'Idea'),
+    ('mvp', 'MVP'),
+    ('fundraising', 'Fundraising'),
+    ('closed', 'Closed'),
 )
 VISIBILITY_CHOICES = (
-    ("public", "Public"),
-    ("private", "Private"),
-    ("unlisted", "Unlisted"),
+    ('public', 'Public'),
+    ('private', 'Private'),
+    ('unlisted', 'Unlisted'),
 )
 
 
-class Project(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Project(TimeStampedModel):
     startup = models.ForeignKey(
         "startups.StartupProfile",
         on_delete=models.CASCADE,
         related_name="projects",
         db_index=True,
     )
-
     title = models.CharField(max_length=255)
 
     slug = models.SlugField(unique=True, blank=True, max_length=255)
 
-    short_description = models.CharField(max_length=500, blank=True, default="")
-    description = models.TextField(blank=True, default="")
+    short_description = models.CharField(max_length=500, blank=True, default='')
+    description = models.TextField(blank=True, default='')
     status = models.CharField(
-        max_length=20, choices=PROJECT_STATUS, default="idea", db_index=True
+        max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True
     )
 
     target_amount = models.DecimalField(
-        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))]
     )
 
     raised_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=0,
-        validators=[MinValueValidator(Decimal("0"))],
+        validators=[MinValueValidator(Decimal('0'))],
     )
     currency = models.CharField(max_length=3, default="UAH")
     thumbnail = models.URLField(blank=True, null=True)
@@ -57,8 +58,16 @@ class Project(models.Model):
     visibility = models.CharField(
         max_length=20, choices=VISIBILITY_CHOICES, default="public"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    is_deleted = models.BooleanField(default=False, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deleted_projects',
+    )
 
     def clean(self):
         if self.target_amount < 0:
@@ -84,21 +93,32 @@ class Project(models.Model):
                 counter = attempt + 1
                 self.slug = f"{base_slug}-{counter}"
 
+    def soft_delete(self, user=None):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.deleted_by = user
+        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+
+    @property
+    def progress_percentage(self):
+        if self.target_amount > 0:
+            return round((self.raised_amount / self.target_amount) * 100, 2)
+        return 0.0
+
     def __str__(self):
         return self.title
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = "Project"
         verbose_name_plural = "Projects"
-        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["startup", "status"]),
-            models.Index(fields=["created_at"]),
+            models.Index(fields=['startup', 'status']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['is_deleted']),
         ]
 
 
-class ProjectAttachment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class ProjectAttachment(TimeStampedModel):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="attachments"
     )
@@ -110,12 +130,11 @@ class ProjectAttachment(models.Model):
     type = models.CharField(max_length=20)
     caption = models.CharField(max_length=255, blank=True)
     order = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Project Attachment"
         verbose_name_plural = "Project Attachments"
-        ordering = ["order", "created_at"]
+        ordering = ["order", "-created_at"]
 
 
 class ProjectAudit(models.Model):
