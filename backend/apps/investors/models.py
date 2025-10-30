@@ -110,7 +110,7 @@ class Investment(TimeStampedModel):
     currency = models.CharField(max_length=3, default='UAH')
     meta = models.JSONField(null=True)  # notes, terms, round info
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = "Investment"
         verbose_name_plural = "Investments"
 
@@ -133,7 +133,7 @@ class PortfolioSnapshot(TimeStampedModel):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
         return f"Snapshot for {investor_name} at {self.computed_at}"
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         verbose_name = "Portfolio Snapshot"
         verbose_name_plural = "Portfolio Snapshots"
         unique_together = ('investor', 'computed_at')
