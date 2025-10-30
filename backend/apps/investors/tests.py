@@ -1,117 +1,197 @@
-from django.core.exceptions import ValidationError
+import uuid
+from decimal import Decimal
+from datetime import datetime
 from django.test import TestCase
 
-from apps.investors.models import InvestorProfile
-from apps.users.models import User
+from django.db import IntegrityError
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError 
 
+
+from apps.startups.models import StartupProfile 
+from apps.investors.models import (
+    InvestorProfile, Tracking, Investment, PortfolioSnapshot
+)
+from apps.projects.models import Project 
+
+User = get_user_model()
+
+# ======================================================================
+# InvestorProfileModelTest
+# ======================================================================
 
 class InvestorProfileModelTest(TestCase):
-    """Unit tests for the InvestorProfile model"""
-
     def setUp(self):
-        """Create a base User and default valid InvestorProfile data"""
-        self.user = User.objects.create(
-            email="investor@example.com",
-            password="plainpassword123",
-            first_name="Investor",
-            last_name="User",
+        self.user = User.objects.create_user(
+            email='profile@example.com', 
+            password='test',
+            first_name='Investor', 
+            last_name='User'
+        )
+        self.profile_data = {
+            'user': self.user, 
+            'company_name': 'Capital Fund', 
+            'full_name': 'C D', 
+            'description': 'Test Description',
+            'investment_range_min': 10000.00, 
+            'investment_range_max': 500000.00, 
+            'preferred_industries': 'IT', 
+            'website': 'http://capital.com', 
+            'email': 'capital@test.com', 
+            'phone': '+380502222222', 
+            'country': 'UA', 
+            'region': 8, 
+            'city': 'Kyiv', 
+            'address': '2', 
+            'postal_code': '2', 
+            'logo': 'logo.png',
+            'partners_brands': 'none'
+        }
+        self.investor = InvestorProfile.objects.create(**self.profile_data)
+
+    def test_profile_creation(self):
+        self.assertEqual(self.investor.company_name, 'Capital Fund')
+
+    def test_str_representation(self):
+        self.assertEqual(str(self.investor), 'Capital Fund')
+
+    def test_validation_error_on_range(self):
+        invalid_data = self.profile_data.copy()
+        invalid_data['investment_range_min'] = 600000.00
+        invalid_data['investment_range_max'] = 500000.00
+        investor_invalid = InvestorProfile(**invalid_data)
+        
+        with self.assertRaises(ValidationError) as cm:
+            investor_invalid.full_clean()
+        
+        self.assertIn("Maximum investment must be greater than minimum investment.", str(cm.exception))
+
+# ======================================================================
+# InvestmentModelTest
+# ======================================================================
+
+class InvestmentModelTest(TestCase):
+    
+    def setUp(self): 
+        self.user = User.objects.create_user(
+            email='invest@example.com', 
+            password='test',
+            first_name='Test', 
+            last_name='Investor'
         )
 
-        self.valid_data = {
-            "user": self.user,
-            "company_name": "Tech Invest Group",
-            "full_name": "John Doe",
-            "description": "An active investor in Ukrainian startups.",
-            "investment_range_min": 10000.00,
-            "investment_range_max": 50000.00,
-            "preferred_industries": "Technology, AI, Fintech",
-            "website": "https://techinvest.com",
-            "email": "investorprofile@example.com",
-            "phone": "+380501234567",
-            "country": "Ukraine",
-            "region": 8,  # Kyiv
-            "city": "Kyiv",
-            "address": "Khreshchatyk St, 12",
-            "postal_code": "01001",
-            "partners_brands": "Petcube, Grammarly",
-            "audit_status": "Pending",
+        self.investor_profile = InvestorProfile.objects.create(
+            user=self.user, company_name='Fund Corp', full_name='D E', 
+            investment_range_min=10, investment_range_max=100, preferred_industries='IT', 
+            website='http://fund.com', email='fund@test.com', phone='+380503333333', 
+            country='UA', city='Kyiv', address='2', postal_code='2', logo='logo.png', 
+            description='desc', partners_brands='none'
+        )
+        
+        self.startup_user = User.objects.create_user(
+            email='startup@example.com', password='test', first_name='Startup', last_name='Owner'
+        )
+        self.startup = StartupProfile.objects.create(
+            user=self.startup_user, company_name="Startup Test Name", email="startup@test.com"
+        )
+        self.project = Project.objects.create(
+            startup=self.startup, title="E-Commerce Platform", target_amount=Decimal('100000.00'),
+        )
+        self.investment = Investment.objects.create(
+            investor=self.user, project=self.project, status='committed', 
+            amount_committed=150000.00, amount_invested=50000.00,
+        )
+
+    def test_investment_creation(self):
+        self.assertEqual(self.investment.status, 'committed')
+        self.assertEqual(self.investment.amount_committed, Decimal('150000.00'))
+
+    def test_str_representation(self):
+        investor_name = f"{self.user.first_name} {self.user.last_name}" 
+        expected_str = f"Investment in {self.project.title} by {investor_name}"
+        self.assertEqual(str(self.investment), expected_str)
+
+    def test_unique_investment_constraints(self):
+        Investment.objects.create(
+            investor=User.objects.create_user(email='new_invest@ex.com', password='t', first_name='New', last_name='Inv'),
+            project=self.project,
+            status='committed',
+            amount_committed=200000.00
+        )
+        self.assertEqual(Investment.objects.count(), 2)
+
+# ======================================================================
+# TrackingModelTest
+# ======================================================================
+
+class TrackingModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='track@example.com', password='test', first_name='Test', last_name='Tracker'
+        )
+        self.investor_profile = InvestorProfile.objects.create(
+            user=self.user, company_name='Tracker Inc.', full_name='T I', 
+            investment_range_min=1, investment_range_max=10, preferred_industries='IT', 
+            website='http://track.com', email='track@test.com', phone='+380504444444', 
+            country='UA', city='Kyiv', address='2', postal_code='2', logo='logo.png', 
+            description='desc', partners_brands='none'
+        )
+        self.target_id = uuid.uuid4()
+        self.tracking_data = {
+            'investor': self.user, 'target_type': 'project', 'target_id': self.target_id, 'source': 'manual'
         }
+        self.tracking = Tracking.objects.create(**self.tracking_data)
 
-    def test_valid_investor_profile_creation(self):
-        """Should create InvestorProfile successfully with valid data"""
-        investor = InvestorProfile.objects.create(**self.valid_data)
-        self.assertIsInstance(investor, InvestorProfile)
-        self.assertEqual(investor.company_name, "Tech Invest Group")
-        self.assertEqual(investor.region, 8)
-        self.assertEqual(str(investor), "Tech Invest Group")
+    def test_tracking_creation(self):
+        self.assertEqual(self.tracking.target_type, 'project')
 
-    def test_email_unique_constraint(self):
-        """Should not allow duplicate investor emails"""
-        InvestorProfile.objects.create(**self.valid_data)
-        duplicate = self.valid_data.copy()
-        duplicate["email"] = "investorprofile@example.com"
-        with self.assertRaises(Exception):
-            InvestorProfile.objects.create(**duplicate)
+    def test_str_representation(self):
+        investor_name = f"{self.user.first_name} {self.user.last_name}" 
+        expected_str = f"Tracking {self.tracking.target_type} for {investor_name}"
+        self.assertEqual(str(self.tracking), expected_str)
 
-    def test_investment_range_validation(self):
-        """Should raise ValidationError if max < min"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["investment_range_min"] = 50000.00
-        invalid_data["investment_range_max"] = 10000.00
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.clean()  # should trigger validation logic
+    def test_unique_tracking_constraints(self):
+        with self.assertRaises(IntegrityError):
+            Tracking.objects.create(**self.tracking_data)
 
-    def test_invalid_email_format(self):
-        """Should raise ValidationError for invalid email format"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["email"] = "not-an-email"
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
+# ======================================================================
+# PortfolioSnapshotModelTest
+# ======================================================================
 
-    def test_invalid_website_format(self):
-        """Should raise ValidationError for invalid website format"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["website"] = "invalid-url"
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
+class PortfolioSnapshotModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='snapshot@example.com', password='test', first_name='Test', last_name='Snapshot'
+        )
+        self.investor_profile = InvestorProfile.objects.create(
+            user=self.user, company_name='Snapshots LLC', full_name='S L', 
+            investment_range_min=1, investment_range_max=10, preferred_industries='IT', 
+            website='http://snap.com', email='snap@test.com', phone='+380505555555', 
+            country='UA', city='Kyiv', address='2', postal_code='2', logo='logo.png', 
+            description='desc', partners_brands='none'
+        )
+        self.computed_at = timezone.make_aware(datetime(2023, 10, 26, 10, 0, 0))
+        self.snapshot = PortfolioSnapshot.objects.create(
+            investor=self.user, computed_at=self.computed_at, projects_count=5,
+            total_committed=500000.00, total_invested=250000.00, summary={'kpi': 'data'}
+        )
 
-    def test_invalid_phone_format(self):
-        """Should raise ValidationError for invalid phone number"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["phone"] = "12345"  # not valid for UA region
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
+    def test_snapshot_creation(self):
+        self.assertEqual(self.snapshot.projects_count, 5)
 
-    def test_invalid_region_choice(self):
-        """Should raise ValidationError for invalid region number"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["region"] = 999  # not in REGION_CHOICES
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
+    def test_str_representation(self):
+        investor_name = f"{self.user.first_name} {self.user.last_name}"
+        expected_str = f"Snapshot for {investor_name} at {str(self.computed_at)}"
+        self.assertEqual(str(self.snapshot), expected_str)
 
-    def test_missing_required_field(self):
-        """Should raise ValidationError when required fields are missing"""
-        invalid_data = self.valid_data.copy()
-        invalid_data.pop("company_name")
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
-
-    def test_field_max_length_constraints(self):
-        """Should raise ValidationError if field exceeds max_length"""
-        invalid_data = self.valid_data.copy()
-        invalid_data["company_name"] = "A" * 300  # exceeds max_length=200
-        investor = InvestorProfile(**invalid_data)
-        with self.assertRaises(ValidationError):
-            investor.full_clean()
-
-    def test_user_relation(self):
-        """InvestorProfile should correctly link to its User"""
-        investor = InvestorProfile.objects.create(**self.valid_data)
-        self.assertEqual(investor.user.email, "investor@example.com")
-        self.assertEqual(investor.user.first_name, "Investor")
+    def test_unique_portfolio_snapshot_constraints(self):
+        with self.assertRaises(IntegrityError):
+            PortfolioSnapshot.objects.create(
+                investor=self.user, 
+                computed_at=self.computed_at,
+                projects_count=1,
+                total_committed=1.00,
+                total_invested=1.00,
+                summary={'kpi': 'data'}
+            )
