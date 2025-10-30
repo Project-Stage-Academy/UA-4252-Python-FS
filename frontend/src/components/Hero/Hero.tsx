@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Hero.scss';
 import winemaking from '../../img/winemaking.jpg';
@@ -6,13 +6,11 @@ import delivery from '../../img/delivery.jpg';
 import cheese from '../../img/cheese.jpg';
 import packaging from '../../img/packaging.jpg';
 
-
 interface ImageItem {
   src: string;
   alt: string;
   position: string;
 }
-
 
 interface HeroContent {
   title: string;
@@ -20,7 +18,6 @@ interface HeroContent {
   ctaText: string;
   images: ImageItem[];
 }
-
 
 const mockContent: HeroContent = {
   title: 'CRAFTMERGE',
@@ -34,38 +31,32 @@ const mockContent: HeroContent = {
   ]
 };
 
-
 const Hero: React.FC = () => {
-  const [content, setContent] = useState<HeroContent>(mockContent);
   const navigate = useNavigate();
-
-
+  
   // TODO: Replace mockContent with real data from API when available
-
 
   const handleCtaClick = () => {
     navigate('/register');
   };
 
-
   return (
     <section className="hero-section">
       <div className="content-container">
         <div className="text-column">
-          <h1 className="title">{content.title}</h1>
-          <p className="subtitle">{content.subtitle}</p>
+          <h1 className="title">{mockContent.title}</h1>
+          <p className="subtitle">{mockContent.subtitle}</p>
           <button
             className="cta-button"
             type="button"
             onClick={handleCtaClick}
           >
-            {content.ctaText}
+            {mockContent.ctaText}
           </button>
         </div>
 
-
         <div className="image-collage">
-          {content.images.map((img, index) => (
+          {mockContent.images.map((img, index) => (
             <div key={index} className={`image-wrapper ${img.position}`}>
               <img
                 src={img.src}
@@ -84,6 +75,5 @@ const Hero: React.FC = () => {
     </section>
   );
 };
-
 
 export default Hero;
