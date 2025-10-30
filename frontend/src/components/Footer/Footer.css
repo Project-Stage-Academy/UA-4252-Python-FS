@@ -1,6 +1,6 @@
 .footer {
-  background-color: #000; 
-  color: #fff; 
+  background-color: #000;
+  color: #fff;
   padding: 40px 20px 20px 20px;
   font-family: 'Inter', Arial, sans-serif;
   display: flex;
@@ -81,7 +81,7 @@
 
 .subscribe-button {
   padding: 8px 16px;
-   height: 40px; 
+   height: 40px;
   border: none;
   border-radius: 4px;
   background-color: #fff;
@@ -123,7 +123,7 @@
 .footer-logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 6px; 
+  gap: 6px;
 }
 
 .footer-logo-text {

@@ -76,6 +76,7 @@ class NotificationModelTest(TestCase):
 
         def pick(field, fallback):
             return field.choices[0][0] if getattr(field, "choices", None) else fallback
+
         # --- Project ---
         self.project = Project.objects.create(
             startup=self.startup,

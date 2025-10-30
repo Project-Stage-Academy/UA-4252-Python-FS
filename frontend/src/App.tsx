@@ -3,7 +3,7 @@ import { routes } from "./routes";
 import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
 import './components/Header/Header.scss';
-import "./App.css"; 
+import "./App.css";
 
 function App() {
   return (
@@ -27,4 +27,3 @@ function App() {
 }
 
 export default App;
-

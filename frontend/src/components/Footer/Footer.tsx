@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaEnvelope, FaPhone } from "react-icons/fa";
-import Logo from "../Logo/Logo"; 
+import Logo from "../Logo/Logo";
 import "./Footer.css";
 
 export default function Footer() {
