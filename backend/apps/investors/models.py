@@ -1,8 +1,9 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-import uuid
 
 from apps.common.models import TimeStampedModel
 
@@ -39,7 +40,6 @@ REGION_CHOICES = (
 )
 
 
-
 class InvestorProfile(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=200)
@@ -71,7 +71,6 @@ class InvestorProfile(TimeStampedModel):
                 "Maximum investment must be greater than minimum investment."
             )
 
-
     def __str__(self):
         return self.company_name
 
@@ -79,12 +78,25 @@ class InvestorProfile(TimeStampedModel):
         verbose_name = "Investor Profile"
         verbose_name_plural = "Investor Profiles"
 
+
 # Tracking Model
 class Tracking(TimeStampedModel):
-    investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tracking')
-    target_type = models.CharField(choices=[('startup', 'startup'), ('project', 'project')], max_length=32)
+    investor = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='tracking'
+    )
+    target_type = models.CharField(
+        choices=[('startup', 'startup'), ('project', 'project')], max_length=32
+    )
     target_id = models.UUIDField()  # FK via generic relation or separate FK fields
-    source = models.CharField(max_length=32, null=True, choices=[('manual', 'manual'), ('suggestion', 'suggestion'), ('import', 'import')])
+    source = models.CharField(
+        max_length=32,
+        null=True,
+        choices=[
+            ('manual', 'manual'),
+            ('suggestion', 'suggestion'),
+            ('import', 'import'),
+        ],
+    )
     meta = models.JSONField(null=True)  # optional metadata
 
     class Meta:
@@ -100,11 +112,25 @@ class Tracking(TimeStampedModel):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
         return f"Tracking {self.target_type} for {investor_name}"
 
+
 # Investment Model
 class Investment(TimeStampedModel):
-    investor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investments')
-    project = models.ForeignKey('projects.Project', on_delete=models.PROTECT, related_name='investments')
-    status = models.CharField(choices=[('committed', 'committed'), ('transferred', 'transferred'), ('returned', 'returned'), ('cancelled', 'cancelled')], default='committed', max_length=50)
+    investor = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='investments'
+    )
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.PROTECT, related_name='investments'
+    )
+    status = models.CharField(
+        choices=[
+            ('committed', 'committed'),
+            ('transferred', 'transferred'),
+            ('returned', 'returned'),
+            ('cancelled', 'cancelled'),
+        ],
+        default='committed',
+        max_length=50,
+    )
     amount_committed = models.DecimalField(max_digits=18, decimal_places=2)
     amount_invested = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default='UAH')
@@ -116,8 +142,9 @@ class Investment(TimeStampedModel):
 
     def __str__(self):
         investor_name = f"{self.investor.first_name} {self.investor.last_name}".strip()
-            
+
         return f"Investment in {self.project.title} by {investor_name}"
+
 
 # PortfolioSnapshot Model
 class PortfolioSnapshot(TimeStampedModel):
@@ -137,4 +164,3 @@ class PortfolioSnapshot(TimeStampedModel):
         verbose_name = "Portfolio Snapshot"
         verbose_name_plural = "Portfolio Snapshots"
         unique_together = ('investor', 'computed_at')
-

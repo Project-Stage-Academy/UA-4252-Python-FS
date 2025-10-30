@@ -1,5 +1,7 @@
 from rest_framework import permissions
+
 from apps.startups.models import StartupProfile
+
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """Custom permission: GET: allowed based on visibility"""
@@ -24,6 +26,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
             return False
         return obj.startup.user == request.user
+
 
 class IsStartupOwner(permissions.BasePermission):
     """Permission to check if user is the owner of the startup"""

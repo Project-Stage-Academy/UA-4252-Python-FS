@@ -1,21 +1,24 @@
-from rest_framework import viewsets, status
+from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 
-from .models import Project
-from .serializers import ProjectListSerializer, ProjectsCreateUpdateSerialiser, ProjectDetailSerializer
-from .pagination import ProjectPagination
 from apps.startups.models import StartupProfile
 
-from .permissions import IsOwnerOrReadOnly, IsStartupOwner
+from .models import Project
 from .pagination import ProjectPagination
+from .permissions import IsOwnerOrReadOnly, IsStartupOwner
+from .serializers import (
+    ProjectDetailSerializer,
+    ProjectListSerializer,
+    ProjectsCreateUpdateSerialiser,
+)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     pagination_class = ProjectPagination
     lookup_field = 'pk'
-    
+
     def get_serializer_class(self):
         if self.action == 'list':
             return ProjectListSerializer
@@ -35,7 +38,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 try:
                     startup = StartupProfile.objects.get(pk=startup_pk)
                     if startup.user != self.request.user:
-                        queryset = queryset.filter(visibility__in=['public', 'unlisted'])
+                        queryset = queryset.filter(
+                            visibility__in=['public', 'unlisted']
+                        )
                 except StartupProfile.DoesNotExist:
                     queryset = queryset.none()
             else:
@@ -64,24 +69,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         startup = get_object_or_404(StartupProfile, pk=startup_pk)
 
         serializer = self.get_serializer(
-            data=request.data,
-            context={'startup': startup, 'request': request}
+            data=request.data, context={'startup': startup, 'request': request}
         )
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def get_success_headers(self, data):
         try:
-            return {
-                'Location': f"/api/projects/{data['id']}/"
-            }
+            return {'Location': f"/api/projects/{data['id']}/"}
         except (TypeError, KeyError):
             return {}
 
@@ -95,10 +95,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
 
         serializer = self.get_serializer(
-            instance,
-            data=request.data,
-            partial=partial,
-            context={'request': request}
+            instance, data=request.data, partial=partial, context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -115,6 +112,5 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return Response(
             {'detail': 'Project successfully deleted'},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )
-

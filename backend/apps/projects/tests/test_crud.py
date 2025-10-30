@@ -1,10 +1,12 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-from rest_framework import status
 from decimal import Decimal
-from apps.startups.models import StartupProfile
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from apps.projects.models import Project
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
@@ -17,13 +19,13 @@ class ProjectCRUDTestCase(TestCase):
             email='owner@example.com',
             first_name='Owner',
             last_name='Example',
-            password='testpass123'
+            password='testpass123',
         )
         self.other_user = User.objects.create_user(
             email='other@example.com',
             first_name='Other',
             last_name='User',
-            password='testpass123'
+            password='testpass123',
         )
 
         self.startup = StartupProfile.objects.create(
@@ -32,7 +34,7 @@ class ProjectCRUDTestCase(TestCase):
             email='startup@example.com',
             description='Test description',
             phone='+380501234567',
-            city='Kyiv'
+            city='Kyiv',
         )
 
         self.project = Project.objects.create(
@@ -42,7 +44,7 @@ class ProjectCRUDTestCase(TestCase):
             description='<p>Full description</p>',
             target_amount=Decimal('50000.00'),
             currency='UAH',
-            visibility='public'
+            visibility='public',
         )
 
         self.client = APIClient()
@@ -59,7 +61,7 @@ class ProjectCRUDTestCase(TestCase):
             'target_amount': 100000,
             'currency': 'UAH',
             'tags': ['tech', 'innovation'],
-            'visibility': 'public'
+            'visibility': 'public',
         }
 
         response = self.client.post(self.list_create_url, data, format='json')
@@ -84,7 +86,10 @@ class ProjectCRUDTestCase(TestCase):
 
         response = self.client.post(self.list_create_url, data, format='json')
 
-        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+        self.assertIn(
+            response.status_code,
+            [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+        )
         self.assertEqual(Project.objects.count(), 1)
 
     def test_create_project_forbidden(self):
@@ -157,7 +162,14 @@ class ProjectCRUDTestCase(TestCase):
         self.project.save()
 
         response = self.client.get(self.detail_url)
-        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])
+        self.assertIn(
+            response.status_code,
+            [
+                status.HTTP_401_UNAUTHORIZED,
+                status.HTTP_403_FORBIDDEN,
+                status.HTTP_404_NOT_FOUND,
+            ],
+        )
 
     def test_retrieve_private_project_as_owner(self):
         """Test owner can retrieve their private project"""
@@ -313,7 +325,7 @@ class ProjectSerializerTestCase(TestCase):
             email='owner@example.com',
             first_name='Owner',
             last_name='User',
-            password='testpass123'
+            password='testpass123',
         )
 
         self.startup = StartupProfile.objects.create(
@@ -351,10 +363,17 @@ class ProjectSerializerTestCase(TestCase):
             data = response.data['results'][0]
 
         required_fields = [
-            'id', 'title', 'slug', 'short_description',
-            'target_amount', 'raised_amount', 'currency',
-            'progress_percentage', 'startup_name', 'visibility',
-            'created_at'
+            'id',
+            'title',
+            'slug',
+            'short_description',
+            'target_amount',
+            'raised_amount',
+            'currency',
+            'progress_percentage',
+            'startup_name',
+            'visibility',
+            'created_at',
         ]
 
         for field in required_fields:
@@ -368,10 +387,17 @@ class ProjectSerializerTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         required_fields = [
-            'id', 'startup_id', 'startup_name', 'email',
-            'title', 'description', 'target_amount',
-            'raised_amount', 'progress_percentage',
-            'created_at', 'updated_at'
+            'id',
+            'startup_id',
+            'startup_name',
+            'email',
+            'title',
+            'description',
+            'target_amount',
+            'raised_amount',
+            'progress_percentage',
+            'created_at',
+            'updated_at',
         ]
 
         for field in required_fields:

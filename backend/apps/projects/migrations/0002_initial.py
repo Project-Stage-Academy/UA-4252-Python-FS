@@ -18,16 +18,28 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='startup',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='projects', to='startups.startupprofile'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='projects',
+                to='startups.startupprofile',
+            ),
         ),
         migrations.AddField(
             model_name='projectattachment',
             name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='projects.project'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='attachments',
+                to='projects.project',
+            ),
         ),
         migrations.AddField(
             model_name='projectaudit',
             name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='audit_logs', to='projects.project'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='audit_logs',
+                to='projects.project',
+            ),
         ),
     ]

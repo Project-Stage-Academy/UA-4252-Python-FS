@@ -5,6 +5,7 @@ from .models import Project
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Serializer for listing projects"""
+
     startup_name = serializers.CharField(source='startup.company_name', read_only=True)
     startup_slug = serializers.CharField(source='startup.slug', read_only=True)
     progress_percentage = serializers.SerializerMethodField()
@@ -37,6 +38,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed project"""
+
     startup_id = serializers.UUIDField(source='startup.id', read_only=True)
     startup_name = serializers.CharField(source='startup.company_name', read_only=True)
     startup_slug = serializers.CharField(source='startup.slug', read_only=True)
@@ -106,9 +108,11 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
         if self.instance:
             target_amount = data.get('target_amount', self.instance.target_amount)
             if self.instance.raised_amount > target_amount:
-                raise serializers.ValidationError({
-                    'target_amount': f'Target amount cannot be less than already raised amount ({self.instance.raised_amount})'
-                })
+                error_message = (
+                    f'Target amount cannot be less than already raised amount '
+                    f'({self.instance.raised_amount})'
+                )
+                raise serializers.ValidationError({'target_amount': error_message})
         return data
 
     def create(self, validated_data):
