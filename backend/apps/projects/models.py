@@ -1,15 +1,13 @@
-from django.db import models
+import uuid
+from decimal import Decimal
+
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-import uuid
 from django.core.validators import MinValueValidator
-from decimal import Decimal
-from django.utils.text import slugify
-from django.conf import settings
-
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
 from django.utils import timezone
-
+from django.utils.text import slugify
 
 from apps.common.models import TimeStampedModel
 
@@ -22,7 +20,7 @@ PROJECT_STATUS = (
 VISIBILITY_CHOICES = (
     ('public', 'Public'),
     ('private', 'Private'),
-    ('unlisted', 'Unlisted')
+    ('unlisted', 'Unlisted'),
 )
 
 
@@ -39,11 +37,20 @@ class Project(TimeStampedModel):
 
     short_description = models.CharField(max_length=500, blank=True, default='')
     description = models.TextField(blank=True, default='')
-    status = models.CharField(max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True)
+    status = models.CharField(
+        max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True
+    )
 
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    target_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))]
+    )
 
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0'))])
+    raised_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(Decimal('0'))],
+    )
     currency = models.CharField(max_length=3, default="UAH")
     thumbnail = models.URLField(blank=True, null=True)
 
@@ -59,7 +66,7 @@ class Project(TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='deleted_projects'
+        related_name='deleted_projects',
     )
 
     def clean(self):
@@ -107,7 +114,7 @@ class Project(TimeStampedModel):
         indexes = [
             models.Index(fields=['startup', 'status']),
             models.Index(fields=['created_at']),
-            models.Index(fields=['is_deleted'])
+            models.Index(fields=['is_deleted']),
         ]
 
 
