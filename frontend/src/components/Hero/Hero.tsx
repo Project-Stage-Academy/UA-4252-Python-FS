@@ -6,11 +6,13 @@ import delivery from '../../img/delivery.jpg';
 import cheese from '../../img/cheese.jpg';
 import packaging from '../../img/packaging.jpg';
 
+
 interface ImageItem {
   src: string;
   alt: string;
   position: string;
 }
+
 
 interface HeroContent {
   title: string;
@@ -18,6 +20,7 @@ interface HeroContent {
   ctaText: string;
   images: ImageItem[];
 }
+
 
 const mockContent: HeroContent = {
   title: 'CRAFTMERGE',
@@ -31,15 +34,19 @@ const mockContent: HeroContent = {
   ]
 };
 
+
 const Hero: React.FC = () => {
   const [content, setContent] = useState<HeroContent>(mockContent);
   const navigate = useNavigate();
 
+
   // TODO: Replace mockContent with real data from API when available
+
 
   const handleCtaClick = () => {
     navigate('/register');
   };
+
 
   return (
     <section className="hero-section">
@@ -47,10 +54,15 @@ const Hero: React.FC = () => {
         <div className="text-column">
           <h1 className="title">{content.title}</h1>
           <p className="subtitle">{content.subtitle}</p>
-          <button className="cta-button" onClick={handleCtaClick}>
+          <button
+            className="cta-button"
+            type="button"
+            onClick={handleCtaClick}
+          >
             {content.ctaText}
           </button>
         </div>
+
 
         <div className="image-collage">
           {content.images.map((img, index) => (
@@ -60,6 +72,9 @@ const Hero: React.FC = () => {
                 alt={img.alt}
                 loading="lazy"
                 className="collage-image"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/assets/img-placeholder.png';
+                }}
               />
               <span className="image-label">{img.alt}</span>
             </div>
@@ -69,5 +84,6 @@ const Hero: React.FC = () => {
     </section>
   );
 };
+
 
 export default Hero;
