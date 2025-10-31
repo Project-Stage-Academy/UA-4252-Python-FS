@@ -1,7 +1,10 @@
-type HomeProps = {
-  title?: string;
+// src/pages/Home.tsx
+import React from 'react';
+
+const Home: React.FC = () => {
+  // Тепер Home нічого не рендерить крім свого контенту,
+  // і WhyWorthGrid не дублюється
+  return null; 
 };
 
-export default function Home({ title = "🏠 Home Page" }: HomeProps) {
-  return <h1>{title}</h1>;
-}
+export default Home;

@@ -2,15 +2,18 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { routes } from "./routes";
 import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
+import WhyWorthGrid from "./components/WhyWorthGrid/WhyWorthGrid";
 import './components/Header/Header.scss';
-import "./App.css"; 
+import "./App.css";
 
 function App() {
   return (
     <Router>
-      <div className="app-container">
+      <div>
 
         <Header />
+
+        <WhyWorthGrid />
 
         <div className="content">
           <Routes>
@@ -27,4 +30,3 @@ function App() {
 }
 
 export default App;
-

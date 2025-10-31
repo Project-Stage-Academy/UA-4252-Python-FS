@@ -7,5 +7,8 @@ module.exports = {
       tsconfig: '<rootDir>/tsconfig.app.json',
       isolatedModules: true
     }
+  },
+  moduleNameMapper: {
+    '\\.(css|scss)$': 'identity-obj-proxy'
   }
 };
