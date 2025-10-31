@@ -1,7 +1,41 @@
 from rest_framework import serializers
-
+from django_fsm import can_proceed
 from .models import Project
 
+class ProjectStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=Project.Status.choices)
+    force = serializers.BooleanField(default=False, required=False)
+
+class ProjectSerializer(serializers.ModelSerializer):
+    can_transition_to = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = '__all__'
+        read_only_fields = ['funded_at', 'status']
+
+    def get_can_transition_to(self, obj):
+        transitions = []
+        for method_name in ['start_mvp', 'start_fundraising', 'mark_funded', 'close_project']:
+            if hasattr(obj, method_name):
+                method = getattr(obj, method_name)
+                if can_proceed(method):
+                    transitions.append(method._django_fsm.target)
+        return transitions
+
+    def validate(self, data):
+        raised = data.get('raised_amount', self.instance.raised_amount if self.instance else 0)
+        target = data.get('target_amount', self.instance.target_amount if self.instance else 0)
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+
+        if 'raised_amount' in validated_data:
+            instance.check_auto_funding()
+
+        return instance
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Serializer for listing projects"""

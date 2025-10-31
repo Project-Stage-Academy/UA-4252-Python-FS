@@ -1,4 +1,5 @@
 from django.db import models
+from django_fsm import FSMField, transition
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 import uuid
@@ -9,7 +10,6 @@ from django.conf import settings
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
-
 
 from apps.common.models import TimeStampedModel
 
@@ -34,22 +34,31 @@ class Project(TimeStampedModel):
         db_index=True,
     )
     title = models.CharField(max_length=255)
-
     slug = models.SlugField(unique=True, blank=True, max_length=255)
 
     short_description = models.CharField(max_length=500, blank=True, default='')
     description = models.TextField(blank=True, default='')
-    status = models.CharField(max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True)
 
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    class Status(models.TextChoices):
+        IDEA = 'idea', 'Idea'
+        MVP = 'mvp', 'MVP'
+        FUNDRAISING = 'fundraising', 'Fundraising'
+        FUNDED = 'funded', 'Funded'
+        CLOSED = 'closed', 'Closed'
 
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0'))])
+    status = FSMField(max_length=20, choices=Status.choices, default=Status.IDEA,
+                      protected=False, db_index=True)
+
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2,
+                                        validators=[MinValueValidator(Decimal('0.01'))])
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0,
+                                        validators=[MinValueValidator(Decimal('0'))])
     currency = models.CharField(max_length=3, default="UAH")
     thumbnail = models.URLField(blank=True, null=True)
 
     tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
     visibility = models.CharField(
-        max_length=20, choices=VISIBILITY_CHOICES, default="public"
+        max_length=20, choices=VISIBILITY_CHOICES, default="private"
     )
 
     is_deleted = models.BooleanField(default=False, db_index=True)
@@ -61,6 +70,30 @@ class Project(TimeStampedModel):
         blank=True,
         related_name='deleted_projects'
     )
+
+    @transition(field=status, source='idea', target='mvp')
+    def start_mvp(self):
+        pass
+
+    @transition(field=status, source='mvp', target='fundraising')
+    def start_fundraising(self):
+        if self.target_amount <= 0:
+            raise ValueError("Target amount must be set before fundraising")
+
+    @transition(field=status, source='fundraising', target='funded')
+    def mark_funded(self):
+        pass
+
+    @transition(field=status, source=['idea', 'mvp', 'fundraising', 'funded'], target='closed')
+    def close_project(self):
+        pass
+
+    def check_auto_funding(self):
+        if (self.status == self.Status.FUNDRAISING and self.raised_amount >= self.target_amount):
+            self.mark_funded()
+            self.save()
+            return True
+        return False
 
     def clean(self):
         if self.target_amount < 0:
