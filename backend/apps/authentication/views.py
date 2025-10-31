@@ -152,8 +152,12 @@ class ResendVerificationView(APIView):
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-        except Exception:
-            logger.exception("Failed to send verification email")
+        except Exception as e:
+            logger.exception("Failed to send verification email: %s", e)
+            return Response(
+                {"detail": "Failed to send email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(status=status.HTTP_200_OK)
 

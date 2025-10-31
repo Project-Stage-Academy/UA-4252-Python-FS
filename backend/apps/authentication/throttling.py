@@ -1,3 +1,5 @@
+import hashlib
+
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework.throttling import BaseThrottle
@@ -19,7 +21,10 @@ class CommonRedisThrottle(BaseThrottle):
     def get_cache_key(self, request):
         ident = self.get_ident(request)
         email = request.data.get('email')
-        return f"throttle:{request.path}:{ident}:{email or 'no-email'}"
+        email_hash = (
+            hashlib.sha256((email or '').encode()).hexdigest() if email else 'no-email'
+        )
+        return f"throttle:{request.path}:{ident}:{email_hash}"
 
     def allow_request(self, request, view):
         key = self.get_cache_key(request)
