@@ -16,6 +16,9 @@ const TR = {
     success: "Ваш пароль успішно змінено. Зараз ви будете перенаправлені на сторінку входу.",
     invalidToken: "Посилання недійсне або прострочене.",
     weak: "Пароль занадто простий.",
+    serverError: "Помилка сервера. Спробуйте пізніше.",
+    networkError: "Помилка мережі. Перевірте підключення.",
+    unknownError: "Невідома помилка.",
   },
   en: {
     title: "Set a new password",
@@ -28,6 +31,9 @@ const TR = {
     success: "Your password has been successfully changed. Redirecting to login...",
     invalidToken: "Invalid or expired link.",
     weak: "Password is too weak.",
+    serverError: "Server error. Please try again later.",
+    networkError: "Network error. Check your connection.",
+    unknownError: "Unknown error.",
   },
 } as const;
 
@@ -44,12 +50,14 @@ export default function RestorePassword({ lang = "uk" }: Props) {
 
   const uid = search.get("uid");
   const token = search.get("token");
+  const next = search.get("next");
+  const locale = lang;
 
   useEffect(() => {
     if (!uid || !token) {
       setError(t.invalidToken);
     }
-  }, [uid, token]);
+  }, [uid, token, t]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +67,7 @@ export default function RestorePassword({ lang = "uk" }: Props) {
     if (!password || !confirm) return setError(t.required);
     if (password.length < 8) return setError(t.tooShort);
     if (password !== confirm) return setError(t.mismatch);
+    if (!uid || !token) return setError(t.invalidToken);
 
     setLoading(true);
     try {
@@ -70,18 +79,23 @@ export default function RestorePassword({ lang = "uk" }: Props) {
 
       if (res.ok) {
         setMsg(t.success);
-        setTimeout(() => navigate("/login"), 3000);
+        const redirect = next
+          ? next
+          : locale
+          ? `/login?lang=${locale}`
+          : "/login";
+        setTimeout(() => navigate(redirect), 3000);
       } else if (res.status === 400) {
         const data = await res.json().catch(() => ({}));
         if (data?.token || data?.uid) setError(t.invalidToken);
         else if (data?.new_password) setError(t.weak);
-        else setError("Error");
+        else setError(t.unknownError);
       } else {
-        setError("Server error");
+        setError(t.serverError);
       }
     } catch (err) {
       console.error(err);
-      setError("Network error");
+      setError(t.networkError);
     } finally {
       setLoading(false);
     }
