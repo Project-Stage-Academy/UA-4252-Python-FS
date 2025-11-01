@@ -1,5 +1,7 @@
 import pytest
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.db import models as dj_models
 
 from apps.startups.models import StartupProfile
 from apps.startups import models
@@ -23,50 +25,48 @@ def _guess_user_fk_field(model_cls):
         try:
             field = model_cls._meta.get_field(name)
             if isinstance(
-                field, (models.ForeignKey, models.OneToOneField)
+                field, (dj_models.ForeignKey, dj_models.OneToOneField)
             ) and issubclass(field.related_model, User):
                 return name
         except Exception:
             pass
-    # 2) any relation to User
     for field in model_cls._meta.get_fields():
-        if isinstance(field, (models.ForeignKey, models.OneToOneField)) and issubclass(
-            field.related_model, User
-        ):
+        if isinstance(
+            field, (dj_models.ForeignKey, dj_models.OneToOneField)
+        ) and issubclass(field.related_model, User):
             return field.name
     pytest.skip("No FK/OneToOne relation to User found on StartupProfile")
 
 
 def _default_for_field(field):
     """Return a simple value for required fields based on field type."""
-    if isinstance(field, (models.CharField, models.TextField)):
+    if isinstance(field, (dj_models.CharField, dj_models.TextField)):
         return f"test_{field.name}"
-    if isinstance(field, models.BooleanField):
-        # respect default if defined
-        return False if field.default is models.NOT_PROVIDED else field.default
+    if isinstance(field, dj_models.BooleanField):
+        return False if field.default is dj_models.NOT_PROVIDED else field.default
     if isinstance(
         field,
         (
-            models.IntegerField,
-            models.AutoField,
-            models.BigIntegerField,
-            models.SmallIntegerField,
+            dj_models.IntegerField,
+            dj_models.AutoField,
+            dj_models.BigIntegerField,
+            dj_models.SmallIntegerField,
         ),
     ):
         return 1
-    if isinstance(field, models.FloatField):
+    if isinstance(field, dj_models.FloatField):
         return 1.0
-    if isinstance(field, models.JSONField):
+    if isinstance(field, dj_models.JSONField):
         return {}
-    if isinstance(field, models.DateField):
+    if isinstance(field, dj_models.DateField):
         from datetime import date
 
         return date.today()
-    if isinstance(field, models.DateTimeField):
+    if isinstance(field, dj_models.DateTimeField):
         from django.utils import timezone
 
         return timezone.now()
-    if isinstance(field, models.EmailField):
+    if isinstance(field, dj_models.EmailField):
         return "test@example.com"
     return None
 

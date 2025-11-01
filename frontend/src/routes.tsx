@@ -18,6 +18,5 @@ export const routes = [
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
   { path: "/forgot-password", element: <PasswordResetRequest /> },
-  { path: "*", element: <div>404 Not Found</div> },
-
+  { path: "*", element: <div>404 Not Found</div> }
 ];

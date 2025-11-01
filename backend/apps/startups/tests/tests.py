@@ -161,7 +161,7 @@ class SavedStartupModelTest(TestCase):
     def test_missing_required_fields(self):
         """Missing required fields should raise ValidationError"""
         invalid_data = self.valid_data.copy()
-        invalid_data.pop("notes")
+        invalid_data.pop("startup")
         saved = SavedStartup(**invalid_data)
         with self.assertRaises(ValidationError):
             saved.full_clean()

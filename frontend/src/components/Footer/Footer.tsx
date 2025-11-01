@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { FaEnvelope, FaPhone } from "react-icons/fa";
+import Logo from "../Logo/Logo";
 import "./Footer.css";
-
 
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,18 +19,19 @@ export default function Footer() {
     }
   };
 
-
   return (
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-left">
-          <h2 className="footer-logo">CRAFTMERGE</h2>
+          <div className="footer-logo-wrapper">
+            <Logo width={31} height={30} color="#fff" className="footer-logo" /> {/* Білий логотип */}
+            <h2 className="footer-logo-text">CRAFTMERGE</h2>
+          </div>
           <p>Львівська Політехніка</p>
           <p>вул. Степана Бандери 12, Львів</p>
           <p><FaEnvelope /> qwerty@gmail.com</p>
           <p><FaPhone /> +38 050 234 23 23</p>
         </div>
-
 
         <div className="footer-center">
           <div className="footer-column">
@@ -54,7 +54,6 @@ export default function Footer() {
           </div>
         </div>
 
-
         <div className="footer-right">
           <h4>Підписка</h4>
           <form onSubmit={handleSubmit} className="subscribe-form">
@@ -69,7 +68,6 @@ export default function Footer() {
           </form>
           {message && <p className="subscribe-message">{message}</p>}
 
-
           <div className="footer-dev-links">
             <p>Розроблено в: OPENTECH | SoftServe</p>
             <p>
@@ -81,9 +79,8 @@ export default function Footer() {
         </div>
       </div>
 
-
       <div className="footer-bottom">
-        © 2023 Forum. All rights reserved.
+        Copyright 2023 Forum. All rights reserved.
       </div>
     </footer>
   );

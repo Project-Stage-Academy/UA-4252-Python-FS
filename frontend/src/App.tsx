@@ -1,19 +1,22 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { routes } from "./routes";
+import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
+import Home from "./pages/Home"; 
+import './components/Header/Header.scss';
 import "./App.css";
 
 function App() {
   return (
     <Router>
       <div className="app-container">
-        <div className="content">
-          <Routes>
-            {routes.map((r, index) => (
-              <Route key={index} path={r.path} element={r.element} />
-            ))}
-          </Routes>
-        </div>
+        <Header />
+
+        {/* Hero займає всю ширину і висоту */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+        </Routes>
+
         <Footer />
       </div>
     </Router>

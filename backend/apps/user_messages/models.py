@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from apps.common.models import TimeStampedModel
 from apps.investors.models import InvestorProfile
 from apps.projects.models import Project
 
 User = get_user_model()
 
 
-class Notification(models.Model):
+class Notification(TimeStampedModel):
     user = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE)
     notification_type = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
@@ -25,7 +26,6 @@ class Notification(models.Model):
     )
     is_read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -33,3 +33,4 @@ class Notification(models.Model):
     class Meta:
         verbose_name = "Notification"
         verbose_name_plural = "Notifications"
+        ordering = ["-created_at"]
