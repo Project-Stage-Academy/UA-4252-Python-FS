@@ -19,12 +19,20 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='startupprofile',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='startup_profiles', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='startup_profiles',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
             model_name='savedstartup',
             name='startup',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='saved_by_investors', to='startups.startupprofile'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='saved_by_investors',
+                to='startups.startupprofile',
+            ),
         ),
         migrations.AddIndex(
             model_name='startupprofile',
@@ -32,11 +40,15 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='startupprofile',
-            index=models.Index(fields=['company_name'], name='startups_st_company_7bb0ef_idx'),
+            index=models.Index(
+                fields=['company_name'], name='startups_st_company_7bb0ef_idx'
+            ),
         ),
         migrations.AddIndex(
             model_name='startupprofile',
-            index=models.Index(fields=['-created_at'], name='startups_st_created_dab4a1_idx'),
+            index=models.Index(
+                fields=['-created_at'], name='startups_st_created_dab4a1_idx'
+            ),
         ),
         migrations.AlterUniqueTogether(
             name='savedstartup',
