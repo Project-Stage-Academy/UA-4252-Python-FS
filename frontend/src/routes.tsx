@@ -5,6 +5,7 @@ import StartupView from "./pages/StartupView";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import Inbox from "./pages/Inbox";
 import RegisterStartup from "./pages/RegisterStartup";
+import RegisterInvestor from "./pages/RegisterInvestor";
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 
 export const routes = [
@@ -12,6 +13,7 @@ export const routes = [
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/register-startup", element: <RegisterStartup /> },
+  { path: "/register-investor", element:<RegisterInvestor />},
   { path: "/startups/:id", element: <StartupView /> },
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
