@@ -8,7 +8,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  gap: 1rem;
   padding: 0 24px;
   box-sizing: border-box;
 }
@@ -17,24 +17,29 @@
   font-family: 'Geologica';
   font-weight: 700;
   font-size: 40px;
-  line-height: 120%;
+  line-height: 110%;
   letter-spacing: 1%;
   text-align: center;
   color: #000000;
   margin: 0;
   max-width: 694px; 
+
 }
 
 .cta-button {
+  display: inline-block;
+  padding: 4px 1.5rem; 
+  text-align: center;
+  text-decoration: none;
   font-family: 'Geologica';
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 20px;
+  font-weight: bold; 
+  font-size: 1rem;
+  line-height: 25px;
   letter-spacing: -1%;
-  background-color: #000000; 
-  color: #ffffff;           
+  background-color: #000000;
+  color: #ffffff;
   width: 95px;
-  height: 40px;
+  height: 25px;
   border: none;
   border-radius: 4px;
   cursor: pointer;

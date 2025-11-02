@@ -12,7 +12,7 @@ const Home: React.FC = () => {
       <ForWhomGrid />
     </>
   );
-}; // <- закриваємо функцію
+}; 
 
 
 export default Home;

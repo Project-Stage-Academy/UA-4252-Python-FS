@@ -14,7 +14,8 @@ interface ForWhomItem {
   title: string;
   icon: string;
 }
-// TODO: replace mockData with real API data from `/api/content/landing/
+
+// TODO: replace mockData with real API data from `/api/content/landing/`
 const mockData: ForWhomItem[] = [
   { title: "Виробники крафтової продукції", icon: craftIcon },
   { title: "Сомельє та ресторатори", icon: sommelierIcon },
@@ -29,8 +30,14 @@ const mockData: ForWhomItem[] = [
 const ForWhomGrid: React.FC = () => {
   return (
     <div className="for-whom-section-wrapper">
-      <section className="for-whom-section">
-        <h2 className="section-title">Для кого</h2>
+      <section
+        className="for-whom-section"
+        role="region"
+        aria-labelledby="for-whom-title"
+      >
+        <h2 id="for-whom-title" className="section-title">
+          Для кого
+        </h2>
         <div className="grid-container">
           {mockData.map((item, i) => (
             <div key={i} className="for-whom-item" tabIndex={0} role="article">
