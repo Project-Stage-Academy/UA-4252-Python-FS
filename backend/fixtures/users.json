@@ -1,0 +1,25 @@
+[
+  {
+    "model": "users.user",
+    "pk": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+    "fields": {
+      "email": "admin@example.com",
+      "password": "AdminPass123",
+      "first_name": "George",
+      "last_name": "Todd",
+      "is_active": true,
+      "is_staff": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "411a4a83-32fc-4e87-8e07-bece70a99532",
+    "fields": {
+      "email": "user1@example.com",
+      "password": "SecurePass123",
+      "first_name": "Dillon",
+      "last_name": "Walton",
+      "is_active": true
+    }
+  }
+]
