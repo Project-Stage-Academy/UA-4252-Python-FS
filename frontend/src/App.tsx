@@ -1,27 +1,28 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { routes } from "./routes";
 import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
-import WhyWorthGrid from "./components/WhyWorthGrid/WhyWorthGrid";
-import './components/Header/Header.scss';
-import "./App.css";
+
+const WhyWorthGrid = lazy(() => import("./components/WhyWorthGrid/WhyWorthGrid"));
 
 function App() {
   return (
     <Router>
-      <div>
-
+      <div className="app-container">
         <Header />
 
-        <WhyWorthGrid />
-
-        <div className="content">
+        <main className="content">
           <Routes>
-            {routes.map((r, index) => (
-              <Route key={index} path={r.path} element={r.element} />
+            {routes.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
             ))}
           </Routes>
-        </div>
+
+          <Suspense fallback={null}>
+            <WhyWorthGrid />
+          </Suspense>
+        </main>
 
         <Footer />
       </div>
