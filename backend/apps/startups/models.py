@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -25,8 +26,8 @@ class StartupProfile(TimeStampedModel):
     city = models.CharField(max_length=100, blank=True, default="")
     address = models.CharField(max_length=255, blank=True, default="")
     postal_code = models.CharField(max_length=20, blank=True, default="")
-
-    # We need to craete media folder and set MEDIA_URL and MEDIA_ROOT in settings.py
+    tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
+    
     logo = models.ImageField(upload_to="startup_logos/%Y/%m/", blank=True, null=True)
     partners_brands = models.TextField(blank=True, default="")
 
