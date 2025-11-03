@@ -90,7 +90,7 @@ class VerifyEmailView(APIView):
     Activates user account after successful email verification.
     """
 
-    def get(self, request, uid, token):
+    def post(self, request, uid, token):
         """
         Verify user's email address.
         Returns:
