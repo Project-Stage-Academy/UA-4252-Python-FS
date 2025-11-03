@@ -11,12 +11,6 @@ from django.utils import timezone
 
 from apps.common.models import TimeStampedModel
 
-PROJECT_STATUS = (
-    ('idea', 'Idea'),
-    ('mvp', 'MVP'),
-    ('fundraising', 'Fundraising'),
-    ('closed', 'Closed'),
-)
 VISIBILITY_CHOICES = (
     ('public', 'Public'),
     ('private', 'Private'),
@@ -36,9 +30,6 @@ class Project(TimeStampedModel):
 
     short_description = models.CharField(max_length=500, blank=True, default='')
     description = models.TextField(blank=True, default='')
-    status = models.CharField(
-        max_length=20, choices=PROJECT_STATUS, default='idea', db_index=True
-    )
 
     class Status(models.TextChoices):
         IDEA = 'idea', 'Idea'
@@ -54,7 +45,10 @@ class Project(TimeStampedModel):
                                         validators=[MinValueValidator(Decimal('0.01'))])
     raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0,
                                         validators=[MinValueValidator(Decimal('0'))])
+
+    allow_overfunding = models.BooleanField(default=False)
     currency = models.CharField(max_length=3, default="UAH")
+    funded_at = models.DateTimeField(null=True, blank=True)
     thumbnail = models.URLField(blank=True, null=True)
 
     tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
@@ -83,30 +77,34 @@ class Project(TimeStampedModel):
 
     @transition(field=status, source='fundraising', target='funded')
     def mark_funded(self):
-        pass
+        self.funded_at = timezone.now()
 
     @transition(field=status, source=['idea', 'mvp', 'fundraising', 'funded'], target='closed')
     def close_project(self):
         pass
 
     def check_auto_funding(self):
-        if (self.status == self.Status.FUNDRAISING and self.raised_amount >= self.target_amount):
+        if (self.status == self.Status.FUNDRAISING and
+                self.raised_amount >= self.target_amount):
             self.mark_funded()
             self.save()
             return True
         return False
 
     def clean(self):
-        if self.target_amount < 0:
-            raise ValidationError("Target amount cannot be negative.")
-        if self.raised_amount < 0:
-            raise ValidationError("Raised amount cannot be negative.")
+        super().clean()
+
+        if not self.allow_overfunding and self.raised_amount > self.target_amount:
+            raise ValidationError({
+                'raised_amount': f'Cannot exceed target amount ({self.target_amount}). '
+                                 f'Enable overfunding first.'
+            })
 
     def save(self, *args, **kwargs):
-        self.full_clean()
 
         if not self.slug:
             self.slug = slugify(self.title)
+
         max_retries = 5
         for attempt in range(max_retries):
             try:
@@ -153,7 +151,6 @@ class ProjectAttachment(TimeStampedModel):
     # When will be ready Upload models
     # upload = models.ForeignKey('uploads.Upload', on_delete=models.CASCADE)
     file = models.FileField(upload_to="project_attachments/%Y/%m")
-
     type = models.CharField(max_length=20)
     caption = models.CharField(max_length=255, blank=True)
     order = models.PositiveIntegerField(default=0)
