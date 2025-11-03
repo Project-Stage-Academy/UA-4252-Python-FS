@@ -13,7 +13,8 @@ const TR = {
     required: "Обидва поля обов’язкові.",
     mismatch: "Паролі не збігаються.",
     tooShort: "Пароль має містити щонайменше 8 символів.",
-    success: "Ваш пароль успішно змінено. Зараз ви будете перенаправлені на сторінку входу.",
+    success:
+      "Ваш пароль успішно змінено. Зараз ви будете перенаправлені на сторінку входу.",
     invalidToken: "Посилання недійсне або прострочене.",
     weak: "Пароль занадто простий.",
     serverError: "Помилка сервера. Спробуйте пізніше.",
@@ -28,7 +29,8 @@ const TR = {
     required: "Both fields are required.",
     mismatch: "Passwords do not match.",
     tooShort: "Password must be at least 8 characters long.",
-    success: "Your password has been successfully changed. Redirecting to login...",
+    success:
+      "Your password has been successfully changed. Redirecting to login...",
     invalidToken: "Invalid or expired link.",
     weak: "Password is too weak.",
     serverError: "Server error. Please try again later.",
@@ -36,6 +38,21 @@ const TR = {
     unknownError: "Unknown error.",
   },
 } as const;
+
+function getCookie(name: string): string | null {
+  const cookieValue = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="))
+    ?.split("=")[1];
+  return cookieValue ? decodeURIComponent(cookieValue) : null;
+}
+
+interface ApiErrorResponse {
+  token?: string[];
+  uid?: string[];
+  new_password?: string[];
+  detail?: string;
+}
 
 export default function RestorePassword({ lang = "uk" }: Props) {
   const t = TR[lang];
@@ -73,28 +90,48 @@ export default function RestorePassword({ lang = "uk" }: Props) {
     try {
       const res = await fetch("/api/auth/password-reset/confirm/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, token, new_password: password }),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken") || "",
+        },
+        body: JSON.stringify({
+          uid,
+          token,
+          new_password: password,
+        }),
       });
+
+      const text = await res.text();
+      let data: ApiErrorResponse = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        // если не JSON — просто игнорим
+      }
 
       if (res.ok) {
         setMsg(t.success);
-        const redirect = next
-          ? next
-          : locale
-          ? `/login?lang=${locale}`
-          : "/login";
+
+        const redirect =
+          next && next.startsWith("/") && !next.startsWith("//")
+            ? next
+            : `/login?lang=${locale}`;
+
         setTimeout(() => navigate(redirect), 3000);
       } else if (res.status === 400) {
-        const data = await res.json().catch(() => ({}));
-        if (data?.token || data?.uid) setError(t.invalidToken);
-        else if (data?.new_password) setError(t.weak);
+        if (data.token || data.uid) setError(t.invalidToken);
+        else if (data.new_password) setError(t.weak);
         else setError(t.unknownError);
-      } else {
+      } else if (res.status === 401 || res.status === 403) {
+        setError(t.invalidToken);
+      } else if (res.status >= 500) {
         setError(t.serverError);
+      } else {
+        setError(t.unknownError);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Password reset error:", err);
       setError(t.networkError);
     } finally {
       setLoading(false);
@@ -103,7 +140,14 @@ export default function RestorePassword({ lang = "uk" }: Props) {
 
   if (error === t.invalidToken) {
     return (
-      <div style={{ maxWidth: 480, margin: "2rem auto", textAlign: "center", fontFamily: "sans-serif" }}>
+      <div
+        style={{
+          maxWidth: 480,
+          margin: "2rem auto",
+          textAlign: "center",
+          fontFamily: "sans-serif",
+        }}
+      >
         <h1>{t.title}</h1>
         <p style={{ color: "#b00020" }}>{t.invalidToken}</p>
       </div>
@@ -111,7 +155,9 @@ export default function RestorePassword({ lang = "uk" }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: "2rem auto", fontFamily: "sans-serif" }}>
+    <div
+      style={{ maxWidth: 480, margin: "2rem auto", fontFamily: "sans-serif" }}
+    >
       <h1>{t.title}</h1>
       <form onSubmit={onSubmit}>
         <label htmlFor="new-password">{t.newPassword}</label>
@@ -137,12 +183,20 @@ export default function RestorePassword({ lang = "uk" }: Props) {
         />
 
         {error && (
-          <div role="alert" aria-live="assertive" style={{ color: "#b00020", marginBottom: 8 }}>
+          <div
+            role="alert"
+            aria-live="assertive"
+            style={{ color: "#b00020", marginBottom: 8 }}
+          >
             {error}
           </div>
         )}
         {msg && (
-          <div role="status" aria-live="polite" style={{ color: "#0f7b0f", marginBottom: 8 }}>
+          <div
+            role="status"
+            aria-live="polite"
+            style={{ color: "#0f7b0f", marginBottom: 8 }}
+          >
             {msg}
           </div>
         )}
