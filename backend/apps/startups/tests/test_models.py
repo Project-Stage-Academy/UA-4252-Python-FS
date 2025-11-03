@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.db import models as dj_models
 
 from apps.startups.models import StartupProfile
+from apps.startups import models
+from apps.startups import apps
 
 User = get_user_model()
 
