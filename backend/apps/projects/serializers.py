@@ -30,7 +30,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     def validate(self, data):
         raised = data.get('raised_amount', self.instance.raised_amount if self.instance else 0)
         target = data.get('target_amount', self.instance.target_amount if self.instance else 0)
-        allow_over = data.get('allow_overfunding', self.instance.allow_overfunding if self.instance else False)
+        allow_over = data.get('allow_overfunding',
+                              self.instance.allow_overfunding if self.instance else False)
 
         if not allow_over and raised > target:
             raise serializers.ValidationError({
