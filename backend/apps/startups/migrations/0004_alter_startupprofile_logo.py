@@ -17,7 +17,7 @@ def logo_upload_to(instance, filename):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('startups', '0003_alter_savedstartup_options_and_more'),
+        ('startups', '0002_initial'),
     ]
 
     operations = [
