@@ -212,8 +212,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return allowed
 
     def perform_update(self, serializer):
-        old_visibility = self.get_object().visibility
+        old_visibility = serializer.instance.visibility
         instance = serializer.save()
-
+        if old_visibility != instance.visibility and instance.visibility == 'public':
+            # Task 6 - Index project in search
+            pass
 
 
