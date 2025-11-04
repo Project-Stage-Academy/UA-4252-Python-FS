@@ -9,6 +9,7 @@ from decimal import Decimal
 
 User = get_user_model()
 
+
 class StatusTransitionTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -78,4 +79,3 @@ class StatusTransitionTest(TestCase):
         self.project.save()
 
         self.assertIsNotNone(self.project.funded_at)
-

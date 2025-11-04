@@ -3,7 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from django_fsm import TransitionNotAllowed, can_proceed
+from django_fsm import TransitionNotAllowed, can_proceed # noqa: F401
 
 from apps.startups.models import StartupProfile
 
@@ -18,7 +18,6 @@ from .serializers import (
     ProjectStatusSerializer
 )
 from django.utils import timezone
-from django_fsm import get_available_FIELD_transitions
 
 from apps.common.constants import PROJECT_TRANSITIONS
 
@@ -37,7 +36,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return ProjectDetailSerializer
 
     def get_queryset(self):
-        queryset = Project.objects.select_related('startup', 'startup__user').filter(is_deleted=False)
+        queryset = Project.objects.select_related(
+            'startup', 'startup__user').filter(is_deleted=False)
 
         if 'startup_pk' in self.kwargs:
             startup_pk = self.kwargs['startup_pk']
