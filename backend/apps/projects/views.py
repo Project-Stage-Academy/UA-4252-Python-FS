@@ -20,6 +20,8 @@ from .serializers import (
 from django.utils import timezone
 from django_fsm import get_available_FIELD_transitions
 
+from apps.common.constants import PROJECT_TRANSITIONS
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     pagination_class = ProjectPagination
@@ -35,8 +37,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return ProjectDetailSerializer
 
     def get_queryset(self):
-        queryset = Project.objects.select_related('startup', 'startup__user')
-        queryset = Project.objects.filter(is_deleted=False)
+        queryset = Project.objects.select_related('startup', 'startup__user').filter(is_deleted=False)
 
         if 'startup_pk' in self.kwargs:
             startup_pk = self.kwargs['startup_pk']
@@ -151,13 +152,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 'error': 'Only user who create project can change status'
             }, status=status.HTTP_403_FORBIDDEN)
 
-        transition_map = {
-            'mvp': 'start_mvp',
-            'fundraising': 'start_fundraising',
-            'funded': 'mark_funded',
-            'closed': 'close_project',
-        }
-
         if new_status == project.status:
             return Response({'message': 'Already in this status'})
 
@@ -168,7 +162,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.save()
             return Response(ProjectSerializer(project).data)
 
-        transition_method = transition_map.get(new_status)
+        transition_method = PROJECT_TRANSITIONS.get(new_status)
         if not transition_method:
             return Response(
                 {'error': f'Unknown status: {new_status}'},
@@ -195,15 +189,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
     def _get_allowed_transitions(self, project):
-        transition_methods = {
-            'start_mvp': 'mvp',
-            'start_fundraising': 'fundraising',
-            'mark_funded': 'funded',
-            'close_project': 'closed'
-        }
-
         allowed = []
-        for method_name, target_status in transition_methods.items():
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
             if hasattr(project, method_name):
                 method = getattr(project, method_name)
                 if can_proceed(method):
@@ -217,5 +204,3 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if old_visibility != instance.visibility and instance.visibility == 'public':
             # Task 6 - Index project in search
             pass
-
-

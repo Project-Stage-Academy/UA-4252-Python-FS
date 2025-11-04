@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django_fsm import can_proceed, get_available_FIELD_transitions
 from .models import Project
 
+from apps.common.constants import PROJECT_TRANSITIONS
 
 class ProjectStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Project.Status.choices)
@@ -17,15 +18,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['funded_at', 'status', 'slug', 'is_deleted', 'deleted_at', 'deleted_by']
 
     def get_can_transition_to(self, obj):
-        transition_methods = {
-            'start_mvp': 'mvp',
-            'start_fundraising': 'fundraising',
-            'mark_funded': 'funded',
-            'close_project': 'closed'
-        }
-
         transitions = []
-        for method_name, target_status in transition_methods.items():
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
             if hasattr(obj, method_name):
                 method = getattr(obj, method_name)
                 if can_proceed(method):
@@ -139,15 +133,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         return 0.0
 
     def get_can_transition_to(self, obj):
-        transition_methods = {
-            'start_mvp': 'mvp',
-            'start_fundraising': 'fundraising',
-            'mark_funded': 'funded',
-            'close_project': 'closed'
-        }
-
         transitions = []
-        for method_name, target_status in transition_methods.items():
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
             if hasattr(obj, method_name):
                 method = getattr(obj, method_name)
                 if can_proceed(method):
@@ -191,10 +178,10 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
                 raise serializers.ValidationError({'target_amount': error_message})
         return data
 
-    def update(self, instance, validate_data):
+    def update(self, instance, validated_data):
         old_raised = instance.raised_amount
-        instance = super().update(instance, validate_data)
-        if 'raised_amount' in validate_data and instance.raised_amount != old_raised:
+        instance = super().update(instance, validated_data)
+        if 'raised_amount' in validated_data and instance.raised_amount != old_raised:
             instance.check_auto_funding()
         return instance
 
