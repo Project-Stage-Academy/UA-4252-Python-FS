@@ -58,7 +58,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
 
     def get_object(self):
-        queryset = Project.objects.select_related('startup', 'startup__user').filter(is_deleted=False)
+        queryset = Project.objects.select_related(
+            'startup', 'startup__user').filter(is_deleted=False)
 
         if 'startup_pk' in self.kwargs:
             queryset = queryset.filter(startup_id=self.kwargs['startup_pk'])
@@ -175,7 +176,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.save()
             return Response(ProjectSerializer(project).data)
 
-        except TransitionNotAllowed as e:
+        except TransitionNotAllowed:
             return Response({
                 'error': f'Cannot transition from {project.status} to {new_status}',
                 'current_status': project.status,
