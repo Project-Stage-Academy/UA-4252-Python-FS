@@ -58,10 +58,9 @@ def consolidate_and_fix_logo_paths(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('startups', '0004_alter_startupprofile_logo'),
-        ('investors', '0003_alter_investorprofile_logo'),
+        ('startups', '0003_alter_startupprofile_logo'),
+        ('investors', '0005_alter_investorprofile_logo'),
     ]
 
     operations = [
