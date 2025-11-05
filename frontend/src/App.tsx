@@ -7,6 +7,7 @@ import './components/Header/Header.scss';
 import "./App.css";
 
 const Register = lazy(() => import("./pages/Register")); 
+const WhyWorthGrid = lazy(() => import("./components/WhyWorthGrid/WhyWorthGrid"));
 
 function App() {
   return (
@@ -14,6 +15,23 @@ function App() {
       <div className="app-container">
         <Header />
 
+        <main className="content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/register"
+              element={
+                <Suspense fallback={null}>
+                  <Register />
+                </Suspense>
+              }
+            />
+          </Routes>
+
+          <Suspense fallback={null}>
+            <WhyWorthGrid />
+          </Suspense>
+        </main>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
