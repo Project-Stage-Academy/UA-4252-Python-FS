@@ -1,9 +1,12 @@
-import { Suspense, lazy } from "react";
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { routes } from "./routes";
-import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
+import Home from "./pages/Home"; 
+import './components/Header/Header.scss';
+import "./App.css";
 
+const Register = lazy(() => import("./pages/Register")); 
 const WhyWorthGrid = lazy(() => import("./components/WhyWorthGrid/WhyWorthGrid"));
 
 function App() {
@@ -14,9 +17,15 @@ function App() {
 
         <main className="content">
           <Routes>
-            {routes.map(({ path, element }) => (
-              <Route key={path} path={path} element={element} />
-            ))}
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/register"
+              element={
+                <Suspense fallback={null}>
+                  <Register />
+                </Suspense>
+              }
+            />
           </Routes>
 
           <Suspense fallback={null}>
