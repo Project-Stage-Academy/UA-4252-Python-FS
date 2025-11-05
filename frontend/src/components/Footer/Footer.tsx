@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaEnvelope, FaPhone } from "react-icons/fa";
-import Logo from "../Logo/Logo"; 
+import Logo from "../Logo/Logo";
 import "./Footer.css";
 
 export default function Footer() {
@@ -37,6 +37,7 @@ export default function Footer() {
           <div className="footer-column">
             <h4>Підприємства</h4>
             <ul className="inline-list">
+              {/* TODO: Replace with fetch from /api/content/landing/ */}
               <li>Компанії</li>
               <li>Стартапи</li>
             </ul>

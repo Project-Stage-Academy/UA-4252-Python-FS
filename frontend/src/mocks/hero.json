@@ -1,0 +1,11 @@
+{
+  "title": "CRAFTMERGE",
+  "subtitle": "Об'єднуємо крафтових виробників та інноваторів",
+  "ctaText": "Детальніше про нас",
+  "images": [
+    { "src": "/src/img/winemaking.jpg", "alt": "winemaking", "position": "top-left" },
+    { "src": "/src/img/delivery.jpg", "alt": "delivery", "position": "top-right" },
+    { "src": "/src/img/cheese.jpg", "alt": "cheese", "position": "center" },
+    { "src": "/src/img/packaging.jpg", "alt": "packaging", "position": "bottom-right" }
+  ]
+}

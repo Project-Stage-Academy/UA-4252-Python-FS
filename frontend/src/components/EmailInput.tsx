@@ -6,9 +6,6 @@ interface EmailInputProps {
   onChange: (value: string) => void;
 }
 
-interface CheckEmailResponse {
-  available: boolean;
-}
 
 const EmailInput: React.FC<EmailInputProps> = ({ value, onChange }) => {
   const [status, setStatus] = useState<"checking" | "available" | "exists" | null>(null);

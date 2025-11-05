@@ -3,7 +3,7 @@ import React from "react";
 interface LogoProps {
   width?: number | string;
   height?: number | string;
-  color?: string; 
+  color?: string;
   className?: string;
 }
 

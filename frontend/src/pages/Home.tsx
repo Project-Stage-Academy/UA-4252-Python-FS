@@ -3,6 +3,7 @@ import Hero from '../components/Hero/Hero';
 import CTASection from '../components/CTASection/CTASection';
 import ForWhomGrid from '../components/ForWhomGrid/ForWhomGrid';
 
+
 const Home: React.FC = () => {
   return (
     <>
@@ -11,7 +12,7 @@ const Home: React.FC = () => {
       <ForWhomGrid />
     </>
   );
-};
+}; 
+
 
 export default Home;
-

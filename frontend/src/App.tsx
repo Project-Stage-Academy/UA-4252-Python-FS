@@ -32,6 +32,17 @@ function App() {
             <WhyWorthGrid />
           </Suspense>
         </main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/register"
+            element={
+              <Suspense fallback={null}>
+                <Register />
+              </Suspense>
+            }
+          />
+        </Routes>
 
         <Footer />
       </div>
