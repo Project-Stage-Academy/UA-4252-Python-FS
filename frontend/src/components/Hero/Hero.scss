@@ -31,60 +31,73 @@ $shadow-color: rgba(0, 0, 0, 0.2);
 
 
 .hero-section {
-  background-color: $light-green;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
-
+    background-color: $light-green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-width: 345px;
+    height: 549px; 
+    padding: 40px 24px; 
+    box-sizing: border-box;
 
   .content-container {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1512px; 
     padding: 0 40px;
-  }
 
+    @media (min-width: 1800px) {
+      max-width: 1700px;
+    }
+
+    @media (min-width: 2100px) {
+      max-width: 2000px;
+    } 
+  } 
 
   .text-column {
     flex: 1;
     max-width: 600px;
     padding-right: 40px;
+    margin-top: 100px;
 
 
     .title {
-      font-family: 'Geologica', sans-serif;
+      font-family: 'Geologica';
       font-weight: 700;
       font-size: 64px;
       line-height: 120%;
       letter-spacing: 1%;
       margin-bottom: 10px;
+      margin-top: 100px;
     }
 
 
     .subtitle {
-      font-family: 'Geologica', sans-serif;
+      font-family: 'Geologica';
       font-weight: 700;
       font-size: 32px;
       line-height: 120%;
       letter-spacing: 1%;
       margin-bottom: 30px;
+      margin-top: 20px;
       color: #333;
     }
 
 
     .cta-button {
+      width: 194px;
+      white-space: nowrap;
       background-color: #000;
       color: #fff;
-      padding: 12px 25px;
+      padding: 30px 1.5rem;
+      padding-top: 4px; 
       border: none;
       border-radius: 6px;
-      font-family: 'Geologica', sans-serif;
+      font-family: 'Geologica';
       font-weight: 700;
       font-size: 16px;
       cursor: pointer;
@@ -120,7 +133,7 @@ $shadow-color: rgba(0, 0, 0, 0.2);
 
 
       .image-label {
-        font-family: 'Geologica', sans-serif;
+        font-family: 'Geologica';
         font-weight: 600;
         font-size: 12px;
         letter-spacing: 1%;
@@ -137,37 +150,34 @@ $shadow-color: rgba(0, 0, 0, 0.2);
 
 
     .winemaking {
-      top: 50px;
-      left: 0px;
-      width: 196px;
-      height: 296px;
+      top: 60px;       
+      left: -250px;       
+      width: 300px;
+      height: 400px;
       z-index: 2;
     }
 
-
     .delivery {
-      top: 20px;
-      left: 250px;
-      width: 228px;
-      height: 170px;
+      top: 20px;       
+      left: 130px;     
+      width: 340px;
+      height: 200px;
       z-index: 3;
     }
 
-
     .cheese {
-      top: 220px;
-      left: 260px;
-      width: 209px;
-      height: 270px;
+      top: 250px;      
+      left: 80px;     
+      width: 280px;
+      height: 350px;
       z-index: 1;
     }
 
-
     .packaging {
-      top: 280px;
-      left: 500px;
-      width: 183px;
-      height: 209px;
+      top: 250px;      
+      left: 450px;     
+      width: 250px;
+      height: 300px;
       z-index: 4;
     }
   }

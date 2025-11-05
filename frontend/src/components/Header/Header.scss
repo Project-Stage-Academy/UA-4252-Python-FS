@@ -12,9 +12,17 @@ $color-border-light: #000;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 70px;
-    max-width: 1200px;
+    height: 72px;
+    max-width: 1512px;
     margin: 0 auto;
+
+    @media (min-width: 1800px) {
+      max-width: 1700px;
+    }
+
+    @media (min-width: 2100px) {
+      max-width: 2000px;
+    }
   }
 
   &__logo {
@@ -30,8 +38,13 @@ $color-border-light: #000;
     }
 
     &-text {
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-family: 'Geologica';
+      font-weight: 700;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 100%;
+      letter-spacing: 0%;
+      text-transform: uppercase;
       color: #231c09;
     }
   }
@@ -77,7 +90,6 @@ $color-border-light: #000;
       border-radius: 0 4px 4px 0;
       cursor: pointer;
       background-color: #f5f5f5;
-      transform: translateY(-5.5px);
 
       svg {
         width: 16px;
