@@ -161,7 +161,7 @@ class SavedStartupModelTest(TestCase):
     def test_missing_required_fields(self):
         """Missing required fields should raise ValidationError"""
         invalid_data = self.valid_data.copy()
-        invalid_data.pop("notes")
+        invalid_data.pop("startup")
         saved = SavedStartup(**invalid_data)
         with self.assertRaises(ValidationError):
             saved.full_clean()
@@ -191,7 +191,8 @@ class StartupPublicProfileAPITest(APITestCase):
             email="test1@startup.com",
             phone="1111111111",
             city="Test City One",
-            partners_brands="tech, innovation",
+            tags=["tech", "innovation"],
+            partners_brands="Beta, Doodle",
             audit_status="approved",
         )
 
@@ -211,7 +212,8 @@ class StartupPublicProfileAPITest(APITestCase):
             email="test2@startup.com",
             phone="2222222222",
             city="Test City Two",
-            partners_brands="saas, finance",
+            tags=["saas", "finance"],
+            partners_brands="Macrosoft, Pear",
             audit_status="pending",
         )
 
@@ -219,33 +221,35 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that an existing startup profile can be retrieved.
         """
-        url = reverse("startup-detail", kwargs={"id": self.startup1.id})
+        url = reverse("startup-detail", kwargs={"pk": self.startup1.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["company_name"], self.startup1.company_name)
         self.assertIn("logo_url", response.data)
         self.assertEqual(response.data["tags"], ["tech", "innovation"])
+        self.assertEqual(response.data["partners_brands"], ["Beta", "Doodle"])
         self.assertEqual(response.data["followers_count"], 0)
 
     def test_get_correct_startup_profile_when_multiple_exist(self):
         """
         Check that the correct profile is returned when multiple exist.
         """
-        url = reverse("startup-detail", kwargs={"id": self.startup2.id})
+        url = reverse("startup-detail", kwargs={"pk": self.startup2.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["company_name"], "Test Startup Two")
         self.assertNotEqual(response.data["company_name"], "Test Startup One")
         self.assertEqual(response.data["founded_year"], 2025)
+        self.assertEqual(response.data["partners_brands"], ["Macrosoft", "Pear"])
         self.assertEqual(response.data["tags"], ["saas", "finance"])
 
     def test_response_schema_is_correct(self):
         """
         Check that the API response contains all expected fields.
         """
-        url = reverse("startup-detail", kwargs={"id": self.startup1.id})
+        url = reverse("startup-detail", kwargs={"pk": self.startup1.id})
         response = self.client.get(url)
 
         expected_keys = [
@@ -260,8 +264,10 @@ class StartupPublicProfileAPITest(APITestCase):
             "city",
             "logo_url",
             "tags",
+            "partners_brands",
             "followers_count",
             "created_at",
+            "updated_at",
         ]
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -271,6 +277,157 @@ class StartupPublicProfileAPITest(APITestCase):
         """
         Check that a 404 is returned for a non-existent startup.
         """
-        url = reverse("startup-detail", kwargs={"id": 999})
+        url = reverse("startup-detail", kwargs={"pk": 999})
         response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class StartupPublicProfileListAPITest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="testuser@example.com",
+            password="password123",
+            first_name="Test",
+            last_name="User",
+        )
+        self.startup1 = StartupProfile.objects.create(
+            user=self.user,
+            company_name="TechNova",
+            tags=["tech", "innovation", "finance"],
+        )
+        self.startup2 = StartupProfile.objects.create(
+            user=self.user,
+            company_name="FinPilot",
+            tags=["saas", "finance"],
+        )
+        self.startup3 = StartupProfile.objects.create(
+            user=self.user,
+            company_name="HealthAI",
+            tags=["ai", "medical", "tech"],
+        )
+
+    def test_startups_list_api(self):
+        """
+        Test all startups are returned with no filters applied.
+        """
+        url = reverse("startup-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected_keys = [
+            "count",
+            "next",
+            "previous",
+            "results",
+        ]
+
+        self.assertCountEqual(response.data.keys(), expected_keys)
+        self.assertEqual(response.data["count"], 3)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_filter_by_company_name(self):
+        """Test filtering by company_name is successful."""
+        url = reverse("startup-list")
+        response = self.client.get(url, {"company_name": "nova"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        company_names = [item["company_name"] for item in response.data["results"]]
+        self.assertIn(self.startup1.company_name, company_names)
+        self.assertNotIn(self.startup2.company_name, company_names)
+        self.assertNotIn(self.startup3.company_name, company_names)
+
+    def test_filter_by_nonexistent_company_name(self):
+        """
+        Test filtering by a not existing company name
+        returns an empty result.
+        """
+        url = reverse("startup-list")
+        response = self.client.get(url, {"company_name": "DoesNotExist"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 0)
+
+    def test_filter_by_tag(self):
+        """Test filtering by tag is successful."""
+        url = reverse("startup-list")
+        response = self.client.get(url, {"tag": "finance"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        company_names = [item["company_name"] for item in response.data["results"]]
+        self.assertIn(self.startup1.company_name, company_names)
+        self.assertIn(self.startup2.company_name, company_names)
+        self.assertNotIn(self.startup3.company_name, company_names)
+
+    def test_filter_by_nonexistent_tag(self):
+        """
+        Test filtering by a not existing tag returns an empty result.
+        """
+        url = reverse("startup-list")
+        response = self.client.get(url, {"tag": "DoesNotExist"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 0)
+
+    def test_filter_by_company_name_and_tag(self):
+        """
+        Test filtering by company_name and tag combined.
+        """
+        url = reverse("startup-list")
+        response = self.client.get(url, {
+            "company_name": "pilot",
+            "tag": "finance",
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(
+            results[0]["company_name"],
+            self.startup2.company_name
+        )
+
+    def test_startups_list_pagination(self):
+        """Test startups list pagination."""
+        page_size = 10
+        extra_startups = 10
+        url = reverse("startup-list")
+
+        # create extra startups to exceed page size
+        for i in range(extra_startups):
+            StartupProfile.objects.create(
+                user=self.user,
+                company_name=f"Extra Startup {i}",
+            )
+
+        # --- first page ---
+        response1 = self.client.get(url, {"page_size": page_size})
+        self.assertEqual(response1.status_code, status.HTTP_200_OK)
+
+        data1 = response1.data["results"]
+        self.assertEqual(len(data1), page_size)
+        self.assertIsNone(response1.data["previous"])
+        self.assertIsNotNone(response1.data["next"])
+
+        total_startups = StartupProfile.objects.count()
+        self.assertEqual(response1.data["count"], total_startups)
+
+        # --- second page ---
+        response2 = self.client.get(url, {
+            "page": 2,
+            "page_size": page_size
+        })
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        data2 = response2.data["results"]
+        self.assertLessEqual(len(data2), page_size)
+        self.assertIsNotNone(response2.data["previous"])
+        self.assertIsNone(response2.data["next"])
+
+        # check first and second pages contain unique items
+        first_ids = {res["id"] for res in data1}
+        second_ids = {res["id"] for res in data2}
+        self.assertFalse(first_ids & second_ids)
+
+    def test_startups_list_invalid_page(self):
+        """Test invalid page returns 404."""
+        url = reverse("startup-list")
+        response = self.client.get(url, {"page": 999})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
