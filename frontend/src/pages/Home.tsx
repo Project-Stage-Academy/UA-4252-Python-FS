@@ -1,7 +1,18 @@
-type HomeProps = {
-  title?: string;
-};
+import React from 'react';
+import Hero from '../components/Hero/Hero';
+import CTASection from '../components/CTASection/CTASection';
+import ForWhomGrid from '../components/ForWhomGrid/ForWhomGrid';
 
-export default function Home({ title = "🏠 Home Page" }: HomeProps) {
-  return <h1>{title}</h1>;
-}
+
+const Home: React.FC = () => {
+  return (
+    <>
+      <Hero />
+      <CTASection />
+      <ForWhomGrid />
+    </>
+  );
+}; 
+
+
+export default Home;

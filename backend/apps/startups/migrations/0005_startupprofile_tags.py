@@ -8,7 +8,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('startups', '0002_initial'),
+        ('startups', '0004_consolidate_logo_fix'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

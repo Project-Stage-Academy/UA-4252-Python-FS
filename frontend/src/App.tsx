@@ -1,24 +1,48 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { routes } from "./routes";
-import Footer from "./components/Footer/Footer";
 import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
+import Home from "./pages/Home"; 
 import './components/Header/Header.scss';
 import "./App.css";
+
+const Register = lazy(() => import("./pages/Register")); 
+const WhyWorthGrid = lazy(() => import("./components/WhyWorthGrid/WhyWorthGrid"));
 
 function App() {
   return (
     <Router>
       <div className="app-container">
-
         <Header />
 
-        <div className="content">
+        <main className="content">
           <Routes>
-            {routes.map((r, index) => (
-              <Route key={index} path={r.path} element={r.element} />
-            ))}
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/register"
+              element={
+                <Suspense fallback={null}>
+                  <Register />
+                </Suspense>
+              }
+            />
           </Routes>
-        </div>
+
+          <Suspense fallback={null}>
+            <WhyWorthGrid />
+          </Suspense>
+        </main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/register"
+            element={
+              <Suspense fallback={null}>
+                <Register />
+              </Suspense>
+            }
+          />
+        </Routes>
 
         <Footer />
       </div>

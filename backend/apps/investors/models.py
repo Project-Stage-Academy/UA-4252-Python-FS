@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
 
 User = get_user_model()
@@ -60,7 +61,7 @@ class InvestorProfile(TimeStampedModel):
     city = models.CharField(max_length=100)
     address = models.CharField(max_length=200)
     postal_code = models.CharField(max_length=20)
-    logo = models.ImageField(upload_to="media/Investor_logos/")
+    logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=50, default="Pending")
 
