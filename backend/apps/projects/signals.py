@@ -42,7 +42,7 @@ def project_status_changed_handler(sender, instance, created, **kwargs):
     if old_status and old_status != instance.status:
         saved_by = SavedStartup.objects.filter(
             startup=instance.startup
-        ).value_list('investor_id', flat=True)
+        ).values_list('investor_id', flat=True)
 
         recipient_ids = list(saved_by)
 

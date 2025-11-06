@@ -1,7 +1,9 @@
 from celery import shared_task
-from apps.user_messages.models import Notification
 
 from .models import Project
+from apps.user_messages.models import Notification
+from .emails import send_project_notification_email
+from django.conf import settings
 
 
 @shared_task(bind=True, max_retries=5)
@@ -43,6 +45,14 @@ def send_project_notification(self, project_id, notification_type, recipient_ids
 
         Notification.objects.bulk_create(notifications)
 
+        notification_ids = Notification.objects.filter(
+            related_project=project,
+            notification_type=notification_type,
+        ).order_by('-created_at')[:len(recipient_ids)].values_list('id', flat=True)
+
+        for notification_id in notification_ids:
+            send_notification_email_task.delay(notification.id)
+
         return f'Created {len(notifications)} notifications for project {project_id}'
 
     except Project.DoesNotExist:
@@ -52,5 +62,22 @@ def send_project_notification(self, project_id, notification_type, recipient_ids
 
 
 @shared_task
-def send_email_notification(notification_id):
-    pass
+def send_notification_email_task(notification_id):
+    try:
+        notification = Notification.objects.select_related(
+            'related_project',
+            'related_project__startup',
+            'user'
+        ).get(id=notification_id)
+
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        project_url = f'{frontend_url}/projects/{notification.related_project.slug}/'
+
+        send_project_notification_email(notification, project_url)
+
+        return f'Email sent for notification {notification_id}'
+
+    except Notification.DoesNotExist:
+        return f'Notification {notification_id} not found'
+    except Exception:
+        raise
