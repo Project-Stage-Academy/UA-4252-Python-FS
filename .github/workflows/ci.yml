@@ -51,6 +51,12 @@ jobs:
           chmod 600 ~/.pgpass
           psql -h "${POSTGRES_HOST}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "SELECT 1;"
 
+      - name: Check migrations
+        working-directory: backend
+        run: |
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate --noinput
+
       - name: Tests with coverage
         working-directory: backend
         run: |
