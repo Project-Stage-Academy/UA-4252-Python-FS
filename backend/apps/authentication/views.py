@@ -135,7 +135,7 @@ class ResendVerificationView(APIView):
                 )
 
         except User.DoesNotExist:
-            return Response(status=status.HTTP_200_OK)  # 400 for test
+            return Response(status=status.HTTP_200_OK)
 
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.id))
