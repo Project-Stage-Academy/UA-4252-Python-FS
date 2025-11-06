@@ -7,4 +7,4 @@ class ProjectsConfig(AppConfig):
     label = "projects"
 
     def ready(self):
-        from . import signals
+        from . import signals  # noqa: F401

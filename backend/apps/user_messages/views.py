@@ -2,24 +2,26 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from .models import Notification
 from .serializers import NotificationSerializer, NotificationMarkReadSerializer
+from apps.investors.models import InvestorProfile
+
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        investor_profile = getattr(self.request.user, 'investor_profile', None)
-
-        if investor_profile:
+        try:
+            investor_profile = InvestorProfile.objects.get(user=self.request.user)
             return Notification.objects.filter(
                 user=investor_profile
             ).select_related('related_project')
-        return Notification.objects.none()
+        except InvestorProfile.DoesNotExist:
+            return Notification.objects.none()
 
     @action(detail=True, methods=['patch'], url_path='mark-read')
     def mark_read(self, request, pk=None):
@@ -44,9 +46,9 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='mark-all-read')
     def mark_all_read(self, request):
-        investor_profile = getattr(request.user, 'investor_profile', None)
-
-        if not investor_profile:
+        try:
+            investor_profile = InvestorProfile.objects.get(user=request.user)
+        except InvestorProfile.DoesNotExist:
             return Response(
                 {'detail': 'Investor profile not found.'},
                 status=status.HTTP_404_NOT_FOUND

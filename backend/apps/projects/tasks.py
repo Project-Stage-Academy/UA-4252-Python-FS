@@ -1,8 +1,9 @@
 from celery import shared_task
-from django.utils import timezone
 from apps.user_messages.models import Notification
 
 from .models import Project
+
+
 @shared_task(bind=True, max_retries=5)
 def send_project_notification(self, project_id, notification_type, recipient_ids):
     """    Create notification entries for interested users. """
@@ -48,6 +49,7 @@ def send_project_notification(self, project_id, notification_type, recipient_ids
         raise self.retry(countdown=60)
     except Exception as exc:
         raise self.retry(exc=exc, countdown=300)
+
 
 @shared_task
 def send_email_notification(notification_id):

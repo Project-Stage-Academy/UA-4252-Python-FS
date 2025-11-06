@@ -79,7 +79,9 @@ class Project(TimeStampedModel):
     def mark_funded(self):
         self.funded_at = timezone.now()
 
-    @transition(field=status, source=['idea', 'mvp', 'fundraising', 'funded'], target='closed')
+    @transition(field=status,
+                source=['idea', 'mvp', 'fundraising', 'funded'],
+                target='closed')
     def close_project(self):
         pass
 

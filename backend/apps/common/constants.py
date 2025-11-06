@@ -1,5 +1,3 @@
-
-
 PROJECT_TRANSITIONS = {
     'mvp': 'start_mvp',
     'fundraising': 'start_fundraising',

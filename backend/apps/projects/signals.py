@@ -29,7 +29,8 @@ def track_status_change(sender, instance, **kwargs):
             old_instance = Project.objects.get(pk=instance.pk)
             instance._old_status = old_instance.status
         except Project.DoesNotExist:
-           instance._old_status = None
+            instance._old_status = None
+
 
 @receiver(post_save, sender=Project)
 def project_status_changed_handler(sender, instance, created, **kwargs):
@@ -58,4 +59,3 @@ def project_status_changed_handler(sender, instance, created, **kwargs):
                 notification_type=notification_type,
                 recipient_ids=recipient_ids
             )
-

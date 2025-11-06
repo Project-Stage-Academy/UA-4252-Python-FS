@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Notification
-from apps.projects.serializers import ProjectSerializer
+# from apps.projects.serializers import ProjectSerializer
+
 
 class NotificationSerializer(serializers.ModelSerializer):
     project_title = serializers.CharField(

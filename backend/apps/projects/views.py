@@ -3,7 +3,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from django_fsm import TransitionNotAllowed, can_proceed # noqa: F401
+
+from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
 
 from apps.startups.models import StartupProfile
 
