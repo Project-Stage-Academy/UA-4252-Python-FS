@@ -6,7 +6,7 @@ from apps.startups.models import SavedStartup
 
 
 @receiver(post_save, sender=Project)
-def project_created_handler(seender, instance, created, **kwargs):
+def project_created_handler(sender, instance, created, **kwargs):
     if created and instance.visibility == 'public':
         saved_by = SavedStartup.objects.filter(
             startup=instance.startup
