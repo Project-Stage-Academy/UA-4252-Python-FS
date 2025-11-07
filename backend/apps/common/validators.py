@@ -12,14 +12,34 @@ def drf_validate_file_size(file, max_size_mb):
         )
 
 
+def _verify_image_with_pil(file):
+    try:
+        Image.open(file).verify()
+        file.seek(0)
+    except (UnidentifiedImageError, OSError, ValueError) as e:
+        raise serializers.ValidationError("Invalid image file.") from e
+
+
 def drf_validate_file_type(file, allowed_types):
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in allowed_types:
         raise serializers.ValidationError(
             f"Дозволені розширення: {', '.join(allowed_types)}."
         )
-    try:
-        Image.open(file).verify()
-        file.seek(0)
-    except (UnidentifiedImageError, OSError, ValueError) as e:
-        raise serializers.ValidationError("Invalid image file.") from e
+    _verify_image_with_pil(file)
+
+
+def drf_validate_attachment_file(file, max_size_mb=10):
+    drf_validate_file_size(file, max_size_mb)
+    ext = os.path.splitext(file.name)[1].lower()
+
+    IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+    DOCUMENT_TYPES = ['.pdf', '.doc', '.docx']
+    ALLOWED_TYPES = IMAGE_TYPES + DOCUMENT_TYPES
+
+    if ext not in ALLOWED_TYPES:
+        raise serializers.ValidationError(
+            f'Support only the following formats: {', '.join(ALLOWED_TYPES)}.'
+        )
+    if ext in IMAGE_TYPES:
+        _verify_image_with_pil(file)

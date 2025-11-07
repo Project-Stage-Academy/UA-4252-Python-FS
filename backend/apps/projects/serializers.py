@@ -1,8 +1,46 @@
-from rest_framework import serializers
+import os
+
 from django_fsm import can_proceed, get_available_FIELD_transitions
-from .models import Project
+from rest_framework import serializers
 
 from apps.common.constants import PROJECT_TRANSITIONS
+from apps.common.validators import drf_validate_attachment_file
+
+from .models import Project, ProjectAttachment
+
+
+class ProjectAttachmentSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(write_only=True)
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectAttachment
+        fields = ['id', 'file', 'file_url', 'type', 'caption', 'order', 'created_at']
+        read_only_fields = ['id', 'created_at', 'type']
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def validate_file(self, file):
+        drf_validate_attachment_file(file, max_size_mb=10)
+        return file
+
+    def create(self, validated_data):
+        file = validated_data.get('file')
+        if file:
+            ext = os.path.splitext(file.name)[1].lower()
+            IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            if ext in IMAGE_TYPES:
+                validated_data['type'] = 'image'
+            else:
+                validated_data['type'] = 'document'
+        return super().create(validated_data)
+
 
 class ProjectStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Project.Status.choices)
@@ -11,11 +49,19 @@ class ProjectStatusSerializer(serializers.Serializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     can_transition_to = serializers.SerializerMethodField()
+    attachments = ProjectAttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['funded_at', 'status', 'slug', 'is_deleted', 'deleted_at', 'deleted_by']
+        read_only_fields = [
+            'funded_at',
+            'status',
+            'slug',
+            'is_deleted',
+            'deleted_at',
+            'deleted_by',
+        ]
 
     def get_can_transition_to(self, obj):
         transitions = []
@@ -28,15 +74,23 @@ class ProjectSerializer(serializers.ModelSerializer):
         return transitions
 
     def validate(self, data):
-        raised = data.get('raised_amount', self.instance.raised_amount if self.instance else 0)
-        target = data.get('target_amount', self.instance.target_amount if self.instance else 0)
-        allow_over = data.get('allow_overfunding',
-                              self.instance.allow_overfunding if self.instance else False)
+        raised = data.get(
+            'raised_amount', self.instance.raised_amount if self.instance else 0
+        )
+        target = data.get(
+            'target_amount', self.instance.target_amount if self.instance else 0
+        )
+        allow_over = data.get(
+            'allow_overfunding',
+            self.instance.allow_overfunding if self.instance else False,
+        )
 
         if not allow_over and raised > target:
-            raise serializers.ValidationError({
-                'raised_amount': f'Cannot exceed target ({target}). Set allow_overfunding=true first.'
-            })
+            raise serializers.ValidationError(
+                {
+                    'raised_amount': f'Cannot exceed target ({target}). Set allow_overfunding=true first.'
+                }
+            )
 
         return data
 
@@ -74,7 +128,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'startup_slug',
             'created_at',
         ]
-        read_only_fields = ['id',  'slug', 'raised_amount', 'created_at']
+        read_only_fields = ['id', 'slug', 'raised_amount', 'created_at']
 
     def get_progress_percentage(self, obj):
         if obj.target_amount and obj.target_amount > 0:
