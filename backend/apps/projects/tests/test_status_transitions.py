@@ -1,11 +1,12 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from apps.projects.models import Project
-from django_fsm import TransitionNotAllowed
-from django.core.exceptions import ValidationError
-from apps.startups.models import StartupProfile
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from django_fsm import TransitionNotAllowed
+
+from apps.projects.models import Project
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
@@ -16,16 +17,15 @@ class StatusTransitionTest(TestCase):
             email='test@example.com',
             password='testpassw',
             first_name='Test',
-            last_name='User'
+            last_name='User',
         )
         self.startup = StartupProfile.objects.create(
-            user=self.user,
-            company_name='Test Startup'
+            user=self.user, company_name='Test Startup'
         )
         self.project = Project.objects.create(
             startup=self.startup,
             title='Test Project',
-            target_amount=Decimal('10000.00')
+            target_amount=Decimal('10000.00'),
         )
 
     def test_valid_transition_idea_to_mvp(self):

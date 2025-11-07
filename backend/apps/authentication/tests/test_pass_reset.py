@@ -223,7 +223,7 @@ class EmailVerificationTestCase(TestCase):
         self.verify_url = f"/api/auth/verify/{self.uid}/{self.token}/"
 
     def test_successful_email_verification(self):
-        response = self.client.get(self.verify_url)
+        response = self.client.post(self.verify_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["detail"], "Email verified successfully.")
@@ -233,14 +233,14 @@ class EmailVerificationTestCase(TestCase):
 
     def test_invalid_token(self):
         invalid_url = f"/api/auth/verify/{self.uid}/invalid-token-123/"
-        response = self.client.get(invalid_url)
+        response = self.client.post(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Invalid", response.data["detail"])
 
     def test_invalid_uid(self):
         invalid_url = f"/api/auth/verify/invalid-uid/{self.token}/"
-        response = self.client.get(invalid_url)
+        response = self.client.post(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Invalid", response.data["detail"])
@@ -249,7 +249,7 @@ class EmailVerificationTestCase(TestCase):
         fake_uuid = uuid.uuid4()
         fake_uid = urlsafe_base64_encode(force_bytes(fake_uuid))
         invalid_url = f"/api/auth/verify/{fake_uid}/{self.token}/"
-        response = self.client.get(invalid_url)
+        response = self.client.post(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
