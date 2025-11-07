@@ -145,6 +145,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     email = serializers.CharField(source='startup.user.email', read_only=True)
     progress_percentage = serializers.SerializerMethodField()
     can_transition_to = serializers.SerializerMethodField()
+    attachments = ProjectAttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -169,6 +170,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'visibility',
             'funded_at',
             'can_transition_to',
+            'attachments',
             'created_at',
             'updated_at',
         ]

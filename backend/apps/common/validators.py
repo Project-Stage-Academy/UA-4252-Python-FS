@@ -39,7 +39,7 @@ def drf_validate_attachment_file(file, max_size_mb=10):
 
     if ext not in ALLOWED_TYPES:
         raise serializers.ValidationError(
-            f'Support only the following formats: {', '.join(ALLOWED_TYPES)}.'
+            f'Support only the following formats: {", ".join(ALLOWED_TYPES)}.'
         )
     if ext in IMAGE_TYPES:
         _verify_image_with_pil(file)
