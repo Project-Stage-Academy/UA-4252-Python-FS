@@ -11,9 +11,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """Check if user has permission to access this specific projects"""
+        """Check if user has permission to access this specific profiles"""
         if request.method in permissions.SAFE_METHODS:
-            if not request.user.is_authenticated:
-                return False
-            return False
+            return request.user and request.user.is_authenticated
         return obj.user == request.user

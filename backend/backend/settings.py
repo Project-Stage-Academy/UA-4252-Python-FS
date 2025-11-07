@@ -151,6 +151,9 @@ SIMPLE_JWT = {
     ),
 }
 
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_SAMESITE = "Strict"
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
