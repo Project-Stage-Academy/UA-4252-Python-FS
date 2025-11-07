@@ -43,15 +43,14 @@ def send_project_notification(self, project_id, notification_type, recipient_ids
             )
             notifications.append(notification)
 
-        Notification.objects.bulk_create(notifications)
-
-        notification_ids = Notification.objects.filter(
-            related_project=project,
-            notification_type=notification_type,
-        ).order_by('-created_at')[:len(recipient_ids)].values_list('id', flat=True)
+        created_notifications = Notification.objects.bulk_create(
+            notifications,
+            update_conflicts=False
+        )
+        notification_ids = [n.id for n in created_notifications]
 
         for notification_id in notification_ids:
-            send_notification_email_task.delay(notification.id)
+            send_notification_email_task.delay(notification_id)
 
         return f'Created {len(notifications)} notifications for project {project_id}'
 

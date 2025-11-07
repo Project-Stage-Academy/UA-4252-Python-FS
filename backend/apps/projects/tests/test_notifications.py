@@ -143,10 +143,12 @@ class ProjectNotificationTestCase(TestCase):
             visibility='public'
         )
 
-        send_project_notification(
-            project_id=project.id,
-            notification_type='project_created',
-            recipient_ids=[self.investor.id]
+        send_project_notification.apply(
+            kwargs={
+                'project_id': project.id,
+                'notification_type': 'project_created',
+                'recipient_ids': [self.investor.id]
+            }
         )
 
         notification = Notification.objects.filter(
