@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
+
 type Lang = "uk" | "en";
 type Props = { lang?: Lang };
 
@@ -31,6 +33,7 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
 
   async function onSubmit(e: React.FormEvent) {
@@ -40,6 +43,10 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
     const v = email.trim();
     if (!v) return setError(t.required);
     if (!EMAIL_RE.test(v)) return setError(t.invalid);
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification.");
+      return;
+    }
 
    setLoading(true);
     try {
@@ -57,7 +64,7 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
                 "Content-Type": "application/json",
                 ...(csrftoken ? { "X-CSRFToken": csrftoken } : {}),
             },
-            body: JSON.stringify({ email: v }),
+            body: JSON.stringify({ email: v, recaptcha: recaptchaToken }),
   });
       setMsg(r.status === 429 ? t.throttled : t.success);
     if (!r.ok) {
@@ -112,6 +119,13 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
             {msg}
           </div>
         )}
+
+        <div style={{ margin: "16px 0" }}>
+          <ReCAPTCHA
+            sitekey={import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY}
+            onChange={(token) => setRecaptchaToken(token)}
+          />
+        </div>
 
         <button type="submit" disabled={loading} aria-busy={loading || undefined}>
           {loading ? "..." : t.submit}
