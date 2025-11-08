@@ -18,40 +18,20 @@ function App() {
         <Header />
 
         <main className="content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/register"
-              element={
-                <Suspense fallback={null}>
-                  <Register />
-                </Suspense>
-              }
-            />
-
-            <Route path="/forgot-password" element={<PasswordResetRequest />} />
-            <Route path="/reset-password" element={<PasswordResetConfirm />} />
-
-            {/* 404 */}
-            <Route path="*" element={<div>404 Not Found</div>} />
-          </Routes>
-
           <Suspense fallback={null}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/register" element={<Register />} />
+
+              <Route path="/forgot-password" element={<PasswordResetRequest />} />
+              <Route path="/reset-password" element={<PasswordResetConfirm />} />
+
+              <Route path="*" element={<div>404 Not Found</div>} />
+            </Routes>
+
             <WhyWorthGrid />
           </Suspense>
         </main>
-
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/register"
-            element={
-              <Suspense fallback={null}>
-                <Register />
-              </Suspense>
-            }
-          />
-        </Routes>
 
         <Footer />
       </div>

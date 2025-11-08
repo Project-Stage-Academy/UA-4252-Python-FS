@@ -45,9 +45,19 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
 
     setLoading(true);
     try {
-      const getCookie = (name: string) => {
-        const row = document.cookie.split("; ").find((r) => r.startsWith(name + "="));
-        return row ? decodeURIComponent(row.split("=")[1]) : undefined;
+      const getCookie = (name: string): string | undefined => {
+        const prefix = name + "=";
+        const entry = document.cookie
+          .split(";")
+          .map(c => c.trim())
+          .find(c => c.startsWith(prefix));
+        if (!entry) return undefined;
+        const raw = entry.split("=").slice(1).join("=");
+        try {
+          return decodeURIComponent(raw);
+        } catch {
+          return raw;
+        }
       };
 
       const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
