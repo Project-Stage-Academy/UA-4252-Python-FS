@@ -25,7 +25,6 @@ urlpatterns = [
     path("api/common/", include("apps.common.urls")),
     path("api/auth/", include("apps.authentication.urls")),
     path("api/startups/", include("apps.startups.urls")),
-    path("api/", include("api.authorization.urls")),
     path("common/", include("apps.common.urls")),
     path("api/", include("apps.projects.urls")),
     # path("api/projects/", include("apps.projects.urls")),

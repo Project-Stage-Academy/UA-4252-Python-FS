@@ -5,6 +5,8 @@ import uuid
 from decimal import Decimal
 from django.utils.text import slugify
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models, transaction
 from django.utils import timezone
@@ -38,13 +40,23 @@ class Project(TimeStampedModel):
         FUNDED = 'funded', 'Funded'
         CLOSED = 'closed', 'Closed'
 
-    status = FSMField(max_length=20, choices=Status.choices, default=Status.IDEA,
-                      protected=False, db_index=True)
+    status = FSMField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.IDEA,
+        protected=False,
+        db_index=True,
+    )
 
-    target_amount = models.DecimalField(max_digits=12, decimal_places=2,
-                                        validators=[MinValueValidator(Decimal('0.01'))])
-    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0,
-                                        validators=[MinValueValidator(Decimal('0'))])
+    target_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    raised_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(Decimal('0'))],
+    )
 
     allow_overfunding = models.BooleanField(default=False)
     currency = models.CharField(max_length=3, default="UAH")
@@ -86,8 +98,10 @@ class Project(TimeStampedModel):
         pass
 
     def check_auto_funding(self):
-        if (self.status == self.Status.FUNDRAISING and
-                self.raised_amount >= self.target_amount):
+        if (
+            self.status == self.Status.FUNDRAISING
+            and self.raised_amount >= self.target_amount
+        ):
             self.mark_funded()
             self.save()
             return True
@@ -97,10 +111,13 @@ class Project(TimeStampedModel):
         super().clean()
 
         if not self.allow_overfunding and self.raised_amount > self.target_amount:
-            raise ValidationError({
-                'raised_amount': f'Cannot exceed target amount ({self.target_amount}). '
-                                 f'Enable overfunding first.'
-            })
+            raise ValidationError(
+                {
+                    'raised_amount': f'Cannot exceed target amount '
+                    f'({self.target_amount}).'
+                    f'Enable overfunding first.'
+                }
+            )
 
     def save(self, *args, **kwargs):
 

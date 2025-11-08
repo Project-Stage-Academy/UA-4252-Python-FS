@@ -16,8 +16,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ['funded_at', 'status', 'slug',
-                            'is_deleted', 'deleted_at', 'deleted_by']
+        read_only_fields = [
+            'funded_at',
+            'status',
+            'slug',
+            'is_deleted',
+            'deleted_at',
+            'deleted_by',
+        ]
 
     def get_can_transition_to(self, obj):
         transitions = []
@@ -30,19 +36,24 @@ class ProjectSerializer(serializers.ModelSerializer):
         return transitions
 
     def validate(self, data):
-        raised = data.get('raised_amount',
-                          self.instance.raised_amount if self.instance else 0)
-        target = data.get('target_amount',
-                          self.instance.target_amount if self.instance else 0)
-        allow_over = data.get('allow_overfunding',
-                              self.instance.allow_overfunding if
-                              self.instance else False)
+        raised = data.get(
+            'raised_amount', self.instance.raised_amount if self.instance else 0
+        )
+        target = data.get(
+            'target_amount', self.instance.target_amount if self.instance else 0
+        )
+        allow_over = data.get(
+            'allow_overfunding',
+            self.instance.allow_overfunding if self.instance else False,
+        )
 
         if not allow_over and raised > target:
-            raise serializers.ValidationError({
-                'raised_amount': f'Cannot exceed target ({target}). '
-                                 f'Set allow_overfunding=true first.'
-            })
+            raise serializers.ValidationError(
+                {
+                    'raised_amount': f'Cannot exceed target ({target}). '
+                    f'Set allow_overfunding=true first.'
+                }
+            )
 
         return data
 

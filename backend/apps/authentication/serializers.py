@@ -22,6 +22,15 @@ ROLE_CHOICES = [
 ]
 
 
+class UserLoginSerializer(serializers.ModelSerializer):
+    email = serializers.CharField()
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ("email", "password")
+
+
 class RegistrationSerializer(serializers.Serializer):
     """
     Serializer for user registration with role-specific fields.
@@ -231,3 +240,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+
+
+class CheckEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(error_messages={"invalid": "Invalid format"})

@@ -1,13 +1,14 @@
+from decimal import Decimal
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
+
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
-from decimal import Decimal
-
-
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -19,7 +20,7 @@ class StatusAPITest(TestCase):
             email='test@example.com',
             password='testpassw',
             first_name='Test',
-            last_name='User'
+            last_name='User',
         )
         self.startup = StartupProfile.objects.create(
             user=self.user,
@@ -34,10 +35,10 @@ class StatusAPITest(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_status_update_endpoint(self):
-        url = reverse('startup-projects-update-status', kwargs={
-            'startup_pk': self.startup.id,
-            'pk': self.project.id
-        })
+        url = reverse(
+            'startup-projects-update-status',
+            kwargs={'startup_pk': self.startup.id, 'pk': self.project.id},
+        )
         data = {'status': 'mvp'}
 
         response = self.client.patch(url, data, format='json')
@@ -45,10 +46,10 @@ class StatusAPITest(TestCase):
         self.assertEqual(response.data['status'], 'mvp')
 
     def test_invalid_transition_returns_400(self):
-        url = reverse('startup-projects-update-status', kwargs={
-            'startup_pk': self.startup.id,
-            'pk': self.project.id
-        })
+        url = reverse(
+            'startup-projects-update-status',
+            kwargs={'startup_pk': self.startup.id, 'pk': self.project.id},
+        )
         data = {'status': 'funded'}
 
         response = self.client.patch(url, data, format='json')
@@ -56,10 +57,10 @@ class StatusAPITest(TestCase):
         self.assertIn('error', response.data)
 
     def test_force_override_by_owner(self):
-        url = reverse('startup-projects-update-status', kwargs={
-            'startup_pk': self.startup.id,
-            'pk': self.project.id
-        })
+        url = reverse(
+            'startup-projects-update-status',
+            kwargs={'startup_pk': self.startup.id, 'pk': self.project.id},
+        )
         data = {'status': 'funded', 'force': True}
 
         response = self.client.patch(url, data, format='json')
@@ -75,14 +76,14 @@ class StatusAPITest(TestCase):
             email='other@example.com',
             password='pass123',
             first_name='Other',
-            last_name='User'
+            last_name='User',
         )
         self.client.force_authenticate(user=other_user)
 
-        url = reverse('startup-projects-update-status', kwargs={
-            'startup_pk': self.startup.id,
-            'pk': self.project.id
-        })
+        url = reverse(
+            'startup-projects-update-status',
+            kwargs={'startup_pk': self.startup.id, 'pk': self.project.id},
+        )
         data = {'status': 'mvp'}
 
         response = self.client.patch(url, data, format='json')
@@ -94,10 +95,10 @@ class StatusAPITest(TestCase):
         self.project.start_fundraising()
         self.project.save()
 
-        url = reverse('startup-projects-detail', kwargs={
-            'startup_pk': self.startup.id,
-            'pk': self.project.id
-        })
+        url = reverse(
+            'startup-projects-detail',
+            kwargs={'startup_pk': self.startup.id, 'pk': self.project.id},
+        )
         data = {'raised_amount': '5000.00'}
 
         response = self.client.patch(url, data, format='json')
