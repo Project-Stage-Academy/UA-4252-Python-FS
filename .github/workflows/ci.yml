@@ -69,12 +69,10 @@ jobs:
       - name: Tests with coverage
         working-directory: backend
         run: |
-          PROJECT_APPS=$(python manage.py shell --no-startup -c "from django.conf import settings; print(' '.join(app for app in settings.INSTALLED_APPS if app.startswith('apps.') or app.startswith('api.')))" | tail -n 1)
-          echo "--- Running tests for the following apps ---"
-          echo "$PROJECT_APPS"
-          echo "--------------------------------------------"
-
-          coverage run --source='.' manage.py test $PROJECT_APPS
+          echo "Running tests for project apps with detailed output..."
+          coverage run manage.py test apps --verbosity=2
+          echo ""
+          coverage report
           coverage xml
 
       - name: Upload coverage to Codecov
