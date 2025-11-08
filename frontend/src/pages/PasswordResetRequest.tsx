@@ -39,42 +39,46 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
     setMsg(null);
 
     const v = email.trim();
+
     if (!v) return setError(t.required);
     if (!EMAIL_RE.test(v)) return setError(t.invalid);
 
-   setLoading(true);
+    setLoading(true);
     try {
-        const getCookie = (name: string) => {
-            const row = document.cookie.split("; ").find(r => r.startsWith(name + "="));
-            return row ? decodeURIComponent(row.split("=")[1]) : undefined;
-  };
-        const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
-        const csrftoken = getCookie("csrftoken") ?? meta?.content;
+      const getCookie = (name: string) => {
+        const row = document.cookie.split("; ").find((r) => r.startsWith(name + "="));
+        return row ? decodeURIComponent(row.split("=")[1]) : undefined;
+      };
 
-        const r = await fetch("/api/auth/password-reset/", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-                ...(csrftoken ? { "X-CSRFToken": csrftoken } : {}),
-            },
-            body: JSON.stringify({ email: v }),
-  });
+      const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+      const csrftoken = getCookie("csrftoken") ?? meta?.content;
+
+      const r = await fetch("/api/auth/password-reset/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrftoken ? { "X-CSRFToken": csrftoken } : {}),
+        },
+        body: JSON.stringify({ email: v }),
+      });
+
       setMsg(r.status === 429 ? t.throttled : t.success);
-    if (!r.ok) {
-      if (r.status >= 500) {
-        console.error("password-reset server error", { status: r.status });
-      } else {
-        console.warn("password-reset client error", { status: r.status });
+
+      if (!r.ok) {
+        if (r.status >= 500) {
+          console.error?.("password-reset server error", { status: r.status });
+        } else {
+          console.warn?.("password-reset client error", { status: r.status });
+        }
       }
+    } catch (err) {
+      setMsg(t.success);
+      console.error?.("password-reset network/fetch error", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setMsg(t.success);
-    console.error("password-reset network/fetch error", err);
-  } finally {
-    setLoading(false);
   }
-};
 
   const invalid = !!error;
 
@@ -104,18 +108,42 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
         />
 
         {error && (
-          <div id="email-error" role="alert" aria-live="assertive" style={{ color: "#b00020", marginBottom: 8 }}>
+          <div
+            id="email-error"
+            role="alert"
+            aria-live="assertive"
+            style={{ color: "#b00020", marginBottom: 8 }}
+          >
             {error}
           </div>
         )}
 
         {msg && (
-          <div role="status" aria-live="polite" style={{ color: msg === t.throttled ? "#b00020" : "#0f7b0f", marginBottom: 8 }}>
+          <div
+            role="status"
+            aria-live="polite"
+            style={{
+              color: msg === t.throttled ? "#b00020" : "#0f7b0f",
+              marginBottom: 8,
+            }}
+          >
             {msg}
           </div>
         )}
 
-        <button type="submit" disabled={loading} aria-busy={loading || undefined}>
+        <button
+          type="submit"
+          disabled={loading}
+          aria-busy={loading || undefined}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#0f7b0f",
+            color: "white",
+            border: "none",
+            borderRadius: 4,
+            cursor: loading ? "default" : "pointer",
+          }}
+        >
           {loading ? "..." : t.submit}
         </button>
       </form>
