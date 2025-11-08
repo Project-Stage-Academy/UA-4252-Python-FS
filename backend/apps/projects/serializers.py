@@ -88,7 +88,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not allow_over and raised > target:
             raise serializers.ValidationError(
                 {
-                    'raised_amount': f'Cannot exceed target ({target}). Set allow_overfunding=true first.'
+                    'raised_amount': f'Cannot exceed target ({target}). '
+                    f'Set allow_overfunding=true first.'
                 }
             )
 

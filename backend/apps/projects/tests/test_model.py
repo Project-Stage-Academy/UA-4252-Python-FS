@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from apps.projects.models import Project
-# from apps.startups.models import StartupProfile
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
