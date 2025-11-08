@@ -9,6 +9,7 @@ from django.db.models import UUIDField
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
+from drf_recaptcha.fields import ReCaptchaV2Field
 
 from apps.common.validators import drf_validate_file_size, drf_validate_file_type
 from apps.investors.models import InvestorProfile
@@ -29,7 +30,7 @@ class RegistrationSerializer(serializers.Serializer):
     - startup: requires company_name
     - investor: requires investment_range_min
     """
-
+    recaptcha = ReCaptchaV2Field()
     email = serializers.EmailField(required=True)
     password = serializers.CharField(
         required=True, write_only=True, validators=[validate_password]
@@ -155,7 +156,7 @@ class RegistrationSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
-
+    recaptcha = ReCaptchaV2Field()
     def validate_email(self, value):
         # Validate format only without revealing existence.
         return value
@@ -166,7 +167,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
     re_new_password = serializers.CharField(min_length=8)
-
+    recaptcha = ReCaptchaV2Field()
     @staticmethod
     def _get_user_from_uid(uid: str) -> User:
         try:

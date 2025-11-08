@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 type Lang = "uk" | "en";
 type Props = { lang?: Lang };
 
@@ -33,11 +32,11 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setMsg(null);
-
     const v = email.trim();
     if (!v) return setError(t.required);
     if (!EMAIL_RE.test(v)) return setError(t.invalid);
@@ -81,7 +80,6 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
   return (
     <div style={{ maxWidth: 480, margin: "2rem auto", fontFamily: "sans-serif" }}>
       <h1>{t.title}</h1>
-
       <form onSubmit={onSubmit} noValidate>
         <label htmlFor="email">{t.emailLabel}</label>
         <input

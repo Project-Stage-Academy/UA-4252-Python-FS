@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models import User
 
 from .serializers import UserLoginSerializer
-from .throttling import CommonRedisThrottle
+from .throttling import CommonRedisThrottle, EmailThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class LoginView(APIView):
     """Authenticates user, generates refresh/access tokens.
     Throttle limited in settings.py with throttle_scope."""
 
-    throttle_classes = [CommonRedisThrottle]
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -108,7 +108,7 @@ class ResendVerificationView(APIView):
     sends mail with verification link.
     """
 
-    throttle_classes = [CommonRedisThrottle]
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         email = request.data.get("email")
