@@ -1,0 +1,17 @@
+🚀 NEW PROJECT LAUNCHED!
+
+{{ project.title }}
+
+Hello,
+
+{{ startup.company_name }} has just launched a new project that might interest you!
+
+Project Description:
+{{ project.short_description }}
+
+View the full project details here:
+{{ project_url }}
+
+Don't miss this opportunity to learn more about this exciting new venture!
+
+---

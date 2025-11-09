@@ -39,6 +39,28 @@ services:
       - db
       - redis
 
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: celery_worker
+    command: celery -A backend worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=mailhog
+      - EMAIL_PORT=1025
+      - EMAIL_USE_TLS=False
+      - DEFAULT_FROM_EMAIL=noreply@siskidomain.com
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - db
+      - redis
+      - backend
+
   db:
     image: postgres:14-alpine
     container_name: db
@@ -59,3 +81,4 @@ services:
     hostname: redis
 volumes:
   dev-db-data:
+
