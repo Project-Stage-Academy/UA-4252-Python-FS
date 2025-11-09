@@ -3,11 +3,11 @@ from django.urls import path
 from .views import health
 from .views import LandingContentAPIView
 
-urlpatterns = [
+
+general_patterns = [
     path("", health, name="health"),
-    path(
-        "landing/",
-        LandingContentAPIView.as_view(),
-        name="landing-content",
-    ),
+]
+
+content_patterns = [
+    path("landing/", LandingContentAPIView.as_view(), name="landing-content"),
 ]

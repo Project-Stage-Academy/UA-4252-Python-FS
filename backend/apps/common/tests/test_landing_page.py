@@ -1,11 +1,11 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from django.urls import reverse
 
 class LandingContentAPITests(APITestCase):
 
     def setUp(self) -> None:
-        self.url = "/api/content/landing/"
+        self.url = reverse("landing-content")
 
     def test_get_landing_content_success(self) -> None:
         response = self.client.get(self.url)
