@@ -1,6 +1,69 @@
 from rest_framework import serializers
-
+from django_fsm import can_proceed, get_available_FIELD_transitions  # noqa: F401
 from .models import Project
+
+from apps.common.constants import PROJECT_TRANSITIONS
+
+
+class ProjectStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=Project.Status.choices)
+    force = serializers.BooleanField(default=False, required=False)
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    can_transition_to = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = '__all__'
+        read_only_fields = [
+            'funded_at',
+            'status',
+            'slug',
+            'is_deleted',
+            'deleted_at',
+            'deleted_by',
+        ]
+
+    def get_can_transition_to(self, obj):
+        transitions = []
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
+            if hasattr(obj, method_name):
+                method = getattr(obj, method_name)
+                if can_proceed(method):
+                    transitions.append(target_status)
+
+        return transitions
+
+    def validate(self, data):
+        raised = data.get(
+            'raised_amount', self.instance.raised_amount if self.instance else 0
+        )
+        target = data.get(
+            'target_amount', self.instance.target_amount if self.instance else 0
+        )
+        allow_over = data.get(
+            'allow_overfunding',
+            self.instance.allow_overfunding if self.instance else False,
+        )
+
+        if not allow_over and raised > target:
+            raise serializers.ValidationError(
+                {
+                    'raised_amount': f'Cannot exceed target ({target}). '
+                    f'Set allow_overfunding=true first.'
+                }
+            )
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+
+        if 'raised_amount' in validated_data:
+            instance.check_auto_funding()
+
+        return instance
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -28,7 +91,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'startup_slug',
             'created_at',
         ]
-        read_only_fields = ['id', 'raised_amount', 'created_at']
+        read_only_fields = ['id', 'slug', 'raised_amount', 'created_at']
 
     def get_progress_percentage(self, obj):
         if obj.target_amount and obj.target_amount > 0:
@@ -44,6 +107,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     startup_slug = serializers.CharField(source='startup.slug', read_only=True)
     email = serializers.CharField(source='startup.user.email', read_only=True)
     progress_percentage = serializers.SerializerMethodField()
+    can_transition_to = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -60,17 +124,23 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'status',
             'target_amount',
             'raised_amount',
+            'allow_overfunding',
             'currency',
             'thumbnail',
             'tags',
             'progress_percentage',
             'visibility',
+            'funded_at',
+            'can_transition_to',
             'created_at',
             'updated_at',
         ]
         read_only_fields = [
             'id',
+            'slug',
             'raised_amount',
+            'status',
+            'funded_at',
             'created_at',
             'updated_at',
         ]
@@ -79,6 +149,16 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         if obj.target_amount and obj.target_amount > 0:
             return round((float(obj.raised_amount) / float(obj.target_amount)) * 100, 2)
         return 0.0
+
+    def get_can_transition_to(self, obj):
+        transitions = []
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
+            if hasattr(obj, method_name):
+                method = getattr(obj, method_name)
+                if can_proceed(method):
+                    transitions.append(target_status)
+
+        return transitions
 
 
 class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
@@ -91,8 +171,9 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
             'short_description',
             'description',
             'thumbnail',
-            'status',
             'target_amount',
+            'raised_amount',
+            'allow_overfunding',
             'currency',
             'tags',
             'visibility',
@@ -108,13 +189,19 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
         if self.instance:
             target_amount = data.get('target_amount', self.instance.target_amount)
             if self.instance.raised_amount > target_amount:
-                raise serializers.ValidationError(
-                    {
-                        'target_amount': f'Target amount cannot be less than'
-                        f' already raised amount ({self.instance.raised_amount})'
-                    }
+                error_message = (
+                    f'Target amount cannot be less than already raised amount '
+                    f'({self.instance.raised_amount})'
                 )
+                raise serializers.ValidationError({'target_amount': error_message})
         return data
+
+    def update(self, instance, validated_data):
+        old_raised = instance.raised_amount
+        instance = super().update(instance, validated_data)
+        if 'raised_amount' in validated_data and instance.raised_amount != old_raised:
+            instance.check_auto_funding()
+        return instance
 
     def create(self, validated_data):
         """Create the project with startup from contex"""
