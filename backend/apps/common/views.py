@@ -130,4 +130,3 @@ class LandingContentAPIView(APIView):
             },
         }
         return Response(content_data)
-    
