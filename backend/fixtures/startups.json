@@ -1,0 +1,209 @@
+[
+  {
+    "model": "startups.startupprofile",
+    "pk": "00fe5091-0a79-4c89-994a-266dc8e7b489",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "TechNova",
+      "email": "info@technova.com",
+      "description": "AI-driven solutions for modern businesses.",
+      "founded_year": 2021,
+      "team_size": 12,
+      "tags": [
+        "Tech",
+        "AI"
+      ],
+      "website": "https://technova.com",
+      "phone": "+380671112233",
+      "city": "Kyiv",
+      "address": "Volodymyrska St, 25",
+      "postal_code": "01001",
+      "logo": null,
+      "partners_brands": "Google, Microsoft",
+      "audit_status": "approved",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "7df99bc9-54c0-4003-b027-1abe4497ab91",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "GreenTech",
+      "email": "contact@greentech.ua",
+      "description": "Eco-friendly energy solutions and consulting.",
+      "founded_year": 2018,
+      "team_size": 25,
+      "tags": [
+        "Green",
+        "Energy"
+      ],
+      "website": "https://greentech.ua",
+      "phone": "+380501234567",
+      "city": "Lviv",
+      "address": "Svobody Ave, 45",
+      "postal_code": "79000",
+      "logo": null,
+      "partners_brands": "Tesla, DTEK",
+      "audit_status": "pending",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "2666f56c-d88b-42fc-93a6-58e61f396c25",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "FinPilot",
+      "email": "team@finpilot.io",
+      "description": "Automated financial reporting platform.",
+      "founded_year": 2020,
+      "team_size": 10,
+      "tags": [
+        "AI",
+        "Finances"
+      ],
+      "website": "https://finpilot.io",
+      "phone": "+380631234567",
+      "city": "Kharkiv",
+      "address": "Shevchenka St, 10",
+      "postal_code": "61000",
+      "logo": null,
+      "partners_brands": "PwC, SoftServe",
+      "audit_status": "approved",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "d8751d92-6596-4b43-a14a-804c5baf4086",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "EduSmart",
+      "email": "hello@edusmart.io",
+      "description": "Online education management system.",
+      "founded_year": 2019,
+      "team_size": 15,
+      "tags": [
+        "Education",
+        "Online"
+      ],
+      "website": "https://edusmart.io",
+      "phone": "+380971234111",
+      "city": "Kyiv",
+      "address": "Hryshka St, 15",
+      "postal_code": "02140",
+      "logo": null,
+      "partners_brands": "KPI, Coursera",
+      "audit_status": "in_review",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "f4b2c9d0-cf89-4865-b5c0-07fe3e32e8f0",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "HealthBridge",
+      "email": "info@healthbridge.com",
+      "description": "Telemedicine platform for doctors and patients.",
+      "founded_year": 2022,
+      "team_size": 8,
+      "tags": [
+        "Medicine",
+        "Health"
+      ],
+      "website": "https://healthbridge.com",
+      "phone": "+380661234777",
+      "city": "Dnipro",
+      "address": "Yavornytskoho Ave, 12",
+      "postal_code": "49000",
+      "logo": null,
+      "partners_brands": "Ministry of Health",
+      "audit_status": "approved",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "84354ed7-1b29-4a26-a0d8-a4e6ff6db063",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "AgroNext",
+      "email": "contact@agronext.ua",
+      "description": "Smart farming IoT solutions.",
+      "founded_year": 2017,
+      "team_size": 20,
+      "tags": [
+        "Agro",
+        "Farming"
+      ],
+      "website": "https://agronext.ua",
+      "phone": "+380991234888",
+      "city": "Vinnytsia",
+      "address": "Soborna St, 7",
+      "postal_code": "21000",
+      "logo": null,
+      "partners_brands": "John Deere, AgroBank",
+      "audit_status": "approved",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "b8d0776d-6e08-4edf-9b8c-054705fbf4eb",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "CyberForge",
+      "email": "admin@cyberforge.io",
+      "description": "Cybersecurity tools and penetration testing.",
+      "founded_year": 2016,
+      "team_size": 30,
+      "tags": [
+        "Cybersecurity"
+      ],
+      "website": "https://cyberforge.io",
+      "phone": "+380501234999",
+      "city": "Odesa",
+      "address": "Deribasivska St, 22",
+      "postal_code": "65000",
+      "logo": null,
+      "partners_brands": "ESET, Cisco",
+      "audit_status": "pending",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "4c8d397c-5945-4ce3-bce7-133363046796",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "AutoMind",
+      "email": "support@automind.ai",
+      "description": "Autonomous vehicle navigation systems.",
+      "founded_year": 2023,
+      "team_size": 6,
+      "tags": [
+        "AI",
+        "Navigation"
+      ],
+      "website": "https://automind.ai",
+      "phone": "+380931112222",
+      "city": "Kyiv",
+      "address": "Peremohy Ave, 10",
+      "postal_code": "03057",
+      "logo": null,
+      "partners_brands": "NVIDIA, BMW",
+      "audit_status": "draft",
+      "created_at": "2025-10-31T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  }
+]

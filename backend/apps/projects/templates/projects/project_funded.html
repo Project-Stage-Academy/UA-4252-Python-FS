@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Successfully Funded</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #FF9800;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }
+        .success-badge {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .funding-summary {
+            background-color: #FFF3E0;
+            padding: 15px;
+            border-left: 4px solid #FF9800;
+            margin: 20px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #FF9800;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Project Successfully Funded!</h1>
+    </div>
+    <div class="content">
+        <h2>{{ project.title }}</h2>
+
+        <div style="text-align: center;">
+            <span class="success-badge">✓ FULLY FUNDED</span>
+        </div>
+
+        <p>Congratulations!</p>
+        <p><strong>{{ startup.company_name }}</strong> has successfully reached their funding goal!</p>
+
+        <div class="funding-summary">
+            <p><strong>Final Amount Raised:</strong> {{ project.raised_amount }} {{ project.currency }}</p>
+            <p><strong>Target Was:</strong> {{ project.target_amount }} {{ project.currency }}</p>
+            <p><strong>Achievement:</strong> {{ project.progress_percentage }}% of goal</p>
+        </div>
+
+        <p>Thank you for your interest and support! The project will now move forward to the next exciting phase.</p>
+
+        <p style="text-align: center;">
+            <a href="{{ project_url }}" class="cta-button">View Project Updates</a>
+        </p>
+    </div>
+    <div class="footer">
+        <p>You received this email because you're following {{ startup.company_name }}.</p>
+    </div>
+</body>
+</html>

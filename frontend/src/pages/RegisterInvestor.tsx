@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const RegisterInvestor: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +14,12 @@ const RegisterInvestor: React.FC = () => {
     minInvestment: "",
     maxInvestment: "",
     role: "investor",
+    logoFile: null as File | null,
   });
 
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
   const [resendEmail, setResendEmail] = useState("");
@@ -39,7 +44,15 @@ const RegisterInvestor: React.FC = () => {
     if (!formData.entityType.length) newErrors.entityType = "Виберіть тип суб’єкта";
     if (!formData.minInvestment) newErrors.minInvestment = "Не ввели мінімальну інвестицію";
     if (!formData.maxInvestment) newErrors.maxInvestment = "Не ввели максимальну інвестицію";
-
+    if (formData.logoFile) {
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!allowedTypes.includes(formData.logoFile.type)) {
+        newErrors.logo = "Дозволені лише PNG, JPEG або JPG файли.";
+      }
+      if (formData.logoFile.size > 10 * 1024 * 1024) {
+        newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
+      }
+    }
     return newErrors;
   };
 
@@ -74,22 +87,28 @@ type MultiField = "representing" | "entityType";
       return;
     }
 
-    try {
-      const min = Number(formData.minInvestment);
-      const max = Number(formData.maxInvestment);
+    const min = Number(formData.minInvestment);
+    const max = Number(formData.maxInvestment);
 
-      const response = await fetch("/api/auth/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          company_name: formData.companyName,
-          investment_range_min: isNaN(min) ? 0 : min,
-          investment_range_max: isNaN(max) ? 0 : max,
-        }),
-      });
+    const formDataObj = new FormData();
+    formDataObj.append("email", formData.email);
+    formDataObj.append("password", formData.password);
+    formDataObj.append("role", formData.role);
+    formDataObj.append("company_name", formData.companyName);
+    formDataObj.append("investment_range_min", isNaN(min) ? "0" : String(min));
+    formDataObj.append("investment_range_max", isNaN(max) ? "0" : String(max));
+    if (formData.logoFile) {
+      formDataObj.append("logo", formData.logoFile);
+    }
+    if (!recaptchaToken) {
+      setErrors(prev => ({ ...prev, recaptcha: "Підтвердіть, що ви не робот" }));
+      setStatus("idle");
+      return;
+    }
+    formDataObj.append("recaptcha", recaptchaToken);
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE || '';
+      const response = await fetch(`${API_BASE}/api/auth/register/`, { method: 'POST', body: formDataObj });
 
       const data = await response.json();
 
@@ -111,7 +130,9 @@ type MultiField = "representing" | "entityType";
           minInvestment: "",
           maxInvestment: "",
           role: "investor",
+          logoFile: null,
         });
+        setLogoPreview(null);
       }
     } catch (e) {
       console.error("Register error:", e);
@@ -161,6 +182,40 @@ type MultiField = "representing" | "entityType";
         <input name="companyName" value={formData.companyName} onChange={handleChange} />
       </label>
       {errors.companyName && <p role="alert">{errors.companyName}</p>}
+      <label>
+        Логотип компанії
+        <input
+          type="file"
+          name="logoFile"
+          accept="image/png, image/jpeg, image/jpg"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            const MAX_SIZE = 10485760;
+
+            if (file && file.size > MAX_SIZE) {
+              setErrors(prev => ({ ...prev, logo: `Розмір файлу не повинен перевищувати 10 МБ.` }));
+              setLogoPreview(null);
+              setFormData(prev => ({ ...prev, logoFile: null }));
+              e.target.value = '';
+            } else {
+              setErrors(prev => {
+                const { logo, ...rest } = prev;
+                return rest;
+              });
+              setFormData(prev => ({ ...prev, logoFile: file || null }));
+              setLogoPreview(file ? URL.createObjectURL(file) : null);
+            }
+          }}
+        />
+      </label>
+      {formData.logoFile && <p>Вибрано: {formData.logoFile.name}</p>}
+      {logoPreview && (
+        <div style={{marginTop: "8px"}}>
+          <img src={logoPreview} alt="Logo preview" style={{maxWidth: "120px", maxHeight: "120px", borderRadius: "8px"}} />
+        </div>
+      )}
+      {errors.logo && <p role="alert">{errors.logo}</p>}
+
 
       <label>
         Електронна пошта
@@ -229,6 +284,14 @@ type MultiField = "representing" | "entityType";
         <input name="maxInvestment" type="number" value={formData.maxInvestment} onChange={handleChange} />
       </label>
       {errors.maxInvestment && <p role="alert">{errors.maxInvestment}</p>}
+
+      <div className="field">
+          <ReCAPTCHA
+              sitekey={import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY}
+              onChange={token => setRecaptchaToken(token)}
+              />
+        {errors.recaptcha && <p className="error-text">{errors.recaptcha}</p>}
+      </div>
 
       <button type="submit">Зареєструватися</button>
 

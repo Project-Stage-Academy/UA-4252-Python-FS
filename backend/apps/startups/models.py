@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
 
 User = get_user_model()
@@ -25,10 +28,10 @@ class StartupProfile(TimeStampedModel):
     city = models.CharField(max_length=100, blank=True, default="")
     address = models.CharField(max_length=255, blank=True, default="")
     postal_code = models.CharField(max_length=20, blank=True, default="")
+    tags = ArrayField(models.CharField(max_length=50), blank=True, default=list)
 
-    # We need to craete media folder and set MEDIA_URL and MEDIA_ROOT in settings.py
-    logo = models.ImageField(upload_to="startup_logos/%Y/%m/", blank=True, null=True)
-    partners_brands = models.TextField(blank=True, default="")
+    logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
+    partners_brands = models.TextField(blank=True, default='')
 
     audit_status = models.CharField(max_length=100, blank=True, default="")
 
@@ -42,6 +45,7 @@ class StartupProfile(TimeStampedModel):
             models.Index(fields=["user"]),
             models.Index(fields=["company_name"]),
             models.Index(fields=["-created_at"]),
+            GinIndex(fields=["tags"], name="startups_tags_gin"),
         ]
 
 

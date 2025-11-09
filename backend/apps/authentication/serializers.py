@@ -9,7 +9,9 @@ from django.db.models import UUIDField
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
+from drf_recaptcha.fields import ReCaptchaV2Field
 
+from apps.common.validators import drf_validate_file_size, drf_validate_file_type
 from apps.investors.models import InvestorProfile
 from apps.startups.models import StartupProfile
 
@@ -37,7 +39,7 @@ class RegistrationSerializer(serializers.Serializer):
     - startup: requires company_name
     - investor: requires investment_range_min
     """
-
+    recaptcha = ReCaptchaV2Field()
     email = serializers.EmailField(required=True)
     password = serializers.CharField(
         required=True, write_only=True, validators=[validate_password]
@@ -45,6 +47,7 @@ class RegistrationSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150, required=True)
     last_name = serializers.CharField(max_length=150, required=True)
     role = serializers.ChoiceField(choices=ROLE_CHOICES, required=True)
+    logo = serializers.ImageField(required=False, allow_null=True)
 
     # startup
     company_name = serializers.CharField(
@@ -88,15 +91,26 @@ class RegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("This email is already registered")
         return value
 
+    def validate_logo(self, value):
+        """
+        Validate logo file size and format
+        """
+        if value in (None, ''):
+            return value
+        drf_validate_file_size(value, 10)
+        drf_validate_file_type(value, ['.jpg', '.jpeg', '.png'])
+        return value
+
     def create(self, validated_data):
         """
         Create user and profile based on role.
         """
-        email = validated_data["email"]
-        password = validated_data["password"]
-        first_name = validated_data["first_name"]
-        last_name = validated_data["last_name"]
-        role = validated_data["role"]
+        email = validated_data['email']
+        password = validated_data['password']
+        first_name = validated_data['first_name']
+        last_name = validated_data['last_name']
+        role = validated_data['role']
+        logo_file = validated_data.get('logo', None)
 
         user = User.objects.create_user(
             email=email,
@@ -116,12 +130,12 @@ class RegistrationSerializer(serializers.Serializer):
                 email=email,
                 founded_year=2024,
                 team_size=1,
-                city="",
-                address="",
-                postal_code="",
-                logo="",
-                partners_brands="",
-                audit_status="Pending",
+                city='',
+                address='',
+                postal_code='',
+                logo=logo_file,
+                partners_brands='',
+                audit_status='Pending',
             )
 
         elif role == "investor":
@@ -151,7 +165,7 @@ class RegistrationSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
-
+    recaptcha = ReCaptchaV2Field()
     def validate_email(self, value):
         # Validate format only without revealing existence.
         return value
@@ -162,7 +176,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
     re_new_password = serializers.CharField(min_length=8)
-
+    recaptcha = ReCaptchaV2Field()
     @staticmethod
     def _get_user_from_uid(uid: str) -> User:
         try:

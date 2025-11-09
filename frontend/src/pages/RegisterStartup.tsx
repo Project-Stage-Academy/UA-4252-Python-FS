@@ -4,6 +4,7 @@ import '../css/RegisterStartup.css';
 import opentechlogo from "../img/opentechlogo.png";
 import craftmergelogo from "../img/craftmergelogo.png";
 import craftmergelogoblack from "../img/craftmergelogoblack.png";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 type FormState = {
   name: string;
@@ -33,10 +34,13 @@ export default function RegisterStartup() {
     startup: false,
     entrepreneur: false,
     legal: false,
+    logoFile: null,
   });
 
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [errors, setErrors] = useState<ErrorState>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -49,6 +53,10 @@ export default function RegisterStartup() {
       const { files } = target as HTMLInputElement;
       if (files && files[0]) {
         setForm(prev => ({ ...prev, logoFile: files[0] }));
+        setLogoPreview(URL.createObjectURL(files[0]));
+      } else {
+        setForm(prev => ({ ...prev, logoFile: null }));
+        setLogoPreview(null);
       }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
@@ -68,6 +76,15 @@ export default function RegisterStartup() {
     if (!form.surname) newErrors.surname = "Не ввели прізвище";
     if (!form.registercompany && !form.startup) newErrors.represent = "Виберіть кого ви представляєте";
     if (!form.entrepreneur && !form.legal) newErrors.person = "Виберіть який суб’єкт господарювання ви представляєте";
+    if (form.logoFile) {
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!allowedTypes.includes(form.logoFile.type)) {
+        newErrors.logo = "Дозволені лише PNG, JPEG або JPG файли.";
+      }
+      if (form.logoFile.size > 10 * 1024 * 1024) {
+        newErrors.logo = "Розмір файлу не повинен перевищувати 10 МБ.";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -76,9 +93,36 @@ export default function RegisterStartup() {
     e.preventDefault();
     if (!validate()) return;
     setStatus("loading");
+
+    const formData = new FormData();
+    formData.append("email", form.email);
+    formData.append("password", form.password);
+    formData.append("first_name", form.name);
+    formData.append("last_name", form.surname);
+    formData.append("company_name", form.company);
+    formData.append("role", "startup");
+    if (form.logoFile) {
+      formData.append("logo", form.logoFile);
+    }
+    if (!recaptchaToken) {
+      setErrors(prev => ({ ...prev, recaptcha: "Підтвердіть, що ви не робот" }));
+      setStatus("idle");
+      return;
+    }
+    formData.append("recaptcha", recaptchaToken);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStatus("success");
+      const API_BASE = import.meta.env.VITE_API_BASE || "";
+      const response = await fetch(API_BASE + `/api/auth/register/`, {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+        // Тут можна обробити помилки з бекенду
+      }
     } catch {
       setStatus("error");
     }
@@ -143,7 +187,6 @@ export default function RegisterStartup() {
       </div>
     );
   }
-
   return (
       <div className="page">
         <header className="navigation">
@@ -261,6 +304,27 @@ export default function RegisterStartup() {
               {errors.represent && <p className="error-text">{errors.represent}</p>}
 
               <div className="field">
+                <label>Логотип компанії</label>
+                <input
+                  type="file"
+                  name="logoFile"
+                  accept="image/png, image/jpeg"
+                  onChange={handleChange}
+                />
+                {form.logoFile && <p>Вибрано: {form.logoFile.name}</p>}
+                {logoPreview && !errors.logo && (
+                  <div style={{ marginTop: "8px" }}>
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      style={{ maxWidth: "120px", maxHeight: "120px", borderRadius: "8px" }}
+                    />
+                  </div>
+                )}
+                {errors.logo && <p className="error-text">{errors.logo}</p>}
+              </div>
+
+              <div className="field">
                 <label><span style={{color: "red"}}>*</span> Який суб’єкт господарювання ви представляєте?</label>
                 <label><input type="checkbox" name="entrepreneur" checked={form.entrepreneur} onChange={handleChange}/>Фізична
                   особа-підприємець</label>
@@ -268,6 +332,14 @@ export default function RegisterStartup() {
                   особа</label>
               </div>
               {errors.person && <p className="error-text">{errors.person}</p>}
+
+              <div className="field">
+                <ReCAPTCHA
+                  sitekey={import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY}
+                  onChange={token => setRecaptchaToken(token)}
+                />
+                {errors.recaptcha && <p className="error-text">{errors.recaptcha}</p>}
+              </div>
 
               <p className="form-terms">
                 Реєструючись, я погоджуюсь з <a href="#" className="link">правилами використання</a> сайту Craftmerge
