@@ -26,10 +26,10 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-default-key")
-
+RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+DRF_RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_PRIVATE_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-
 ALLOWED_HOSTS = ["*"]
 
 # Application definition
@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "drf_recaptcha",
 ]
 
 LOCAL_APPS = [
@@ -76,9 +77,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "backend.urls"
 
-CORS_ALLOW_ALL_ORIGINS = (
-    os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
-)
+CORS_ALLOW_ALL_ORIGINS = False
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_URL,
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -168,7 +173,6 @@ if os.environ.get("DJANGO_TEST", "0") == "1":
         "LOCATION": "unique-for-testing",
     }
 
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
