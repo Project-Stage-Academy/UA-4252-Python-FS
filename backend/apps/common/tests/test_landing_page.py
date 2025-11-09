@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.urls import reverse
 
+
 class LandingContentAPITests(APITestCase):
 
     def setUp(self) -> None:
