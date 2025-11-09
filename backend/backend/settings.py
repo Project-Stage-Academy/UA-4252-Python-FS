@@ -60,6 +60,7 @@ LOCAL_APPS = [
     "apps.user_messages",
     "apps.users",
     "apps.authentication",
+    "apps.profiles",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -158,6 +159,9 @@ SIMPLE_JWT = {
         days=int(os.environ.get("REFRESH_TOKEN_LIFETIME", "1"))
     ),
 }
+
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_SAMESITE = "Strict"
 
 CACHES = {
     "default": {

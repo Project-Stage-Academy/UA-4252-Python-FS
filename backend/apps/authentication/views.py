@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -54,6 +55,11 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        if not user.is_active:
+            return Response(
+                {"error": "Account inactive."}, status=status.HTTP_403_FORBIDDEN
+            )
+
         tokens = TokenObtainPairSerializer.get_token(user)
 
         response = Response(
@@ -66,12 +72,14 @@ class LoginView(APIView):
             status=status.HTTP_200_OK,
         )
 
+        secure_flag = getattr(settings, "AUTH_COOKIE_SECURE", True)
+
         response.set_cookie(
             key="access_token",
             value=str(tokens.access_token),
             httponly=True,
-            secure=False,  # While still in development, True when in prod.
-            samesite="Strict",
+            secure=secure_flag,
+            samesite=getattr(settings, "AUTH_COOKIE_SAMESITE", "Strict"),
         )
 
         response.set_cookie(
@@ -96,8 +104,8 @@ class LogoutView(APIView):
         if not refresh_token:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        token = RefreshToken(refresh_token)
         try:
+            token = RefreshToken(refresh_token)
             token.blacklist()
             response = Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -105,7 +113,7 @@ class LogoutView(APIView):
             response.delete_cookie("access_token")
 
             return response
-        except Exception:
+        except TokenError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -136,7 +144,7 @@ class ResendVerificationView(APIView):
                 )
 
         except User.DoesNotExist:
-            return Response(status=status.HTTP_200_OK)  # 400 for test
+            return Response(status=status.HTTP_200_OK)
 
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.id))
