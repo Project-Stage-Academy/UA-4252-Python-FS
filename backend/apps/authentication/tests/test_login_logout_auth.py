@@ -131,3 +131,47 @@ class ResendVerificationTests(APITestCase):
         response = self.client.post(self.resend_url, resend_data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+
+@override_settings(COMMON_REDIS_THROTTLE_RATE=6)
+class CheckEmailTest(APITestCase):
+    def setUp(self):
+        self.email = "test@email.com"
+        self.password = "test123test"
+        self.user = User.objects.create_user(
+            email=self.email,
+            password=self.password,
+            first_name="Test",
+            last_name="User",
+        )
+        self.check_url = reverse("check-email")
+
+    def test_check_success_false(self):
+        check_data = {"email": self.email}
+        check_response = self.client.post(self.check_url, check_data, format="json")
+
+        self.assertEqual(check_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(check_response.data["available"], 'false')
+
+    def test_check_success_true(self):
+        check_data = {"email": "somerandommail@email.com"}
+        check_response = self.client.post(self.check_url, check_data, format="json")
+
+        self.assertEqual(check_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(check_response.data["available"], 'true')
+
+    def test_check_throttled(self):
+        check_data = {"email": self.email}
+
+        for i in range(0, 10):
+            self.client.post(self.check_url, check_data, format="json")
+
+        response = self.client.post(self.check_url, check_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    def test_check_fail(self):
+        check_data = {"no-mail": "no-mail-info"}
+        check_response = self.client.post(self.check_url, check_data, format="json")
+
+        self.assertEqual(check_response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -1,19 +1,33 @@
+import hashlib
+
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework.throttling import BaseThrottle
 from apps.users.models import User
 from django.utils.http import urlsafe_base64_decode
 
-RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 6)
+RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 60)
 DURATION = getattr(settings, "COMMON_REDIS_THROTTLE_DURATION", 60)
 
 EMAIL_RATE = getattr(settings, "EMAIL_THROTTLE_RATE", 6)
 EMAIL_DURATION = getattr(settings, "EMAIL_THROTTLE_DURATION", 3600)
 
 class CommonRedisThrottle(BaseThrottle):
+    """
+    Redis-based throttle that limits requests by a combination of:
+        - user IP address
+        - email (if provided)
+
+    RATE: allowed requests per duration
+    DURATION: window in minutes
+    """
     def get_cache_key(self, request, view):
         ident = self.get_ident(request)
-        return f"throttle:{request.path}:{ident}"
+        email = request.data.get('email')
+        email_hash = (
+            hashlib.sha256((email or '').encode()).hexdigest() if email else 'no-email'
+        )
+        return f"throttle:{request.path}:{ident}:{email_hash}"
 
     def allow_request(self, request, view):
         key = self.get_cache_key(request, view)
