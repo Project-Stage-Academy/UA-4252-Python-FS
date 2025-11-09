@@ -1,15 +1,14 @@
-from django_fsm import FSMField, transition
-from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 import uuid
 from decimal import Decimal
-from django.utils.text import slugify
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import IntegrityError, models, transaction
 from django.utils import timezone
+from django.utils.text import slugify
+from django_fsm import FSMField, transition
 
 from apps.common.models import TimeStampedModel
 
@@ -91,9 +90,9 @@ class Project(TimeStampedModel):
     def mark_funded(self):
         self.funded_at = timezone.now()
 
-    @transition(field=status,
-                source=['idea', 'mvp', 'fundraising', 'funded'],
-                target='closed')
+    @transition(
+        field=status, source=['idea', 'mvp', 'fundraising', 'funded'], target='closed'
+    )
     def close_project(self):
         pass
 
