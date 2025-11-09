@@ -39,6 +39,7 @@ class GetHealth(APIView):
 def health(request):
     return JsonResponse({"status": "ok"})
 
+
 class LandingContentAPIView(APIView):
     """
     Returns static content for the main landing page.
@@ -47,14 +48,20 @@ class LandingContentAPIView(APIView):
     to render the page in a single JSON object.
     """
 
+    # Allow public access for a GET request
     permission_classes = [permissions.AllowAny]
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-
+        """
+        Handles the GET request and returns the structured content.
+        """
         content_data = {
             "hero": {
                 "title": "Where Great Ideas Get Funded",
-                "subtitle": "Connecting the most innovative startups with visionary investors.",
+                "subtitle": (
+                    "Connecting the most innovative startups "
+                    "with visionary investors."
+                ),
                 "cta_text": "Get Started",
                 "hero_images": [
                     {"url": "/static/images/hero_main.png"},
@@ -65,31 +72,49 @@ class LandingContentAPIView(APIView):
                 {
                     "icon": "startup",
                     "title": "For Startups",
-                    "desc": "Pitch your vision, secure funding, and access the resources to scale your business.",
+                    "desc": (
+                        "Pitch your vision, secure funding, and "
+                        "access the resources to scale your business."
+                    ),
                 },
                 {
                     "icon": "investor",
                     "title": "For Investors",
-                    "desc": "Discover curated, high-potential startups and invest in the next generation of innovation.",
+                    "desc": (
+                        "Discover curated, high-potential startups "
+                        "and invest in the next generation of innovation."
+                    ),
                 },
                 {
                     "icon": "expert",
                     "title": "For Experts",
-                    "desc": "Join our network to mentor founders and advise on industry-specific challenges.",
+                    "desc": (
+                        "Join our network to mentor founders and "
+                        "advise on industry-specific challenges."
+                    ),
                 },
             ],
             "why_worth": [
                 {
                     "title": "Curated Deal Flow",
-                    "desc": "Access a vetted pipeline of startups that align with your investment thesis.",
+                    "desc": (
+                        "Access a vetted pipeline of startups that "
+                        "align with your investment thesis."
+                    ),
                 },
                 {
                     "title": "Streamlined Process",
-                    "desc": "From discovery to due diligence, our platform simplifies the entire investment cycle.",
+                    "desc": (
+                        "From discovery to due diligence, our platform "
+                        "simplifies the entire investment cycle."
+                    ),
                 },
                 {
                     "title": "Community & Network",
-                    "desc": "Connect with founders, co-investors, and industry leaders.",
+                    "desc": (
+                        "Connect with founders, co-investors, "
+                        "and industry leaders."
+                    ),
                 },
             ],
             "footer_links": {
@@ -105,3 +130,4 @@ class LandingContentAPIView(APIView):
             },
         }
         return Response(content_data)
+    

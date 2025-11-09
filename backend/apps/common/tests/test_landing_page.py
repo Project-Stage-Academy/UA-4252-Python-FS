@@ -39,3 +39,4 @@ class LandingContentAPITests(APITestCase):
         self.assertIn("left", data["footer_links"])
         self.assertIn("right", data["footer_links"])
         self.assertIsInstance(data["footer_links"]["left"], list)
+        
