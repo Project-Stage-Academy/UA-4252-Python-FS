@@ -32,6 +32,13 @@ class StartupProfile(TimeStampedModel):
 
     audit_status = models.CharField(max_length=100, blank=True, default="")
 
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True)
+    published_by_id = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="published_profiles"
+    )
+    draft_saved_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.company_name
 

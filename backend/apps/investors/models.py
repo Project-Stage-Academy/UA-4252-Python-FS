@@ -63,6 +63,13 @@ class InvestorProfile(TimeStampedModel):
     partners_brands = models.TextField()
     audit_status = models.CharField(max_length=50, default="Pending")
 
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True)
+    published_by_id = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="published_profiles"
+    )
+    draft_saved_at = models.DateTimeField(auto_now=True)
+
     def clean(self):
         if self.investment_range_max < self.investment_range_min:
             raise ValidationError(

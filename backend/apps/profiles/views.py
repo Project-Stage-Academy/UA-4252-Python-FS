@@ -1,4 +1,6 @@
 from rest_framework import status, viewsets
+
+# from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.investors.models import InvestorProfile
@@ -11,18 +13,20 @@ from .serializers import UnifiedProfileSerializer, UnifiedProfileUpdateSerialize
 class ProfileViewSet(viewsets.ViewSet):
     permission_classes = [IsOwnerOrReadOnly]
 
-    def _get_profile_object(self, profile_uuid):
+    def _get_profile_object(self, pk):
         try:
-            return InvestorProfile.objects.get(id=profile_uuid)
+            profile = InvestorProfile.objects.get(id=pk)
         except InvestorProfile.DoesNotExist:
-            pass
+            try:
+                profile = StartupProfile.objects.get(id=pk)
+            except StartupProfile.DoesNotExist:
+                return Response(
+                    {'detail': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND
+                )
 
-        try:
-            return StartupProfile.objects.get(id=profile_uuid)
-        except StartupProfile.DoesNotExist:
-            pass
+        self.check_object_permissions(self.request, profile)
 
-        return None
+        return profile
 
     def retrieve(self, request, pk=None):
         profile = self._get_profile_object(pk)
@@ -83,13 +87,6 @@ class ProfileViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         profile = self._get_profile_object(pk)
 
-        if not profile:
-            return Response(
-                {'detail': 'No such profile exists'}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        self.check_object_permissions(request, profile)
-
         update_serializer = UnifiedProfileUpdateSerializer(
             data=request.data, partial=True
         )
@@ -109,13 +106,6 @@ class ProfileViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         profile = self._get_profile_object(pk)
 
-        if profile is None:
-            return Response(
-                {'detail': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        self.check_object_permissions(request, profile)
-
         update_serializer = UnifiedProfileUpdateSerializer(
             data=request.data, partial=False
         )
@@ -131,3 +121,7 @@ class ProfileViewSet(viewsets.ViewSet):
 
         response_serializer = UnifiedProfileSerializer(updated_profile)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    # @action(detail=True, methods=['post'], permission_classes=[IsOwnerOrReadOnly])
+    # def publish(self, request, pk=None):
+    #     profile = self._get_profile_object(pk)

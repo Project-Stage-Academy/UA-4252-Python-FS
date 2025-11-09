@@ -66,6 +66,9 @@ class UnifiedProfileSerializer(serializers.Serializer):
             'logo': instance.logo.url if instance.logo else None,
             'partners_brands': instance.partners_brands,
             'audit_status': instance.audit_status,
+            'is_published': instance.is_published,
+            'published_at': instance.published_at,
+            'published_by': instance.published_by.id if instance.published_by else None,
         }
 
         # Exceptional fields for Startups
