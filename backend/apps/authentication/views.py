@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .throttling import CommonRedisThrottle, EmailThrottle
 from .emails import send_password_reset_email
 from .serializers import (
     CheckEmailSerializer,
@@ -32,7 +33,7 @@ class LoginView(APIView):
     """Authenticates user, generates refresh/access tokens.
     Throttle limited in throttling.py with throttle_classes, using Redis to count."""
 
-    throttle_classes = [CommonRedisThrottle]
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -114,7 +115,7 @@ class ResendVerificationView(APIView):
     sends mail with verification link.
     """
 
-    throttle_classes = [CommonRedisThrottle]
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         email = request.data.get("email")
@@ -172,6 +173,7 @@ class RegisterView(APIView):
     - Prevents attackers from discovering registered emails
     - Duplicate emails are handled in serializer validation
     """
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         """
@@ -190,7 +192,7 @@ class RegisterView(APIView):
                     status=status.HTTP_201_CREATED,
                 )
 
-        serializer = RegistrationSerializer(data=request.data)
+        serializer = RegistrationSerializer(data=request.data, context={'request': request})
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -228,6 +230,7 @@ class VerifyEmailView(APIView):
     GET /api/auth/verify/<uid>/<token>/
     Activates user account after successful email verification.
     """
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request, uid, token):
         """
@@ -281,7 +284,7 @@ class PasswordResetRequestView(APIView):
              password reset link.
         400: Validation errors.
     """
-
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
@@ -321,7 +324,7 @@ class PasswordResetConfirmView(APIView):
         200: Sets a new password for a user.
         400: Validation errors.
     """
-
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer
 
@@ -353,7 +356,7 @@ class CheckEmailView(APIView):
         429: Too Many Requests
     """
 
-    throttle_classes = [CommonRedisThrottle]
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         serializer = CheckEmailSerializer(data=request.data)
