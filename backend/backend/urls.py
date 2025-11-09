@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/startups/", include("apps.startups.urls")),
     path("api/content/", include(content_patterns)),
     path("api/", include("apps.projects.urls")),
+    path("common/", include("apps.common.urls")),
     # path("api/projects/", include("apps.projects.urls")),
     path("api/investors/", include("apps.investors.urls")),
     path("api/users/", include("apps.users.urls")),
