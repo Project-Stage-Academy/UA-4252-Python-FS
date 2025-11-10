@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
@@ -117,13 +118,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             data=request.data, context={'startup': startup, 'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        project = serializer.save()
+        with transaction.atomic():
+            project = serializer.save()
+
+            if request.FILES:
+                self._handle_attachment(project, request)
 
         headers = self.get_success_headers(serializer.data)
-
-        if request.FILES:
-            self._handle_attachment(project, request)
-
         detail_serializer = ProjectDetailSerializer(
             project, context={'request': request}
         )

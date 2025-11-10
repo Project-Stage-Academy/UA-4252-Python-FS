@@ -1,6 +1,6 @@
 import os
 
-from django_fsm import can_proceed, get_available_FIELD_transitions
+from django_fsm import can_proceed
 from rest_framework import serializers
 
 from apps.common.constants import PROJECT_TRANSITIONS
