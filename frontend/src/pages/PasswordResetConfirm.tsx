@@ -61,7 +61,7 @@ export default function PasswordResetConfirm({ lang = "uk" }: Props) {
       const r = await fetch("/api/auth/password-reset/confirm/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, token, new_password: password }),
+        body: JSON.stringify({ uidb64: uid, token, new_password: password }),
       });
 
       if (r.ok) {

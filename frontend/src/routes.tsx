@@ -18,7 +18,7 @@ export const routes = [
   { path: "/startups/:id", element: <StartupView /> },
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
-  { path: "/reset-password", element: <PasswordResetRequest /> },
-  { path: "/reset-password/confirm", element: <PasswordResetConfirm /> },
+  { path: "/forgot-password", element: <PasswordResetRequest /> },
+  { path: "/forgot-password/confirm", element: <PasswordResetConfirm /> },
   { path: "*", element: <div>404 Not Found</div> }
 ];

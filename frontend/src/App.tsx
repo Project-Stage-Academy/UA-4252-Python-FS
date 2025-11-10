@@ -1,15 +1,10 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
-import Home from "./pages/Home";
 import "./components/Header/Header.scss";
 import "./App.css";
-
-// Ленивые импорты
-const Register = lazy(() => import("./pages/Register"));
-const PasswordResetRequest = lazy(() => import("./pages/PasswordResetRequest"));
-const PasswordResetConfirm = lazy(() => import("./pages/PasswordResetConfirm"));
+import { routes } from "./routes";
 
 function App() {
   return (
@@ -20,10 +15,7 @@ function App() {
         <main className="content">
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<PasswordResetRequest />} />
-              <Route path="/reset-password/confirm" element={<PasswordResetConfirm />} />
+              {routes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
             </Routes>
           </Suspense>
         </main>
