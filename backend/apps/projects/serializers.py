@@ -1,8 +1,9 @@
-from rest_framework import serializers
 from django_fsm import can_proceed, get_available_FIELD_transitions  # noqa: F401
-from .models import Project
+from rest_framework import serializers
 
 from apps.common.constants import PROJECT_TRANSITIONS
+
+from .models import Project, ProjectAudit
 
 
 class ProjectStatusSerializer(serializers.Serializer):
@@ -214,3 +215,54 @@ class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Return detailed representation after create/update"""
         return ProjectDetailSerializer(instance, context=self.context).data
+
+
+class ProjectAuditSerializer(serializers.ModelSerializer):
+    user_email = serializers.CharField(
+        source='user.email', read_only=True, allow_null=True
+    )
+    user_name = serializers.SerializerMethodField()
+    changed_fields_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectAudit
+        fields = [
+            'id',
+            'action',
+            'timestamp',
+            'user_email',
+            'user_name',
+            'changes',
+            'changed_fields_display',
+            'user_agent',
+        ]
+        read_only_fields = fields
+
+    def get_user_name(self, obj):
+        if obj.user:
+            return (
+                f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.email
+            )
+        return "System"
+
+    def get_changed_fields_display(self, obj):
+        changes = obj.changes or {}
+        changed_fields = changes.get('changed_fields', [])
+
+        field_labels = {
+            'title': 'Title',
+            'short_description': 'Short Description',
+            'description': 'Description',
+            'status': 'Status',
+            'target_amount': 'Target Amount',
+            'raised_amount': 'Raised Amount',
+            'allow_overfunding': 'Allow Overfunding',
+            'currency': 'Currency',
+            'funded_at': 'Funded At',
+            'thumbnail': 'Thumbnail',
+            'tags': 'Tags',
+            'visibility': 'Visibility',
+            'is_deleted': 'Deleted',
+            'deleted_at': 'Deleted At',
+            'deleted_by': 'Deleted By',
+        }
