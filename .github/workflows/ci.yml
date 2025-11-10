@@ -70,7 +70,7 @@ jobs:
         working-directory: backend
         run: |
           echo "Running tests for project apps with detailed output..."
-          coverage run manage.py test apps --verbosity=2
+          coverage run manage.py test --verbosity=2
           echo ""
           coverage report
           coverage xml
