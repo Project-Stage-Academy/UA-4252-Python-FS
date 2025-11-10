@@ -1,0 +1,20 @@
+💰 FUNDRAISING STARTED!
+
+{{ project.title }}
+
+Great news!
+
+{{ startup.company_name }} has started raising funds for their project!
+
+FUNDING DETAILS:
+-----------------
+Target Amount: {{ project.target_amount }} {{ project.currency }}
+Current Progress: {{ project.raised_amount }} {{ project.currency }} ({{ project.progress_percentage }}%)
+
+This is your opportunity to support this exciting venture and become part of its success story!
+
+View the full project and invest here:
+{{ project_url }}
+
+---
+You received this email because you're following {{ startup.company_name }}.
