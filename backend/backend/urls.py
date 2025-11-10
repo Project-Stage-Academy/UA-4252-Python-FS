@@ -18,7 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -32,7 +32,7 @@ urlpatterns = [
     path("api/investors/", include("apps.investors.urls")),
     path("api/users/", include("apps.users.urls")),
     path("api/messages/", include("apps.user_messages.urls")),
-    re_path("api/search/", include("apps.search.urls")),
+    path("api/search/", include("apps.search.urls")),
 ]
 
 if settings.DEBUG:

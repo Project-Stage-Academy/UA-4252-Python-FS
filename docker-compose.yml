@@ -77,4 +77,3 @@ services:
 volumes:
   dev-db-data:
   es-data:
-  certs:
