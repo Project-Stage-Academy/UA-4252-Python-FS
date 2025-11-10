@@ -87,14 +87,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             captions = [c.strip() for c in captions_raw.split(',') if c.strip()]
         else:
             captions = captions_raw if captions_raw else []
-        created_attachments = []
+
+        validated_serializers = []
         for idx, file in enumerate(files):
             caption = captions[idx] if idx < len(captions) else ''
             serializer = ProjectAttachmentSerializer(
                 data={'file': file, 'caption': caption, 'order': idx},
                 context={'request': request},
             )
-            if serializer.is_valid(raise_exception=True):
+            serializer.is_valid(raise_exception=True)
+            validated_serializers.append(serializer)
+
+            created_attachments = []
+            for serializer in validated_serializers:
                 attachment = serializer.save(project=project)
                 created_attachments.append(attachment)
         return created_attachments
