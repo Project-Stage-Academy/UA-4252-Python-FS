@@ -1,9 +1,8 @@
-from django_fsm import can_proceed
 from rest_framework import serializers
+from django_fsm import can_proceed, get_available_FIELD_transitions  # noqa: F401
+from .models import Project
 
 from apps.common.constants import PROJECT_TRANSITIONS
-
-from .models import Project
 
 
 class ProjectStatusSerializer(serializers.Serializer):

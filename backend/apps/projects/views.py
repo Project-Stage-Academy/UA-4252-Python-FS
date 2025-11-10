@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+
+from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
 
 from apps.common.constants import PROJECT_TRANSITIONS
 from apps.startups.models import StartupProfile
@@ -150,10 +151,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         force = serializer.validated_data.get('force', False)
 
         if project.startup.user != request.user:
-            return Response(
-                {'error': 'Only user who create project can change status'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return Response({
+                'error': 'Only user who create project can change status'
+            }, status=status.HTTP_403_FORBIDDEN)
 
         if new_status == project.status:
             return Response({'message': 'Already in this status'})
@@ -169,7 +169,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if not transition_method:
             return Response(
                 {'error': f'Unknown status: {new_status}'},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
@@ -189,7 +189,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
 
         except ValueError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def _get_allowed_transitions(self, project):
         allowed = []

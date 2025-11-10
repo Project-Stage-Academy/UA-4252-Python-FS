@@ -42,7 +42,8 @@ REGION_CHOICES = (
 
 
 class InvestorProfile(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='investor_profile')
     company_name = models.CharField(max_length=200)
     full_name = models.CharField(max_length=200)
     description = models.TextField()
@@ -86,7 +87,8 @@ class Tracking(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name='tracking'
     )
     target_type = models.CharField(
-        choices=[('startup', 'startup'), ('project', 'project')], max_length=32
+        choices=[('startup', 'startup'), ('project', 'project')],
+        max_length=32
     )
     target_id = models.UUIDField()  # FK via generic relation or separate FK fields
     source = models.CharField(
