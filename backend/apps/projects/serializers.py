@@ -266,3 +266,8 @@ class ProjectAuditSerializer(serializers.ModelSerializer):
             'deleted_at': 'Deleted At',
             'deleted_by': 'Deleted By',
         }
+
+        return [
+            field_labels.get(field, field.replace('_', ' ').title())
+            for field in changed_fields
+        ]
