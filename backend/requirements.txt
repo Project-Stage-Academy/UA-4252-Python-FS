@@ -1,5 +1,5 @@
 asgiref==3.10.0
-astroid==4.0.1
+astroid==4.0.2
 black==25.9.0
 certifi==2025.10.5
 celery==5.4.0
