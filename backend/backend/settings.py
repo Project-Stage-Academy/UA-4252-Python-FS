@@ -48,6 +48,8 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -59,6 +61,7 @@ LOCAL_APPS = [
     "apps.user_messages",
     "apps.users",
     "apps.authentication",
+    "apps.search",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -77,7 +80,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "backend.urls"
 
 CORS_ALLOW_ALL_ORIGINS = (
-    os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
+        os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -211,3 +214,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 PASSWORD_RESET_TIMEOUT = int(
     os.environ.get("PASSWORD_RESET_TIMEOUT", 60 * 60)
 )  # 1hr by default
+
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": "http://es:9200",
+        "basic_auth": (
+            os.environ.get("ELASTIC_USERNAME"),
+            os.environ.get("ELASTIC_PASSWORD")
+        ),
+    }
+}
