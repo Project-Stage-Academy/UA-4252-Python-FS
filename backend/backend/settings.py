@@ -215,9 +215,12 @@ PASSWORD_RESET_TIMEOUT = int(
     os.environ.get("PASSWORD_RESET_TIMEOUT", 60 * 60)
 )  # 1hr by default
 
+ES_HOST = os.environ.get("ELASTIC_HOST", "es")
+ES_PORT = os.environ.get("ELASTIC_PORT", 9200)
+
 ELASTICSEARCH_DSL = {
     "default": {
-        "hosts": "http://es:9200",
+        "hosts": f"http://{ES_HOST}:{ES_PORT}",
         "basic_auth": (
             os.environ.get("ELASTIC_USERNAME"),
             os.environ.get("ELASTIC_PASSWORD")
