@@ -48,25 +48,14 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
       return;
     }
 
-    setLoading(true);
+   setLoading(true);
     try {
-      const getCookie = (name: string): string | undefined => {
-        const prefix = name + "=";
-        const entry = document.cookie
-          .split(";")
-          .map(c => c.trim())
-          .find(c => c.startsWith(prefix));
-        if (!entry) return undefined;
-        const raw = entry.split("=").slice(1).join("=");
-        try {
-          return decodeURIComponent(raw);
-        } catch {
-          return raw;
-        }
-      };
-
-      const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
-      const csrftoken = getCookie("csrftoken") ?? meta?.content;
+        const getCookie = (name: string) => {
+            const row = document.cookie.split("; ").find(r => r.startsWith(name + "="));
+            return row ? decodeURIComponent(row.split("=")[1]) : undefined;
+  };
+        const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+        const csrftoken = getCookie("csrftoken") ?? meta?.content;
 
         const r = await fetch("/api/auth/password-reset/", {
             method: "POST",
@@ -78,20 +67,18 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
             body: JSON.stringify({ email: v, recaptcha: recaptchaToken }),
   });
       setMsg(r.status === 429 ? t.throttled : t.success);
-
-      if (!r.ok) {
-        if (r.status >= 500) {
-          console.error?.("password-reset server error", { status: r.status });
-        } else {
-          console.warn?.("password-reset client error", { status: r.status });
-        }
+    if (!r.ok) {
+      if (r.status >= 500) {
+        console.error("password-reset server error", { status: r.status });
+      } else {
+        console.warn("password-reset client error", { status: r.status });
       }
-    } catch (err) {
-      setMsg(t.success);
-      console.error?.("password-reset network/fetch error", err);
-    } finally {
-      setLoading(false);
     }
+  } catch (err) {
+    setMsg(t.success);
+    console.error("password-reset network/fetch error", err);
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -122,25 +109,13 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
         />
 
         {error && (
-          <div
-            id="email-error"
-            role="alert"
-            aria-live="assertive"
-            style={{ color: "#b00020", marginBottom: 8 }}
-          >
+          <div id="email-error" role="alert" aria-live="assertive" style={{ color: "#b00020", marginBottom: 8 }}>
             {error}
           </div>
         )}
 
         {msg && (
-          <div
-            role="status"
-            aria-live="polite"
-            style={{
-              color: msg === t.throttled ? "#b00020" : "#0f7b0f",
-              marginBottom: 8,
-            }}
-          >
+          <div role="status" aria-live="polite" style={{ color: msg === t.throttled ? "#b00020" : "#0f7b0f", marginBottom: 8 }}>
             {msg}
           </div>
         )}
@@ -152,19 +127,7 @@ export default function PasswordResetRequest({ lang = "uk" }: Props) {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          aria-busy={loading || undefined}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#0f7b0f",
-            color: "white",
-            border: "none",
-            borderRadius: 4,
-            cursor: loading ? "default" : "pointer",
-          }}
-        >
+        <button type="submit" disabled={loading} aria-busy={loading || undefined}>
           {loading ? "..." : t.submit}
         </button>
       </form>
