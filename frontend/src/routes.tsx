@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,5 +20,6 @@ export const routes = [
   { path: "/dashboard", element: <InvestorDashboard /> },
   { path: "/messages", element: <Inbox /> },
   { path: "/forgot-password", element: <PasswordResetRequest /> },
-  { path: "/error", element: <ErrorPage /> }
+  { path: "/error", element: <ErrorPage /> },
+  { path: "*", element: <Navigate to="/error" replace /> },
 ];

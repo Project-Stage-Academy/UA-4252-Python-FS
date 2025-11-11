@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 type Lang = "uk" | "en";
+
 type Props = {
   lang?: Lang;
   query?: string;
@@ -26,7 +28,7 @@ const TR = {
   },
 } as const;
 
-export default function EmptyState({
+export default function ErrorPage({
   lang = "uk",
   query,
   suggestions = [],
@@ -40,37 +42,20 @@ export default function EmptyState({
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 600,
-        margin: "4rem auto",
-        textAlign: "center",
-        fontFamily: "sans-serif",
-        padding: "2rem",
-        borderRadius: 16,
-        background: "#fafafa",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-      }}
-    >
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-      <h1>{t.title}</h1>
-      <p style={{ color: "#555", marginBottom: 24 }}>{t.subtitle}</p>
+    <div className="max-w-[600px] mx-auto my-16 text-center font-sans p-8 rounded-2xl bg-gray-50 shadow-md">
+      <div className="text-6xl mb-4">🔍</div>
+      <h1 className="text-2xl font-bold">{t.title}</h1>
+      <p className="text-gray-600 mb-6">{t.subtitle}</p>
 
       {suggestions.length > 0 && (
-        <div style={{ marginBottom: 32 }}>
-          <h3 style={{ marginBottom: 12 }}>{t.suggestionsTitle}</h3>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
+        <div className="mb-8">
+          <h3 className="mb-3 font-semibold">{t.suggestionsTitle}</h3>
+          <div className="flex flex-wrap justify-center gap-2">
             {suggestions.map((tag) => (
               <button
                 key={tag}
                 onClick={() => handleTagClick(tag)}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: 16,
-                  padding: "6px 12px",
-                  background: "white",
-                  cursor: "pointer",
-                }}
+                className="border border-gray-300 rounded-full px-3 py-1 bg-white hover:bg-gray-100 transition"
               >
                 {tag}
               </button>
@@ -79,47 +64,27 @@ export default function EmptyState({
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+      <div className="flex flex-col gap-3 items-center">
         <button
           onClick={onClearFilters}
-          style={{
-            background: "#f5f5f5",
-            border: "1px solid #ccc",
-            padding: "8px 16px",
-            borderRadius: 8,
-            cursor: "pointer",
-          }}
+          className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-200 transition"
         >
           {t.clearFilters}
         </button>
 
-        <a
-          href="/popular"
-          style={{
-            textDecoration: "none",
-            color: "white",
-            background: "#007bff",
-            padding: "8px 16px",
-            borderRadius: 8,
-            display: "inline-block",
-          }}
+        <Link
+            to="/popular"
+            className="text-white bg-blue-600 px-4 py-2 rounded-md inline-block hover:bg-blue-700 transition"
         >
-          {t.popularTags}
-        </a>
+            {t.popularTags}
+        </Link>
 
-        <a
-          href="/register"
-          style={{
-            textDecoration: "none",
-            color: "white",
-            background: "#28a745",
-            padding: "8px 16px",
-            borderRadius: 8,
-            display: "inline-block",
-          }}
-        >
-          {t.createListing}
-        </a>
+         <Link
+            to="/register"
+            className="text-white bg-green-600 px-4 py-2 rounded-md inline-block hover:bg-green-700 transition"
+         >
+            {t.createListing}
+         </Link>
       </div>
     </div>
   );
