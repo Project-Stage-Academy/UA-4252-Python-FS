@@ -31,6 +31,7 @@ urlpatterns = [
     # path("api/investors/", include("apps.investors.urls")),
     path("api/users/", include("apps.users.urls")),
     path("api/", include("apps.user_messages.urls")),
+    path("api/profiles/", include("apps.profiles.urls")),
 ]
 
 if settings.DEBUG:

@@ -20,6 +20,10 @@ class UnifiedProfileSerializer(serializers.Serializer):
     partners_brands = serializers.CharField(allow_blank=True)
     audit_status = serializers.CharField(allow_blank=True)
 
+    is_published = serializers.BooleanField(read_only=True)
+    published_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    published_by_id = serializers.IntegerField(read_only=True, allow_null=True)
+
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
@@ -68,7 +72,7 @@ class UnifiedProfileSerializer(serializers.Serializer):
             'audit_status': instance.audit_status,
             'is_published': instance.is_published,
             'published_at': instance.published_at,
-            'published_by': instance.published_by.id if instance.published_by else None,
+            'published_by_id': instance.published_by_id,
         }
 
         # Exceptional fields for Startups
