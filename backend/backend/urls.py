@@ -30,9 +30,9 @@ urlpatterns = [
     path("api/", include("apps.projects.urls")),
     path("common/", include(general_patterns)),
     # path("api/projects/", include("apps.projects.urls")),
-    path("api/investors/", include("apps.investors.urls")),
+    # path("api/investors/", include("apps.investors.urls")),
     path("api/users/", include("apps.users.urls")),
-    path("api/messages/", include("apps.user_messages.urls")),
+    path("api/", include("apps.user_messages.urls")),
 ]
 
 if settings.DEBUG:
