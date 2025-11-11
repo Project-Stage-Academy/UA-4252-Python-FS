@@ -2,11 +2,13 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
-import Home from "./pages/Home"; 
-import './components/Header/Header.scss';
+import Home from "./pages/Home";
+import PasswordResetRequest from "./pages/PasswordResetRequest";
+import PasswordResetConfirm from "./pages/PasswordResetConfirm";
+import "./components/Header/Header.scss";
 import "./App.css";
 
-const Register = lazy(() => import("./pages/Register")); 
+const Register = lazy(() => import("./pages/Register"));
 const WhyWorthGrid = lazy(() => import("./components/WhyWorthGrid/WhyWorthGrid"));
 
 function App() {
@@ -16,33 +18,20 @@ function App() {
         <Header />
 
         <main className="content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/register"
-              element={
-                <Suspense fallback={null}>
-                  <Register />
-                </Suspense>
-              }
-            />
-          </Routes>
-
           <Suspense fallback={null}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/register" element={<Register />} />
+
+              <Route path="/forgot-password" element={<PasswordResetRequest />} />
+              <Route path="/reset-password" element={<PasswordResetConfirm />} />
+
+              <Route path="*" element={<div>404 Not Found</div>} />
+            </Routes>
+
             <WhyWorthGrid />
           </Suspense>
         </main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/register"
-            element={
-              <Suspense fallback={null}>
-                <Register />
-              </Suspense>
-            }
-          />
-        </Routes>
 
         <Footer />
       </div>
