@@ -17,7 +17,7 @@ from .serializers import (
     ProjectAttachmentSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
-    ProjectsCreateUpdateSerialiser,
+    ProjectsCreateUpdateSerializer,
     ProjectSerializer,
     ProjectStatusSerializer,
 )
@@ -31,7 +31,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ProjectListSerializer
         elif self.action in ['create', 'update', 'partial_update']:
-            return ProjectsCreateUpdateSerialiser
+            return ProjectsCreateUpdateSerializer
         elif self.action == 'update_status':
             return ProjectStatusSerializer
         return ProjectDetailSerializer
@@ -98,10 +98,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             validated_serializers.append(serializer)
 
-            created_attachments = []
-            for serializer in validated_serializers:
-                attachment = serializer.save(project=project)
-                created_attachments.append(attachment)
+        created_attachments = []
+        for serializer in validated_serializers:
+            attachment = serializer.save(project=project)
+            created_attachments.append(attachment)
         return created_attachments
 
     def list(self, request, *args, **kwargs):
@@ -158,8 +158,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        serializer.instance.refresh_from_db()
+        detail_serializer = ProjectDetailSerializer(
+            serializer.instance, context={'request': request}
+        )
 
-        return Response(serializer.data)
+        return Response(detail_serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
