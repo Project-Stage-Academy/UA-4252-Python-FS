@@ -13,11 +13,13 @@ from apps.investors.models import (
     InvestorProfile,
     PortfolioSnapshot,
     Tracking,
+    SavedItem,
 )
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 
 User = get_user_model()
+
 
 # ======================================================================
 # InvestorProfileModelTest
@@ -268,3 +270,144 @@ class PortfolioSnapshotModelTest(TestCase):
                 total_invested=1.00,
                 summary={'kpi': 'data'},
             )
+
+
+class SavedItemModelTest(TestCase):
+    """Unit tests for the SavedItem model"""
+
+    def setUp(self):
+        """Create related objects for testing SavedStartup"""
+        self.investor_user = User.objects.create_user(
+            email="investor@example.com",
+            password="password123",
+            first_name="Investor",
+            last_name="User",
+        )
+
+        self.investor = InvestorProfile.objects.create(
+            user=self.investor_user,
+            company_name="Global Ventures",
+            full_name="Investor Inc.",
+            description="A venture fund investing in tech startups.",
+            investment_range_min=10000.00,
+            investment_range_max=50000.00,
+            preferred_industries="AI, SaaS",
+            website="https://globalventures.com",
+            email="contact@globalventures.com",
+            phone="+380441234567",
+            country="Ukraine",
+            region=8,
+            city="Kyiv",
+            address="Khreshchatyk 10",
+            postal_code="01001",
+            logo="media/Investor_logos/logo.png",
+            partners_brands="Tesla, SpaceX",
+            audit_status="Verified",
+        )
+
+        self.startup_user = User.objects.create_user(
+            email="owner@smartvision.ai",
+            password="password321",
+            first_name="Owner",
+            last_name="Smart",
+        )
+
+        self.startup = StartupProfile.objects.create(
+            user=self.startup_user,
+            company_name="SmartVision",
+            description="AI-based startup.",
+            founded_year=2021,
+            team_size=10,
+            website="https://smartvision.ai",
+            email="info@smartvision.ai",
+            phone="+380501112233",
+            city="Lviv",
+            address="Shevchenka 22",
+            postal_code="79000",
+            logo="media/startup_logos/smartvision.png",
+            partners_brands="Google, Amazon",
+            audit_status="Approved",
+        )
+
+        self.project = Project.objects.create(
+            startup=self.startup,
+            title="AI Assistant",
+            slug="ai-assistant",
+            short_description="SmartVision’s AI-powered assistant.",
+            target_amount=200000.00,
+            visibility="public",
+        )
+
+        self.startup_data = {
+            "investor": self.investor,
+            "target_object": self.startup,
+        }
+
+        self.project_data = {
+            "investor": self.investor,
+            "target_object": self.project,
+        }
+
+    def test_create_valid_saved_startup(self):
+        """Ensure a valid SavedItem can be created for Startup"""
+        saved = SavedItem.objects.create(**self.startup_data)
+        self.assertIsInstance(saved, SavedItem)
+        self.assertEqual(saved.investor.company_name, "Global Ventures")
+        self.assertEqual(saved.target_object.company_name, "SmartVision")
+
+    def test_str_method_for_startup(self):
+        """__str__ should return readable text for Startup"""
+        saved = SavedItem.objects.create(**self.startup_data)
+        expected_str = "Saved SmartVision by Global Ventures"
+        self.assertEqual(str(saved), expected_str)
+
+    def test_missing_required_fields_for_startup(self):
+        """Missing required fields should raise ValidationError for Startup"""
+        invalid_data = self.startup_data.copy()
+        invalid_data.pop("target_object")
+        saved = SavedItem(**invalid_data)
+        with self.assertRaises(ValidationError):
+            saved.full_clean()
+
+    def test_foreign_key_relations_for_startup(self):
+        """SavedItem must have valid investor and startup relations"""
+        saved = SavedItem.objects.create(**self.startup_data)
+        self.assertEqual(saved.investor.user.email, "investor@example.com")
+        self.assertEqual(saved.target_object.user.email, "owner@smartvision.ai")
+
+    def test_create_valid_saved_project(self):
+        """Ensure a valid SavedItem can be created for Project"""
+        saved = SavedItem.objects.create(**self.project_data)
+        self.assertIsInstance(saved, SavedItem)
+        self.assertEqual(saved.investor.company_name, "Global Ventures")
+        self.assertEqual(saved.target_object.title, "AI Assistant")
+        self.assertEqual(saved.target_object.startup, self.startup)
+
+    def test_str_method_for_project(self):
+        """__str__ should return readable text for Project"""
+        saved = SavedItem.objects.create(**self.project_data)
+        expected_str = "Saved AI Assistant by Global Ventures"
+        self.assertEqual(str(saved), expected_str)
+
+    def test_missing_required_fields_for_project(self):
+        """Missing required fields should raise ValidationError for Project"""
+        invalid_data = self.project_data.copy()
+        invalid_data.pop("target_object")
+        saved = SavedItem(**invalid_data)
+        with self.assertRaises(ValidationError):
+            saved.full_clean()
+
+    def test_foreign_key_relations_for_project(self):
+        """SavedItem must have valid investor and project relations"""
+        saved = SavedItem.objects.create(**self.project_data)
+        self.assertEqual(saved.investor.user.email, "investor@example.com")
+        self.assertEqual(saved.target_object.startup.company_name, "SmartVision")
+
+    def test_investor_can_save_both_startup_and_project(self):
+        """Investor can save both a Startup and one of its Projects"""
+        saved_startup = SavedItem.objects.create(**self.startup_data)
+        saved_project = SavedItem.objects.create(**self.project_data)
+
+        self.assertEqual(SavedItem.objects.filter(investor=self.investor).count(), 2)
+        self.assertNotEqual(saved_startup.target_object, saved_project.target_object)
+        self.assertEqual(saved_startup.investor, saved_project.investor)

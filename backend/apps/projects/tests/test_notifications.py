@@ -1,10 +1,11 @@
 from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from apps.projects.models import Project
-from apps.startups.models import StartupProfile, SavedStartup
-from apps.investors.models import InvestorProfile
+from apps.startups.models import StartupProfile
+from apps.investors.models import InvestorProfile, SavedItem
 from apps.user_messages.models import Notification
 from apps.projects.tasks import send_project_notification
 
@@ -38,9 +39,9 @@ class ProjectNotificationTestCase(TestCase):
             investment_range_min=10000,
             investment_range_max=100000
         )
-        SavedStartup.objects.create(
+        SavedItem.objects.create(
             investor=self.investor,
-            startup=self.startup
+            target_object=self.startup,
         )
 
     @patch('apps.projects.tasks.send_notification_email_task.delay')

@@ -1,11 +1,13 @@
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
-from apps.common.utils import logo_upload_to
+from apps.common.utils import logo_upload_to, build_limit_choices
 from apps.common.models import TimeStampedModel
 
 User = get_user_model()
@@ -40,6 +42,11 @@ REGION_CHOICES = (
     (26, 'Chernivtsi Region'),
 )
 
+ALLOWED_SAVED_MODELS = {
+    "startupprofile": "startups.startupprofile",
+    "project": "projects.project",
+}
+
 
 class InvestorProfile(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -68,7 +75,6 @@ class InvestorProfile(TimeStampedModel):
 
     def clean(self):
         if self.investment_range_max < self.investment_range_min:
-
             raise ValidationError(
                 "Maximum investment must be greater than minimum investment."
             )
@@ -167,3 +173,33 @@ class PortfolioSnapshot(TimeStampedModel):
         verbose_name = "Portfolio Snapshot"
         verbose_name_plural = "Portfolio Snapshots"
         unique_together = ('investor', 'computed_at')
+
+
+class SavedItem(models.Model):
+    investor = models.ForeignKey(
+        InvestorProfile,
+        on_delete=models.CASCADE,
+        related_name="saved_items",
+    )
+
+    # Generic Foreign Key fields
+    target_type = models.ForeignKey(
+        to=ContentType,
+        limit_choices_to=build_limit_choices(ALLOWED_SAVED_MODELS),
+        on_delete=models.CASCADE,
+    )
+    target_id = models.UUIDField()
+    target_object = GenericForeignKey(
+        ct_field="target_type",
+        fk_field="target_id",
+    )
+
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Saved {self.target_object} by {self.investor.company_name}"
+
+    class Meta:
+        verbose_name = "Saved Items"
+        verbose_name_plural = "Saved Items"
+        unique_together = ["investor", "target_type", "target_id"]
