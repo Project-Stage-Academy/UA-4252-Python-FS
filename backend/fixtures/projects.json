@@ -1,0 +1,667 @@
+[
+  {
+    "model": "projects.project",
+    "pk": "3640a56e-c763-46a7-81e0-a8ea6283391a",
+    "fields": {
+      "startup": "00fe5091-0a79-4c89-994a-266dc8e7b489",
+      "title": "NovaAI Assistant",
+      "slug": "novaai-assistant",
+      "short_description": "AI assistant for business workflow automation.",
+      "description": "A next-generation AI assistant that automates routine business workflows including scheduling, document analysis, and internal communication.",
+      "status": "idea",
+      "target_amount": "200000.00",
+      "raised_amount": "85000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/novaai/400/300",
+      "tags": [
+        "AI",
+        "Tech",
+        "Automation",
+        "Assistance"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2025-08-20T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "59539df4-e30f-48d8-a8b4-fb48858e41aa",
+    "fields": {
+      "startup": "00fe5091-0a79-4c89-994a-266dc8e7b489",
+      "title": "InsightVision Analytics",
+      "slug": "insightvision-analytics",
+      "short_description": "AI system for real-time business analytics.",
+      "description": "A universal analytics engine that uses machine learning to help companies track trends, detect anomalies, and forecast performance.",
+      "status": "fundraising",
+      "target_amount": "150000.00",
+      "raised_amount": "62000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/insightvision/400/300",
+      "tags": [
+        "AI",
+        "Analytics",
+        "ML"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2024-11-10T11:30:00Z",
+      "updated_at": "2024-12-01T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "856a0b4e-1082-45c0-8d60-d7760d21a792",
+    "fields": {
+      "startup": "7df99bc9-54c0-4003-b027-1abe4497ab91",
+      "title": "EcoCharge Station",
+      "slug": "ecocharge-station",
+      "short_description": "Smart charging stations for green vehicles.",
+      "description": "Modular eco-friendly charging infrastructure designed for private homes and public locations.",
+      "status": "fundraising",
+      "target_amount": "300000.00",
+      "raised_amount": "150000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/ecocharge/400/300",
+      "tags": [
+        "Energy",
+        "Green",
+        "EV"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2025-02-13T11:30:00Z",
+      "updated_at": "2025-09-01T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "3af15b59-4f4b-4a18-813b-ae66fe1b33ec",
+    "fields": {
+      "startup": "7df99bc9-54c0-4003-b027-1abe4497ab91",
+      "title": "GreenConsult Advisor",
+      "slug": "greenconsult-advisor",
+      "short_description": "Eco-impact calculator for companies.",
+      "description": "A digital tool that allows companies to calculate, monitor and optimise their environmental footprint.",
+      "status": "mvp",
+      "target_amount": "90000.00",
+      "raised_amount": "43000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/greenconsult/400/300",
+      "tags": [
+        "Green",
+        "Assistance"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2022-07-04T11:30:00Z",
+      "updated_at": "2024-10-11T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "412792cb-33ed-49b4-8346-c49a06017077",
+    "fields": {
+      "startup": "2666f56c-d88b-42fc-93a6-58e61f396c25",
+      "title": "FinPilot Reports AI",
+      "slug": "finpilot-reports-ai",
+      "short_description": "Automated financial reporting suite.",
+      "description": "A system that auto-generates financial statements based on transaction history and business data.",
+      "status": "idea",
+      "target_amount": "180000.00",
+      "raised_amount": "101000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/finreports/400/300",
+      "tags": [
+        "AI",
+        "Finances"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2023-05-28T11:30:00Z",
+      "updated_at": "2025-07-29T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "027842d3-d155-45ac-abce-8a1948521733",
+    "fields": {
+      "startup": "2666f56c-d88b-42fc-93a6-58e61f396c25",
+      "title": "AuditFlow Engine",
+      "slug": "auditflow-engine",
+      "short_description": "AI-powered auditing automation engine.",
+      "description": "Real-time auditing engine for accountants and financial teams.",
+      "status": "mvp",
+      "target_amount": "120000.00",
+      "raised_amount": "42000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/auditflow/400/300",
+      "tags": [
+        "Finances",
+        "AI",
+        "Automation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2021-04-11T11:30:00Z",
+      "updated_at": "2025-05-30T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "9bf917c5-e10a-4989-93c5-f0c5589e98a9",
+    "fields": {
+      "startup": "d8751d92-6596-4b43-a14a-804c5baf4086",
+      "title": "EduSmart Classroom",
+      "slug": "edusmart-classroom",
+      "short_description": "Digital classroom for schools.",
+      "description": "Tools for managing lessons, assignments, schedules and communication in modern schools.",
+      "status": "mvp",
+      "target_amount": "110000.00",
+      "raised_amount": "65000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/eschool/400/300",
+      "tags": [
+        "Education",
+        "Management"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2024-12-12T11:30:00Z",
+      "updated_at": "2025-09-27T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "92b5ec3b-4e29-4f6a-b76a-12d7182210d4",
+    "fields": {
+      "startup": "d8751d92-6596-4b43-a14a-804c5baf4086",
+      "title": "SmartExam AI",
+      "slug": "smartexam-ai",
+      "short_description": "AI system for exam supervision.",
+      "description": "Automated exam monitoring and plagiarism detection.",
+      "status": "closed",
+      "target_amount": "90000.00",
+      "raised_amount": "38000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/smartexam/400/300",
+      "tags": [
+        "Education",
+        "AI",
+        "Monitoring",
+        "Plagiarism"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2024-10-08T11:30:00Z",
+      "updated_at": "2025-03-18T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "26581175-f63f-4166-8613-1b23d262ab9e",
+    "fields": {
+      "startup": "f4b2c9d0-cf89-4865-b5c0-07fe3e32e8f0",
+      "title": "TeleCare Connect",
+      "slug": "telecare-connect",
+      "short_description": "Telemedicine service for remote patients.",
+      "description": "A clinical-grade remote consultation system.",
+      "status": "fundraising",
+      "target_amount": "160000.00",
+      "raised_amount": "91000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/telecare/400/300",
+      "tags": [
+        "Medicine",
+        "Health",
+        "Consultation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2023-12-21T11:30:00Z",
+      "updated_at": "2025-05-21T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "6850d4e4-edaf-44ec-8523-3bda8c6558de",
+    "fields": {
+      "startup": "f4b2c9d0-cf89-4865-b5c0-07fe3e32e8f0",
+      "title": "HealthBridge AI Doctor",
+      "slug": "healthbridge-ai-doctor",
+      "short_description": "AI diagnostics tool.",
+      "description": "Automatic patient symptom assessment and recommendation engine.",
+      "status": "mvp",
+      "target_amount": "210000.00",
+      "raised_amount": "108000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/aidoctor/400/300",
+      "tags": [
+        "Health",
+        "AI"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2024-10-04T11:30:00Z",
+      "updated_at": "2025-08-21T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "4f15dfa1-0f5c-479e-8282-13ca42a2d7a9",
+    "fields": {
+      "startup": "84354ed7-1b29-4a26-a0d8-a4e6ff6db063",
+      "title": "AgroSense Monitor",
+      "slug": "agrosense-monitor",
+      "short_description": "IoT crop monitoring platform.",
+      "description": "A system that monitors soil, humidity and crop health using distributed sensors.",
+      "status": "mvp",
+      "target_amount": "130000.00",
+      "raised_amount": "72000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/agrosense/400/300",
+      "tags": [
+        "Agro",
+        "Farming"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2021-12-14T11:30:00Z",
+      "updated_at": "2024-07-30T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "64c4479f-af7d-4ecf-9512-7e607ca5f090",
+    "fields": {
+      "startup": "84354ed7-1b29-4a26-a0d8-a4e6ff6db063",
+      "title": "FarmBot Planner",
+      "slug": "farmbot-planner",
+      "short_description": "Farm workflow automation planner.",
+      "description": "A digital planner designed to help farms automate planting, irrigation and harvesting routines.",
+      "status": "fundraising",
+      "target_amount": "100000.00",
+      "raised_amount": "46000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/farmbot/400/300",
+      "tags": [
+        "Farming",
+        "Automation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2020-03-05T11:30:00Z",
+      "updated_at": "2021-07-11T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "1845a077-85c9-400c-bea3-6d8d60dfadd3",
+    "fields": {
+      "startup": "b8d0776d-6e08-4edf-9b8c-054705fbf4eb",
+      "title": "ForgeShield Scanner",
+      "slug": "forgeshield-scanner",
+      "short_description": "Advanced cybersecurity scanner.",
+      "description": "Multi-layer vulnerability scanner for corporate networks.",
+      "status": "mvp",
+      "target_amount": "170000.00",
+      "raised_amount": "88000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/forgeshield/400/300",
+      "tags": [
+        "Cybersecurity"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2025-11-07T11:30:00Z",
+      "updated_at": "2025-11-07T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "c615cfed-dc05-4f57-90e2-6645f3e48113",
+    "fields": {
+      "startup": "b8d0776d-6e08-4edf-9b8c-054705fbf4eb",
+      "title": "CyberForge Pentest Suite",
+      "slug": "cyberforge-pentest-suite",
+      "short_description": "Pentest suite for security specialists.",
+      "description": "Professional pentesting platform with automated recon and exploitation modules.",
+      "status": "idea",
+      "target_amount": "140000.00",
+      "raised_amount": "69000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/pentest/400/300",
+      "tags": [
+        "Cybersecurity",
+        "Automation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2022-02-20T11:30:00Z",
+      "updated_at": "2022-10-10T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "8d445a27-d2db-4c86-83cd-44837e93a726",
+    "fields": {
+      "startup": "4c8d397c-5945-4ce3-bce7-133363046796",
+      "title": "AutoMind NavCore",
+      "slug": "automind-navcore",
+      "short_description": "Navigation core for autonomous vehicles.",
+      "description": "A real-time navigation and avoidance system powered by neural networks.",
+      "status": "closed",
+      "target_amount": "250000.00",
+      "raised_amount": "137000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/navcore/400/300",
+      "tags": [
+        "AI",
+        "Navigation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2025-10-29T11:30:00Z",
+      "updated_at": "2025-10-31T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "9de36de5-3ab9-45aa-85b4-413c2fb8add8",
+    "fields": {
+      "startup": "4c8d397c-5945-4ce3-bce7-133363046796",
+      "title": "AutoMind TrafficSim",
+      "slug": "automind-trafficsim",
+      "short_description": "Traffic simulation engine.",
+      "description": "A high-accuracy simulation engine for training autonomous navigation models.",
+      "status": "fundraising",
+      "target_amount": "190000.00",
+      "raised_amount": "90000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/trafficsim/400/300",
+      "tags": [
+        "AI",
+        "ML",
+        "Navigation"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "deleted_at": null,
+      "deleted_by": null,
+      "created_at": "2023-01-22T11:30:00Z",
+      "updated_at": "2023-04-25T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "5f1d687b-2b1f-43cb-b9d7-cb1c9e7f10a1",
+    "fields": {
+      "startup": "97e8a2f4-5f49-49ff-85f5-48a91b4de2f0",
+      "title": "SmartSite Planner",
+      "slug": "smartsite-planner",
+      "short_description": "AI system for optimizing construction workflows.",
+      "description": "Predicts material needs and schedules using machine learning.",
+      "status": "mvp",
+      "target_amount": "180000.00",
+      "raised_amount": "95000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "funded_at": null,
+      "thumbnail": "https://picsum.photos/seed/smartsite/400/300",
+      "tags": [
+        "Construction",
+        "AI",
+        "Planning"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2025-01-05T11:30:00Z",
+      "updated_at": "2025-07-10T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "21726c0a-1c3f-49e5-a991-09a78b7df2c0",
+    "fields": {
+      "startup": "97e8a2f4-5f49-49ff-85f5-48a91b4de2f0",
+      "title": "SafetyNet Monitor",
+      "slug": "safetynet-monitor",
+      "short_description": "Real-time safety monitoring system for worksites.",
+      "description": "Uses sensors and AI to detect safety violations on construction sites.",
+      "status": "fundraising",
+      "target_amount": "220000.00",
+      "raised_amount": "103000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/safetynet/400/300",
+      "tags": [
+        "AI",
+        "Safety",
+        "IoT"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2025-03-18T11:30:00Z",
+      "updated_at": "2025-09-01T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "a81e27cb-6c1a-4c9c-83a7-44e364c67e3e",
+    "fields": {
+      "startup": "9e11c7db-9af2-4d0c-b9ce-bb2a7bfc98d9",
+      "title": "TraceChain",
+      "slug": "tracechain",
+      "short_description": "Blockchain platform for tracking food supply chains.",
+      "description": "Provides full transparency from farm to table using blockchain smart contracts.",
+      "status": "fundraising",
+      "target_amount": "250000.00",
+      "raised_amount": "110000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/tracechain/400/300",
+      "tags": [
+        "Blockchain",
+        "Agro",
+        "Sustainability"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2024-08-09T11:30:00Z",
+      "updated_at": "2025-04-03T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "2cf65e2f-ec45-4b69-9b27-04d55d6e8a66",
+    "fields": {
+      "startup": "9e11c7db-9af2-4d0c-b9ce-bb2a7bfc98d9",
+      "title": "GreenLabel App",
+      "slug": "greenlabel-app",
+      "short_description": "Mobile app for eco product certification.",
+      "description": "Helps consumers verify sustainability certifications via QR scanning.",
+      "status": "idea",
+      "target_amount": "90000.00",
+      "raised_amount": "31000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/greenlabel/400/300",
+      "tags": [
+        "Sustainability",
+        "Mobile",
+        "Green"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2023-10-15T11:30:00Z",
+      "updated_at": "2025-02-01T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "b0fd56b9-9a3a-4bda-9813-58931b61b9a8",
+    "fields": {
+      "startup": "ce851b4b-0f92-43ab-8d9b-82c0b01607d4",
+      "title": "RoboLine Controller",
+      "slug": "roboline-controller",
+      "short_description": "Industrial robot line management tool.",
+      "description": "Automates industrial robot scheduling and maintenance.",
+      "status": "mvp",
+      "target_amount": "200000.00",
+      "raised_amount": "89000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/roboline/400/300",
+      "tags": [
+        "Automation",
+        "Robotics",
+        "Industry"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2025-05-15T11:30:00Z",
+      "updated_at": "2025-10-18T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "74eb15e1-3420-4f71-bcb3-7f41e1a04c4f",
+    "fields": {
+      "startup": "ce851b4b-0f92-43ab-8d9b-82c0b01607d4",
+      "title": "AutoPick Vision",
+      "slug": "autopick-vision",
+      "short_description": "Computer vision for robotic arms.",
+      "description": "Improves precision in item picking and assembly lines.",
+      "status": "fundraising",
+      "target_amount": "230000.00",
+      "raised_amount": "120000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/autopick/400/300",
+      "tags": [
+        "AI",
+        "Vision",
+        "Robotics"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2024-12-01T11:30:00Z",
+      "updated_at": "2025-07-09T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "6ff7b52c-1e50-4e53-bc64-444e362ed5a4",
+    "fields": {
+      "startup": "b72b841f-cc09-43d5-b5d7-bc40b3e87a23",
+      "title": "Artify Gallery",
+      "slug": "artify-gallery",
+      "short_description": "Virtual gallery for NFT exhibitions.",
+      "description": "Lets artists showcase NFTs in 3D virtual galleries.",
+      "status": "mvp",
+      "target_amount": "150000.00",
+      "raised_amount": "74000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/artifygallery/400/300",
+      "tags": [
+        "NFT",
+        "Art",
+        "3D"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2024-05-03T11:30:00Z",
+      "updated_at": "2025-05-19T11:30:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": "c5b8d7d1-99d9-4937-bcb8-64f2de5c9b02",
+    "fields": {
+      "startup": "b72b841f-cc09-43d5-b5d7-bc40b3e87a23",
+      "title": "Mintify Studio",
+      "slug": "mintify-studio",
+      "short_description": "NFT creation tool for artists.",
+      "description": "Streamlines minting process with templates and royalties automation.",
+      "status": "idea",
+      "target_amount": "80000.00",
+      "raised_amount": "27000.00",
+      "allow_overfunding": false,
+      "currency": "UAH",
+      "thumbnail": "https://picsum.photos/seed/mintify/400/300",
+      "tags": [
+        "NFT",
+        "Blockchain",
+        "Creator"
+      ],
+      "visibility": "public",
+      "is_deleted": false,
+      "created_at": "2023-09-15T11:30:00Z",
+      "updated_at": "2025-03-01T11:30:00Z"
+    }
+  }
+]
