@@ -19,17 +19,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from apps.common.urls import content_patterns, general_patterns
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/common/", include("apps.common.urls")),
+    path("api/common/", include(general_patterns)),
     path("api/auth/", include("apps.authentication.urls")),
     path("api/startups/", include("apps.startups.urls")),
     # path("common/", include("apps.common.urls")),
     path("api/projects/", include("apps.projects.urls")),
     path("api/investors/", include("apps.investors.urls")),
+    path("api/content/", include(content_patterns)),
     path("api/users/", include("apps.users.urls")),
     path("api/", include("apps.user_messages.urls")),
+    path("api/search/", include("apps.search.urls")),
 ]
 
 if settings.DEBUG:
