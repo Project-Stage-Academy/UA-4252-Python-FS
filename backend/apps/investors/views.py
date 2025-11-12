@@ -1,7 +1,7 @@
 from django.db import IntegrityError, transaction 
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins, generics, status
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, NotFound
 
@@ -10,7 +10,7 @@ from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 from apps.startups.pagination import StartupPagination
 
-from .permissions import IsTrackingOwner
+from .permissions import IsTrackingOwner, IsInvestorSelf
 from .serializers import (
     TrackingCreateSerializer,
     TrackingListSerializer,
@@ -25,16 +25,16 @@ class TrackingViewSet(mixins.CreateModelMixin,
                       mixins.DestroyModelMixin,
                       viewsets.GenericViewSet):
     """
-    ViewSet для Створення (POST /api/tracking/) та
-    Видалення (DELETE /api/tracking/{id}/) записів Tracking.
+    ViewSet for creating (POST /api/tracking/) and
+    deleting (DELETE /api/tracking/{id}/) Tracking records.
     """
     queryset = Tracking.objects.all()
     serializer_class = TrackingCreateSerializer
 
     def get_permissions(self):
         """
-        POST (create) - потрібна лише аутентифікація.
-        DELETE (destroy) - потрібна аутентифікація + IsTrackingOwner.
+        POST (create) - needs only authentication.
+        DELETE (destroy) - needs authentication + IsTrackingOwner.
         """
         if self.action == 'destroy':
             return [IsAuthenticated(), IsTrackingOwner()]
@@ -45,8 +45,8 @@ class TrackingViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """
-        Перевизначено для ідемпотентності.
-        Якщо запис вже існує, повертає 200 OK замість 400.
+        Override for idempotence.
+        If the record already exists, it returns 200 OK instead of 400.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -72,23 +72,20 @@ class TrackingViewSet(mixins.CreateModelMixin,
 
 class InvestorTrackingListView(generics.ListAPIView):
     """
-    View для списку відстежуваних об'єктів інвестора.
-    GET /api/investors/{investor_id}/tracking/
+    View for the investor's list of tracked objects.
+    GET /api/investors/{investor_id}/tracking/ 
     """
     serializer_class = TrackingListSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsInvestorSelf]
     pagination_class = StartupPagination 
 
     def get_queryset(self):
         """
-        Повертає список 'Tracking' для інвестора,
-        відфільтрований за 'target_type'.
+        Returns a list of 'Tracking' for the investor,
+        filtered by 'target_type'.
         """
         investor_id = self.kwargs.get('investor_id')
         target_type = self.request.query_params.get('type')
-
-        if self.request.user.id != investor_id:
-            raise PermissionDenied("Ви можете переглядати лише власні відстеження.")
 
         try:
             User.objects.get(pk=investor_id)
@@ -106,8 +103,8 @@ class InvestorTrackingListView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         """
-        Перевизначено для додавання даних про 'target' (startup/project)
-        до відповіді, уникаючи N+1 запитів.
+        Override to add 'target' (startup/project) data
+        to the response, avoiding N+1 queries.
         """
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -123,8 +120,8 @@ class InvestorTrackingListView(generics.ListAPIView):
 
     def fetch_and_inject_targets(self, request, tracking_data):
         """
-        Допоміжний метод для оптимізованого завантаження
-        даних про стартапи або проекти.
+        A helpful method for optimized loading 
+        of startup or project data.
         """
         if not tracking_data:
             return tracking_data

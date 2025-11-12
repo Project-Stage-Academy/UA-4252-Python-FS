@@ -11,8 +11,8 @@ from apps.startups.serializers import StartupPublicProfileSerializer
 
 class TrackingCreateSerializer(serializers.ModelSerializer):
     """
-    Серіалайзер для створення (POST) об'єкта Tracking.
-    Він валідує target_id і автоматично встановлює інвестора.
+    Serializer for creating (POST) a Tracking object.
+    It validates target_id and automatically sets the investor.
     """
     investor = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -31,7 +31,7 @@ class TrackingCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        Перевіряємо, чи існує об'єкт, який ми намагаємося відстежити.
+        We check whether the object we are trying to track exists.
         """
         target_type = data.get('target_type')
         target_id = data.get('target_id')
@@ -55,15 +55,16 @@ class TrackingCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """
-        Перевизначаємо create для ідемпотентності.
-        Якщо запис вже існує (завдяки unique_together), ми його повертаємо.
+        Simple create. Idempotence (duplicate handling) is implemented in
+        TrackingViewSet.create(), which catches IntegrityError and returns
+        the existing record with HTTP 200.
         """
         return super().create(validated_data)
 
 
 class TrackedStartupSerializer(serializers.ModelSerializer):
     """
-    Мінімальний серіалайзер для StartupProfile, як вимагає таска.
+    Minimal serializer for StartupProfile as required by the task.
     """
     logo_url = serializers.SerializerMethodField()
     
@@ -80,7 +81,7 @@ class TrackedStartupSerializer(serializers.ModelSerializer):
 
 class TrackedProjectSerializer(serializers.ModelSerializer):
     """
-    Мінімальний серіалайзер для Project, як вимагає таска.
+    Minimal serializer for Project as required by the task.
     """
     class Meta:
         model = Project
@@ -89,8 +90,8 @@ class TrackedProjectSerializer(serializers.ModelSerializer):
 
 class TrackingListSerializer(serializers.ModelSerializer):
     """
-    Серіалайзер для списку (GET) об'єктів Tracking.
-    Поле 'target' буде додано у View для оптимізації.
+    Serializer for a list (GET) of Tracking objects.
+    The 'target' field will be added to the View for optimization.
     """
     target = serializers.JSONField(read_only=True, default=None)
 
