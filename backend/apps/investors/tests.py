@@ -3,10 +3,13 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from apps.investors.models import (
     Investment,
@@ -411,3 +414,202 @@ class SavedItemModelTest(TestCase):
         self.assertEqual(SavedItem.objects.filter(investor=self.investor).count(), 2)
         self.assertNotEqual(saved_startup.target_object, saved_project.target_object)
         self.assertEqual(saved_startup.investor, saved_project.investor)
+
+
+class SavedItemViewSetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="testuser1@example.com",
+            password="Pass123",
+            first_name="First",
+            last_name="User",
+        )
+
+        self.other_user = User.objects.create_user(
+            email="testuser2@example.com",
+            password="Pass123",
+            first_name="Second",
+            last_name="User",
+        )
+
+        self.investor = InvestorProfile.objects.create(
+            user=self.user,
+            company_name="Investor Co",
+            full_name="John Doe",
+            description="Some description",
+            investment_range_min=1000,
+            investment_range_max=5000,
+            preferred_industries="Tech",
+            website="https://example.com",
+            email="investor@example.com",
+            phone="+380501112233",
+            country="Ukraine",
+            region=1,
+            city="Kyiv",
+            address="Main St 1",
+            postal_code="01001",
+            partners_brands="Partner A",
+        )
+
+        self.other_investor = InvestorProfile.objects.create(
+            user=self.other_user,
+            company_name="Other Co",
+            full_name="Jane Smith",
+            description="Some description",
+            investment_range_min=1000,
+            investment_range_max=2000,
+            preferred_industries="Health",
+            website="https://other.com",
+            email="other@example.com",
+            phone="+380501234567",
+            country="Ukraine",
+            region=1,
+            city="Lviv",
+            address="Street 5",
+            postal_code="79000",
+            partners_brands="None",
+        )
+
+        self.startup = StartupProfile.objects.create(
+            user=self.other_user,
+            company_name="StartupOne",
+            email="startup@example.com"
+        )
+        self.project = Project.objects.create(
+            startup=self.startup,
+            title="ProjectOne",
+            slug="project-one",
+            target_amount=10000,
+        )
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        self.create_url = reverse(
+            "saved-item-create",
+            kwargs={"investor_id": str(self.investor.id)},
+        )
+
+    def test_save_startup_success(self):
+        """Test investor can save a startup"""
+        data = {
+            "target_type": "startupprofile",
+            "target_id": str(self.startup.id),
+        }
+
+        response = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        self.assertIn("id", response.data)
+        self.assertIn("saved_at", response.data)
+
+        saved_startup = SavedItem.objects.get(id=response.data["id"])
+        self.assertEqual(saved_startup.investor, self.investor)
+        self.assertEqual(saved_startup.target_object, self.startup)
+
+    def test_save_project_success(self):
+        """Test investor can save a project"""
+        data = {
+            "target_type": "project",
+            "target_id": str(self.project.id),
+        }
+
+        response = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        self.assertIn("id", response.data)
+        self.assertIn("saved_at", response.data)
+
+        saved_project = SavedItem.objects.get(id=response.data["id"])
+        self.assertEqual(saved_project.investor, self.investor)
+        self.assertEqual(saved_project.target_object, self.project)
+
+    def test_save_item_idempotent(self):
+        """Test duplicate record is not created if already exists"""
+        data = {
+            "target_type": "project",
+            "target_id": str(self.project.id),
+        }
+
+        res1 = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(res1.status_code, 201)
+
+        res2 = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(res2.status_code, 201)
+
+        self.assertEqual(SavedItem.objects.count(), 1)
+        self.assertEqual(res1.data["id"], res2.data["id"])
+
+    def test_save_item_invalid_target_id(self):
+        """Test user cannot save not existing item"""
+        payload = {
+            "target_type": "project",
+            "target_id": "doesnotexist",
+        }
+
+        response = self.client.post(self.create_url, payload, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("target_id", response.data)
+
+    def test_delete_saved_item_success(self):
+        """Test investor can delete a saved item"""
+        saved_item = SavedItem.objects.create(
+            investor=self.investor,
+            target_type=ContentType.objects.get_for_model(Project),
+            target_id=self.project.id,
+        )
+        delete_url = reverse(
+            "saved-item-delete",
+            kwargs={
+                "investor_id": str(self.investor.id),
+                "saved_item_id": str(saved_item.id),
+            },
+        )
+
+        response = self.client.delete(delete_url)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(SavedItem.objects.filter(id=saved_item.id).exists())
+
+    def test_cannot_save_item_for_other_investor(self):
+        """Test user cannot save item for other investor"""
+        url = reverse(
+            "saved-item-create",
+            kwargs={"investor_id": str(self.other_investor.id)}
+        )
+        data = {
+            "target_type": "project",
+            "target_id": str(self.project.id),
+        }
+
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 404)
+
+    def test_cannot_delete_other_investors_saved_item(self):
+        """Test user cannot delete item saved by other investor"""
+        saved_item = SavedItem.objects.create(
+            investor=self.other_investor,
+            target_type=ContentType.objects.get_for_model(Project),
+            target_id=self.project.id,
+        )
+        url = reverse(
+            "saved-item-delete",
+            kwargs={
+                "investor_id": str(self.other_investor.id),
+                "saved_item_id": str(saved_item.id),
+            },
+        )
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(SavedItem.objects.filter(id=saved_item.id).exists())
+
+    def test_save_item_auth_required(self):
+        """Test unauthenticated user cannot save item"""
+        self.client.logout()
+        data = {
+            "target_type": "project",
+            "target_id": str(self.project.id)
+        }
+
+        response = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(response.status_code, 401)

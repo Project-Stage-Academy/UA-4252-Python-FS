@@ -28,7 +28,7 @@ urlpatterns = [
     path("common/", include("apps.common.urls")),
     path("api/", include("apps.projects.urls")),
     # path("api/projects/", include("apps.projects.urls")),
-    # path("api/investors/", include("apps.investors.urls")),
+    path("api/investors/", include("apps.investors.urls")),
     path("api/users/", include("apps.users.urls")),
     path("api/", include("apps.user_messages.urls")),
 ]
