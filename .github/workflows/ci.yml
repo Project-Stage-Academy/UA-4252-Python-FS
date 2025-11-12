@@ -16,6 +16,8 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     services:
       db:
         image: postgres:14
@@ -25,6 +27,13 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
           --health-cmd "pg_isready --username postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -60,12 +69,10 @@ jobs:
       - name: Tests with coverage
         working-directory: backend
         run: |
-          PROJECT_APPS=$(python manage.py shell --no-startup -c "from django.conf import settings; print(' '.join(app for app in settings.INSTALLED_APPS if app.startswith('apps.') or app.startswith('api.')))" | tail -n 1)
-          echo "--- Running tests for the following apps ---"
-          echo "$PROJECT_APPS"
-          echo "--------------------------------------------"
-
-          coverage run --source='.' manage.py test $PROJECT_APPS
+          echo "Running tests for project apps with detailed output..."
+          coverage run manage.py test --verbosity=2
+          echo ""
+          coverage report
           coverage xml
 
       - name: Upload coverage to Codecov

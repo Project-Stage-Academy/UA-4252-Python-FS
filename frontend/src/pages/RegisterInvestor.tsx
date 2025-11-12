@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const RegisterInvestor: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const RegisterInvestor: React.FC = () => {
     logoFile: null as File | null,
   });
 
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -97,7 +100,12 @@ type MultiField = "representing" | "entityType";
     if (formData.logoFile) {
       formDataObj.append("logo", formData.logoFile);
     }
-
+    if (!recaptchaToken) {
+      setErrors(prev => ({ ...prev, recaptcha: "Підтвердіть, що ви не робот" }));
+      setStatus("idle");
+      return;
+    }
+    formDataObj.append("recaptcha", recaptchaToken);
     try {
       const API_BASE = import.meta.env.VITE_API_BASE || '';
       const response = await fetch(`${API_BASE}/api/auth/register/`, { method: 'POST', body: formDataObj });
@@ -276,6 +284,14 @@ type MultiField = "representing" | "entityType";
         <input name="maxInvestment" type="number" value={formData.maxInvestment} onChange={handleChange} />
       </label>
       {errors.maxInvestment && <p role="alert">{errors.maxInvestment}</p>}
+
+      <div className="field">
+          <ReCAPTCHA
+              sitekey={import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY}
+              onChange={token => setRecaptchaToken(token)}
+              />
+        {errors.recaptcha && <p className="error-text">{errors.recaptcha}</p>}
+      </div>
 
       <button type="submit">Зареєструватися</button>
 
