@@ -4,6 +4,12 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import PasswordResetRequest from "./PasswordResetRequest";
 
+jest.mock("../config/env", () => ({
+  API_BASE: "/api",
+  RECAPTCHA_PUBLIC_KEY: "test-recaptcha-key",
+}));
+jest.mock("react-google-recaptcha", () => () => <div data-testid="recaptcha" />);
+
 let originalFetch: typeof global.fetch;
 let errorSpy: jest.SpyInstance;
 let warnSpy: jest.SpyInstance;
@@ -47,10 +53,7 @@ describe("PasswordResetRequest (UA)", () => {
     render(<PasswordResetRequest lang="uk" />);
 
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText("Поле електронної пошти є обов’язковим.")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Поле електронної пошти є обов’язковим.")).toBeInTheDocument();
   });
 
   it("показує помилку 'некоректний формат', якщо email неправильний", async () => {
@@ -59,10 +62,7 @@ describe("PasswordResetRequest (UA)", () => {
 
     await user.type(screen.getByLabelText("Електронна пошта"), "not-an-email");
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText("Введіть коректну адресу електронної пошти.")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Введіть коректну адресу електронної пошти.")).toBeInTheDocument();
   });
 
   it("рендерить success-UI при 200 OK і надсилає правильний payload", async () => {
