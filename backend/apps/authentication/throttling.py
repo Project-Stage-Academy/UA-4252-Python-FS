@@ -36,7 +36,7 @@ class CommonRedisThrottle(BaseThrottle):
         return f"throttle:{request.path}:{ident}:{email_hash}"
 
     def allow_request(self, request, view):
-        key = self.get_cache_key(request, view)
+        key = self.get_cache_key(request)
 
         duration = self._get_duration()
         rate = self._get_rate()
