@@ -77,11 +77,14 @@ class InvestorProfile(TimeStampedModel):
     draft_saved_at = models.DateTimeField(auto_now=True)
 
     def clean(self):
-        if self.investment_range_max < self.investment_range_min:
-
-            raise ValidationError(
-                "Maximum investment must be greater than minimum investment."
-            )
+        if (
+            self.investment_range_min is not None
+            and self.investment_range_max is not None
+        ):
+            if self.investment_range_max < self.investment_range_min:
+                raise ValidationError(
+                    "investment_range_max must be >= investment_range_min"
+                )
 
     def __str__(self):
         return self.company_name

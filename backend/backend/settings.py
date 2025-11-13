@@ -26,10 +26,8 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-default-key")
-RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY", "unsafe-recaptcha-key")
-DRF_RECAPTCHA_SECRET_KEY = os.environ.get(
-    "RECAPTCHA_PRIVATE_KEY", "unsafe-recaptcha-key"
-)
+RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+DRF_RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_PRIVATE_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = ["*"]

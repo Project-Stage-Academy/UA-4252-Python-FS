@@ -2,6 +2,7 @@ from django.http import Http404
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.investors.models import InvestorProfile
@@ -52,7 +53,7 @@ REQUIRED_FOR_PUBLISH_INVESTOR = [
 
 
 class ProfileViewSet(viewsets.ViewSet):
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
 
     def _get_profile_object(self, pk):
         try:
