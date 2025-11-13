@@ -17,9 +17,11 @@ class SavedItemCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "saved_at"]
 
     def validate(self, attrs):
-        target_type = ContentType.objects.get(model=attrs.get("target_type"))
-        target_id = attrs.get("target_id")
+        app_label, model_name = (ALLOWED_SAVED_MODELS[attrs.get("target_type")]
+                                 .split("."))
+        target_type = ContentType.objects.get(app_label=app_label, model=model_name)
         model_class = target_type.model_class()
+        target_id = attrs.get("target_id")
 
         if not model_class.objects.filter(id=target_id).exists():
             raise serializers.ValidationError(
