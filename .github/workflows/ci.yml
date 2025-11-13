@@ -18,6 +18,10 @@ jobs:
       POSTGRES_PORT: 5432
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      ELASTIC_HOST: es
+      ELASTIC_PORT: 9200
+      ELASTIC_USERNAME: ${{ secrets.ELASTIC_USERNAME }}
+      ELASTIC_PASSWORD: ${{ secrets.ELASTIC_PASSWORD }}
     services:
       db:
         image: postgres:14
@@ -37,6 +41,19 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      es:
+        image: elasticsearch:8.12.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - uses: actions/checkout@v5
@@ -65,6 +82,11 @@ jobs:
         run: |
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --noinput
+
+      - name: Check ES connection
+        working-directory: backend
+        run: |
+          python manage.py wait_for_es
 
       - name: Tests with coverage
         working-directory: backend
