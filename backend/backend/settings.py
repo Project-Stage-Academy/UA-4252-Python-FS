@@ -150,7 +150,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.authentication.cookie_auth.CookieJWTAuthentication",
     ),
 }
 
@@ -179,7 +179,6 @@ if os.environ.get("DJANGO_TEST", "0") == "1":
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-for-testing",
     }
-
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
