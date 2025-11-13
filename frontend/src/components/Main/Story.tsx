@@ -1,4 +1,5 @@
 import React from "react";
+import DOMPurify from "dompurify";
 import "./Story.scss";
 
 type SidebarItem = { label: string; value: React.ReactNode };
@@ -17,29 +18,40 @@ type Props = {
   showTOC?: boolean;
 };
 
-const Story: React.FC<Props> = ({ sections, sidebar, title = "Про компанію", showTOC = false }) => {
-  const sanitize = (html: string) => {
-    try {
-      const doc = new DOMParser().parseFromString(html ?? "", "text/html");
-      doc.querySelectorAll("script, style").forEach((el) => el.remove());
-      return doc.body.innerHTML;
-    } catch {
-      return html;
-    }
-  };
+const sanitizeHtml = (html: string) =>
+  DOMPurify.sanitize(html || "", {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["script", "style"],
+    FORBID_ATTR: ["onerror", "onclick", "onload", "style"],
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|\/))/i,
+  });
 
-  // Якщо title дублює перший heading — не показуємо його
-  const shouldShowTitle = title && sections.length > 0 && title.trim() !== sections[0].heading.trim();
+const Story: React.FC<Props> = ({
+  sections,
+  sidebar,
+  title = "Про компанію",
+  showTOC = false,
+}) => {
+  const shouldShowTitle =
+    title && sections.length > 0 && title.trim() !== sections[0].heading.trim();
 
   return (
     <section className="story" id="story">
       <div className="story__grid">
         <div className="story__main">
           {shouldShowTitle && <h2 className="story__pageTitle">{title}</h2>}
+
           {sections.map((s) => (
-            <article key={s.id} id={s.id} className={`story__section ${s.highlight ? "is-highlight" : ""}`}>
+            <article
+              key={s.id}
+              id={s.id}
+              className={`story__section ${s.highlight ? "is-highlight" : ""}`}
+            >
               <h3 className="story__h3">{s.heading}</h3>
-              <div className="story__content" dangerouslySetInnerHTML={{ __html: sanitize(s.html) }} />
+              <div
+                className="story__content"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.html) }}
+              />
             </article>
           ))}
         </div>
