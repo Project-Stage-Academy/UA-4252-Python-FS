@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
@@ -13,10 +14,11 @@ from .models import Project, ProjectAudit
 from .pagination import ProjectPagination
 from .permissions import IsOwnerOrReadOnly, IsStartupOwner
 from .serializers import (
+    ProjectAttachmentSerializer,
     ProjectAuditSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
-    ProjectsCreateUpdateSerialiser,
+    ProjectsCreateUpdateSerializer,
     ProjectSerializer,
     ProjectStatusSerializer,
 )
@@ -30,7 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ProjectListSerializer
         elif self.action in ['create', 'update', 'partial_update']:
-            return ProjectsCreateUpdateSerialiser
+            return ProjectsCreateUpdateSerializer
         elif self.action == 'update_status':
             return ProjectStatusSerializer
         return ProjectDetailSerializer
@@ -79,6 +81,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return [IsStartupOwner()]
         return [IsOwnerOrReadOnly()]
 
+    def _handle_attachment(self, project, request):
+        files = request.FILES.getlist('attachments')
+        captions_raw = request.data.get('captions', '')
+        if isinstance(captions_raw, str):
+            captions = [c.strip() for c in captions_raw.split(',') if c.strip()]
+        else:
+            captions = captions_raw if captions_raw else []
+
+        validated_serializers = []
+        for idx, file in enumerate(files):
+            caption = captions[idx] if idx < len(captions) else ''
+            serializer = ProjectAttachmentSerializer(
+                data={'file': file, 'caption': caption, 'order': idx},
+                context={'request': request},
+            )
+            serializer.is_valid(raise_exception=True)
+            validated_serializers.append(serializer)
+
+        created_attachments = []
+        for serializer in validated_serializers:
+            attachment = serializer.save(project=project)
+            created_attachments.append(attachment)
+        return created_attachments
+
     def list(self, request, *args, **kwargs):
         startup_pk = self.kwargs.get('startup_pk')
         if not startup_pk:
@@ -98,11 +124,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             data=request.data, context={'startup': startup, 'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        with transaction.atomic():
+            project = serializer.save()
+
+            if request.FILES:
+                self._handle_attachment(project, request)
 
         headers = self.get_success_headers(serializer.data)
+        detail_serializer = ProjectDetailSerializer(
+            project, context={'request': request}
+        )
+
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            detail_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def get_success_headers(self, data):
@@ -125,8 +159,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        serializer.instance.refresh_from_db()
+        detail_serializer = ProjectDetailSerializer(
+            serializer.instance, context={'request': request}
+        )
 
-        return Response(serializer.data)
+        return Response(detail_serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True

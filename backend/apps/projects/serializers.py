@@ -1,9 +1,58 @@
-from django_fsm import can_proceed, get_available_FIELD_transitions  # noqa: F401
+import os
+
+from django_fsm import can_proceed
 from rest_framework import serializers
 
 from apps.common.constants import PROJECT_TRANSITIONS
+from apps.common.validators import drf_validate_attachment_file
 
-from .models import Project, ProjectAudit
+from .models import Project, ProjectAttachment, ProjectAudit
+
+
+class ProjectTransitionMixin:
+
+    def get_can_transition_to(self, obj):
+        transitions = []
+        for method_name, target_status in PROJECT_TRANSITIONS.items():
+            if hasattr(obj, method_name):
+                method = getattr(obj, method_name)
+                if can_proceed(method):
+                    transitions.append(target_status)
+
+        return transitions
+
+
+class ProjectAttachmentSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(write_only=True)
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectAttachment
+        fields = ['id', 'file', 'file_url', 'type', 'caption', 'order', 'created_at']
+        read_only_fields = ['id', 'created_at', 'type']
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def validate_file(self, file):
+        drf_validate_attachment_file(file, max_size_mb=10)
+        return file
+
+    def create(self, validated_data):
+        file = validated_data.get('file')
+        if file:
+            ext = os.path.splitext(file.name)[1].lower()
+            IMAGE_TYPES = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+            if ext in IMAGE_TYPES:
+                validated_data['type'] = 'image'
+            else:
+                validated_data['type'] = 'document'
+        return super().create(validated_data)
 
 
 class ProjectStatusSerializer(serializers.Serializer):
@@ -11,8 +60,9 @@ class ProjectStatusSerializer(serializers.Serializer):
     force = serializers.BooleanField(default=False, required=False)
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(ProjectTransitionMixin, serializers.ModelSerializer):
     can_transition_to = serializers.SerializerMethodField()
+    attachments = ProjectAttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -25,16 +75,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'deleted_at',
             'deleted_by',
         ]
-
-    def get_can_transition_to(self, obj):
-        transitions = []
-        for method_name, target_status in PROJECT_TRANSITIONS.items():
-            if hasattr(obj, method_name):
-                method = getattr(obj, method_name)
-                if can_proceed(method):
-                    transitions.append(target_status)
-
-        return transitions
 
     def validate(self, data):
         raised = data.get(
@@ -100,7 +140,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return 0.0
 
 
-class ProjectDetailSerializer(serializers.ModelSerializer):
+class ProjectDetailSerializer(ProjectTransitionMixin, serializers.ModelSerializer):
     """Serializer for detailed project"""
 
     startup_id = serializers.UUIDField(source='startup.id', read_only=True)
@@ -109,6 +149,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     email = serializers.CharField(source='startup.user.email', read_only=True)
     progress_percentage = serializers.SerializerMethodField()
     can_transition_to = serializers.SerializerMethodField()
+    attachments = ProjectAttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -133,6 +174,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'visibility',
             'funded_at',
             'can_transition_to',
+            'attachments',
             'created_at',
             'updated_at',
         ]
@@ -151,18 +193,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             return round((float(obj.raised_amount) / float(obj.target_amount)) * 100, 2)
         return 0.0
 
-    def get_can_transition_to(self, obj):
-        transitions = []
-        for method_name, target_status in PROJECT_TRANSITIONS.items():
-            if hasattr(obj, method_name):
-                method = getattr(obj, method_name)
-                if can_proceed(method):
-                    transitions.append(target_status)
 
-        return transitions
-
-
-class ProjectsCreateUpdateSerialiser(serializers.ModelSerializer):
+class ProjectsCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating projects"""
 
     class Meta:
