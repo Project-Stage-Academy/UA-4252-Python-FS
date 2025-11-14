@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./VerifyEmailConfirm.scss";
 
 interface Props {
   onSuccess: () => void;
@@ -11,7 +12,17 @@ export const VerifyEmailConfirm = ({ onSuccess }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
-    if (!token) return;
+    if (!token) {
+      setMessage("Будь ласка, введіть токен.");
+      setStatus("error");
+      return;
+    }
+
+    if (token.length < 10) {
+      setMessage("Некоректний токен.");
+      setStatus("error");
+      return;
+    }
 
     setLoading(true);
     setMessage("");
@@ -41,42 +52,28 @@ export const VerifyEmailConfirm = ({ onSuccess }: Props) => {
   };
 
   return (
-    <div style={{ width: "100%", maxWidth: 400, marginTop: 16 }}>
+    <div className="verify-email-confirm">
       <input
         type="text"
         placeholder="Вставте токен для підтвердження"
         value={token}
         onChange={(e) => setToken(e.target.value)}
-        style={{
-          width: "100%",
-          padding: 10,
-          borderRadius: 4,
-          border: "1px solid #ccc",
-          marginBottom: 8,
-        }}
+        className="verify-email-input"
       />
+
       <button
         onClick={handleVerify}
         disabled={loading || !token}
-        style={{
-          width: "100%",
-          padding: 10,
-          background: "#000",
-          color: "#fff",
-          border: "none",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
+        className="verify-email-button"
       >
         {loading ? "Перевірка..." : "Підтвердити email"}
       </button>
+
       {message && (
         <p
-          style={{
-            marginTop: 8,
-            color: status === "success" ? "green" : "red",
-            textDecoration: status === "error" ? "underline" : "none",
-          }}
+          className={`verify-email-message ${
+            status === "success" ? "success" : "error"
+          }`}
         >
           {message}
         </p>

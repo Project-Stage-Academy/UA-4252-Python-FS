@@ -11,8 +11,14 @@ export const ResendVerificationButton = ({ email }: { email: string }) => {
       return;
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMessage("Некоректний формат email");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
+
     try {
       await axios.post("/api/auth/resend-verification/", { email });
       setMessage("Лист для активації повторно відправлено!");
@@ -36,6 +42,7 @@ export const ResendVerificationButton = ({ email }: { email: string }) => {
       >
         {loading ? "Надсилається..." : "Надіслати"}
       </button>
+
       {message && <p className="text-sm text-gray-700">{message}</p>}
     </div>
   );

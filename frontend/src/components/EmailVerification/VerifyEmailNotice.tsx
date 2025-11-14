@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import "./VerifyEmailNotice.scss";
 
 export const VerifyEmailNotice = () => {
+  const navigate = useNavigate(); 
   const [step, setStep] = useState<"notice" | "resend" | "success">("notice");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -40,7 +42,7 @@ export const VerifyEmailNotice = () => {
           </p>
           <button
             className="verify-email-button"
-            onClick={() => (window.location.href = "/login")}
+            onClick={() => navigate("/login")} 
           >
             Повернутись до входу
           </button>
@@ -106,7 +108,7 @@ export const VerifyEmailNotice = () => {
         </p>
         <button
           className="verify-email-button"
-          onClick={() => (window.location.href = "/login")}
+          onClick={() => navigate("/login")} 
         >
           Повернутись до входу
         </button>
