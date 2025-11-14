@@ -9,6 +9,8 @@ import RegisterStartup from "./pages/RegisterStartup";
 import RegisterInvestor from "./pages/RegisterInvestor";
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 import ErrorPage from "./pages/ErrorPage";
+import PasswordResetConfirm from "./pages/PasswordResetConfirm";
+import RestorePassword from "./pages/RestorePassword";
 
 export const routes = [
   { path: "/", element: <Home /> },
@@ -22,4 +24,7 @@ export const routes = [
   { path: "/forgot-password", element: <PasswordResetRequest /> },
   { path: "/error", element: <ErrorPage /> },
   { path: "*", element: <Navigate to="/error" replace /> },
+  { path: "/restore-password", element: <RestorePassword /> },
+  { path: "/reset-password", element: <PasswordResetConfirm /> },
+  { path: "*", element: <div>404 Not Found</div> }
 ];

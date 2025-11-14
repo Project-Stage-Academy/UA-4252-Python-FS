@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
-from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
+from apps.common.utils import logo_upload_to
 
 User = get_user_model()
 
@@ -42,12 +42,18 @@ REGION_CHOICES = (
 
 
 class InvestorProfile(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='investor_profile'
+    )
     company_name = models.CharField(max_length=200)
     full_name = models.CharField(max_length=200)
-    description = models.TextField()
-    investment_range_min = models.DecimalField(max_digits=12, decimal_places=2)
-    investment_range_max = models.DecimalField(max_digits=12, decimal_places=2)
+    description = models.TextField(blank=True, default="")
+    investment_range_min = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    investment_range_max = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
 
     preferred_industries = models.CharField(
         max_length=200
@@ -62,15 +68,23 @@ class InvestorProfile(TimeStampedModel):
     address = models.CharField(max_length=200)
     postal_code = models.CharField(max_length=20)
     logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
-    partners_brands = models.TextField()
+    partners_brands = models.TextField(blank=True, default="")
     audit_status = models.CharField(max_length=50, default="Pending")
 
-    def clean(self):
-        if self.investment_range_max < self.investment_range_min:
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    published_by_id = models.UUIDField(blank=True, null=True)
+    draft_saved_at = models.DateTimeField(auto_now=True)
 
-            raise ValidationError(
-                "Maximum investment must be greater than minimum investment."
-            )
+    def clean(self):
+        if (
+            self.investment_range_min is not None
+            and self.investment_range_max is not None
+        ):
+            if self.investment_range_max < self.investment_range_min:
+                raise ValidationError(
+                    "investment_range_max must be >= investment_range_min"
+                )
 
     def __str__(self):
         return self.company_name

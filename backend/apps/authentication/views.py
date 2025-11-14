@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
@@ -10,17 +10,164 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .emails import send_password_reset_email
 from .serializers import (
+    CheckEmailSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegistrationSerializer,
+    UserLoginSerializer,
 )
+from .throttling import CommonRedisThrottle, EmailThrottle
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+class LoginView(APIView):
+    """Authenticates user, generates refresh/access tokens.
+    Throttle limited in throttling.py with throttle_classes, using Redis to count."""
+
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
+
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"error": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = authenticate(
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
+        )
+
+        if user is None:
+            return Response(
+                {"error": "Wrong email or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not user.is_active:
+            return Response(
+                {"error": "Account inactive."}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        tokens = TokenObtainPairSerializer.get_token(user)
+
+        response = Response(
+            {
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                }
+            },
+            status=status.HTTP_200_OK,
+        )
+
+        secure_flag = getattr(settings, "AUTH_COOKIE_SECURE", True)
+
+        response.set_cookie(
+            key="access_token",
+            value=str(tokens.access_token),
+            httponly=True,
+            secure=secure_flag,
+            samesite=getattr(settings, "AUTH_COOKIE_SAMESITE", "Strict"),
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(tokens),
+            httponly=True,
+            secure=False,  # While still in development, True when in prod.
+            samesite="Strict",
+        )
+
+        return response
+
+
+class LogoutView(APIView):
+    """
+    Gets token from cookies, blacklisting it, deleting token from cookies.
+    """
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            response = Response(status=status.HTTP_204_NO_CONTENT)
+
+            response.delete_cookie("refresh_token")
+            response.delete_cookie("access_token")
+
+            return response
+        except TokenError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendVerificationView(APIView):
+    """
+    Generates access token for link,
+    sends mail with verification link.
+    """
+
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
+
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"detail": "Necessary fields are missing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(email=email)
+
+            if user.is_active:
+                return Response(
+                    {"detail": "Account was already verified"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
+
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.id))
+
+        verification_link = (
+            f"{settings.FRONTEND_URL}/api/auth/verify-email/{uid}/{token}/"
+        )
+
+        try:
+            send_mail(
+                subject="Verify your email",
+                message=f"Please, verify your email by clicking: {verification_link}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.exception("Failed to send verification email: %s", e)
+            return Response(
+                {"detail": "Failed to send email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class RegisterView(APIView):
@@ -33,6 +180,8 @@ class RegisterView(APIView):
     - Prevents attackers from discovering registered emails
     - Duplicate emails are handled in serializer validation
     """
+
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
         """
@@ -51,7 +200,9 @@ class RegisterView(APIView):
                     status=status.HTTP_201_CREATED,
                 )
 
-        serializer = RegistrationSerializer(data=request.data)
+        serializer = RegistrationSerializer(
+            data=request.data, context={'request': request}
+        )
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -89,6 +240,8 @@ class VerifyEmailView(APIView):
     GET /api/auth/verify/<uid>/<token>/
     Activates user account after successful email verification.
     """
+
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request, uid, token):
         """
@@ -143,6 +296,7 @@ class PasswordResetRequestView(APIView):
         400: Validation errors.
     """
 
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
 
@@ -183,6 +337,7 @@ class PasswordResetConfirmView(APIView):
         400: Validation errors.
     """
 
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer
 
@@ -196,3 +351,35 @@ class PasswordResetConfirmView(APIView):
             {"detail": "Password has been reset successfully."},
             status=status.HTTP_200_OK,
         )
+
+
+class CheckEmailView(APIView):
+    """
+    Safe backend endpoint that the frontend can call (debounced)
+    to check whether an email is already registered.
+    POST /api/auth/check-email/
+    Request body:
+    {
+        "email": "someemail@gmail.com"
+    }
+    Response:
+        'available': 'false' - User exists, 200
+        'available': 'true' - No user with this email exists., 200
+        400: Bad Request body
+        429: Too Many Requests
+    """
+
+    throttle_classes = [CommonRedisThrottle, EmailThrottle]
+
+    def post(self, request):
+        serializer = CheckEmailSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        try:
+            User.objects.get(email=email)
+            return Response({'available': 'false'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'available': 'true'}, status=status.HTTP_200_OK)

@@ -10,10 +10,10 @@ from .serializers import StartupPublicProfileSerializer
 
 
 class StartupPublicProfileViewSet(viewsets.ModelViewSet):
-    queryset = (
-        StartupProfile.objects
-        .annotate(followers_count=Count("saved_by_investors"))
-        .order_by("-created_at", "-updated_at")
+    queryset = StartupProfile.objects.annotate(
+        followers_count=Count("saved_by_investors")
+    ).order_by(
+        "-created_at", "-updated_at"
     )  # annotate() can result in an unordered queryset
 
     serializer_class = StartupPublicProfileSerializer

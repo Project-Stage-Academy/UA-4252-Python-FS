@@ -26,10 +26,10 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-default-key")
-
+RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY")
+DRF_RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_PRIVATE_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-
 ALLOWED_HOSTS = ["*"]
 
 # Application definition
@@ -48,6 +48,9 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_filters",
+    "drf_recaptcha",
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -59,6 +62,8 @@ LOCAL_APPS = [
     "apps.user_messages",
     "apps.users",
     "apps.authentication",
+    "apps.profiles",
+    "apps.search",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -76,9 +81,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "backend.urls"
 
-CORS_ALLOW_ALL_ORIGINS = (
-    os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
-)
+CORS_ALLOW_ALL_ORIGINS = False
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_URL,
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -153,6 +162,9 @@ SIMPLE_JWT = {
     ),
 }
 
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_SAMESITE = "Strict"
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -167,7 +179,6 @@ if os.environ.get("DJANGO_TEST", "0") == "1":
         "LOCATION": "unique-for-testing",
     }
 
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
@@ -211,3 +222,27 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 PASSWORD_RESET_TIMEOUT = int(
     os.environ.get("PASSWORD_RESET_TIMEOUT", 60 * 60)
 )  # 1hr by default
+
+# ==================== CELERY CONFIGURATION ====================
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# ================ ELASTIC SEARCH CONFIGURATION ================
+ES_HOST = os.environ.get("ELASTIC_HOST", "es")
+ES_PORT = os.environ.get("ELASTIC_PORT", 9200)
+
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": f"http://{ES_HOST}:{ES_PORT}",
+        "basic_auth": (
+            os.environ.get("ELASTIC_USERNAME"),
+            os.environ.get("ELASTIC_PASSWORD")
+        ),
+    }
+}

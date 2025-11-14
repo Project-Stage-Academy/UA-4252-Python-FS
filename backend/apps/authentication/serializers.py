@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import UUIDField
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from drf_recaptcha.fields import ReCaptchaV2Field
 from rest_framework import serializers
 
 from apps.common.validators import drf_validate_file_size, drf_validate_file_type
@@ -22,6 +23,15 @@ ROLE_CHOICES = [
 ]
 
 
+class UserLoginSerializer(serializers.ModelSerializer):
+    email = serializers.CharField()
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ("email", "password")
+
+
 class RegistrationSerializer(serializers.Serializer):
     """
     Serializer for user registration with role-specific fields.
@@ -30,6 +40,7 @@ class RegistrationSerializer(serializers.Serializer):
     - investor: requires investment_range_min
     """
 
+    recaptcha = ReCaptchaV2Field()
     email = serializers.EmailField(required=True)
     password = serializers.CharField(
         required=True, write_only=True, validators=[validate_password]
@@ -155,9 +166,11 @@ class RegistrationSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
+    recaptcha = ReCaptchaV2Field()
 
     def validate_email(self, value):
         # Validate format only without revealing existence.
+
         return value
 
 
@@ -166,6 +179,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
     re_new_password = serializers.CharField(min_length=8)
+    recaptcha = ReCaptchaV2Field()
 
     @staticmethod
     def _get_user_from_uid(uid: str) -> User:
@@ -231,3 +245,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+
+
+class CheckEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField(error_messages={"invalid": "Invalid format"})
