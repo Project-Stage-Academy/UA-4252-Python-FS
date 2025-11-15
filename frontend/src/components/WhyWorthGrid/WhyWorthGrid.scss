@@ -9,6 +9,14 @@
   margin: 0 auto;
   padding: 0 24px;
 
+  @media (min-width: 1800px) {
+    max-width: 1700px;
+  }
+
+  @media (min-width: 2100px) {
+    max-width: 2000px;
+  }
+
   .section-title {
     font-family: 'Geologica';
     font-weight: 700;
