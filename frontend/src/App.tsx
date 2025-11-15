@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Home from "./pages/Home";
+import VerifyEmail from "./pages/VerifyEmail";
+import './components/Header/Header.scss';
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 import "./components/Header/Header.scss";
@@ -87,6 +89,14 @@ function App() {
                 </Suspense>
               }
             />
+            <Route
+              path="/verify-email"
+              element={
+                <Suspense fallback={null}>
+                  <VerifyEmail />
+                </Suspense>
+              }
+            />
 
             <Route
               path="/about"
@@ -137,9 +147,16 @@ function App() {
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
 
-          <Suspense fallback={null}>
-            <WhyWorthGrid />
-          </Suspense>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={null}>
+                  <WhyWorthGrid />
+                </Suspense>
+              }
+            />
+          </Routes>
         </main>
 
         <Footer />
