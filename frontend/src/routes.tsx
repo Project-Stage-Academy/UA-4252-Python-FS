@@ -12,9 +12,6 @@ import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 import RestorePassword from "./pages/RestorePassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import ErrorPage from "./pages/ErrorPage";
-import ErrorPage from "./pages/ErrorPage";
-import PasswordResetConfirm from "./pages/PasswordResetConfirm";
-import RestorePassword from "./pages/RestorePassword";
 
 export const routes = [
   { path: "/", element: <Home /> },
@@ -30,10 +27,5 @@ export const routes = [
   { path: "/restore-password", element: <RestorePassword /> },
   { path: "/reset-password", element: <PasswordResetConfirm /> },
   { path: "/error", element: <ErrorPage /> },
-  { path: "*", element: <Navigate to="/error" replace /> },
-  { path: "/error", element: <ErrorPage /> },
-  { path: "*", element: <Navigate to="/error" replace /> },
-  { path: "/restore-password", element: <RestorePassword /> },
-  { path: "/reset-password", element: <PasswordResetConfirm /> },
-  { path: "*", element: <div>404 Not Found</div> }
+  { path: "*", element: <Navigate to="/error" replace /> }
 ];
