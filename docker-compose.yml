@@ -40,6 +40,7 @@ services:
       - db
       - redis
       - es
+      - mongodb
 
   celery_worker:
     build:
@@ -86,6 +87,29 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=true
 
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0-ubi8
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - mongodb-data:/data/db
+
+  mongo-express:
+    image: mongo-express:1-20-alpine3.19
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./backend/.env
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+    depends_on:
+      - mongodb
+
   mailhog:
     image: mailhog/mailhog:latest
     ports:
@@ -99,3 +123,4 @@ services:
 volumes:
   dev-db-data:
   es-data:
+  mongodb-data:

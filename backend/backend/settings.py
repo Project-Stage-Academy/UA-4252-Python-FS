@@ -51,6 +51,7 @@ THIRD_PARTY_APPS = [
     "drf_recaptcha",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
+    "django_mongodb_backend",
 ]
 
 LOCAL_APPS = [
@@ -119,6 +120,14 @@ DATABASES = {
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": os.environ.get("POSTGRES_HOST"),
         "PORT": os.environ.get("POSTGRES_PORT", 5432),
+    },
+    "mongodb": {
+        "ENGINE": "django_mongodb_backend",
+        "NAME": os.environ.get("MONGO_DB_NAME"),
+        "USER": os.environ.get("MONGO_INITDB_ROOT_USERNAME"),
+        "PASSWORD": os.environ.get("MONGO_INITDB_ROOT_PASSWORD"),
+        "HOST": os.environ.get("MONGO_HOST", "mongodb"),
+        "PORT": os.environ.get("MONGO_PORT", 27017),
     }
 }
 
@@ -179,7 +188,6 @@ if os.environ.get("DJANGO_TEST", "0") == "1":
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-for-testing",
     }
-
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
