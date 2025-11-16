@@ -163,6 +163,8 @@ class InvestorTrackingListView(generics.ListAPIView):
 
 class InvestmentViewSet(mixins.CreateModelMixin,
                         mixins.UpdateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     
     queryset = Investment.objects.all()
@@ -177,9 +179,20 @@ class InvestmentViewSet(mixins.CreateModelMixin,
     def get_permissions(self):
         if self.action == 'create':
             return [IsAuthenticated(), IsInvestor()]
-        elif self.action == 'partial_update':
+        
+        elif self.action in ['partial_update', 'retrieve']: 
             return [IsAuthenticated(), IsOwnerOrAdmin()]
+        
         return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Investment.objects.none()
+        if user.is_staff:
+            return Investment.objects.all()
+        
+        return Investment.objects.filter(investor=user)
 
 class InvestorInvestmentsListView(generics.ListAPIView):
     

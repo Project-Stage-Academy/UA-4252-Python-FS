@@ -9,14 +9,16 @@ class IsTrackingOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.investor == request.user
 
+
 class IsInvestorSelf(permissions.BasePermission):
     """
     Allows access only if the `investor_id` in the URL
     matches the authenticated user's ID.
     """
     def has_permission(self, request, view):
-        return request.user.id == view.kwargs.get('investor_id')
-    
+        investor_id = view.kwargs.get('investor_id') or view.kwargs.get('id')
+        return request.user.id == investor_id
+
 
 class IsInvestor(permissions.BasePermission):
     message = "Only users with an investor profile can perform this action."

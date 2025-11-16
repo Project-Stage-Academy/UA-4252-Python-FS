@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 import uuid
+from decimal import Decimal
 
 from ..models import InvestorProfile, Investment
 from apps.projects.models import Project
@@ -109,14 +110,14 @@ class InvestmentAPITests(APITestCase):
 
 
     def test_unauthorized_create_investment(self):
-        data = {'project_id': self.project_public.id, 'amount_committed': 1000, 'currency': 'USD'}
+        data = {'project': self.project_public.id, 'amount_committed': 1000, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_non_investor_create_investment(self):
         self.client.force_authenticate(user=self.startup_user)
         
-        data = {'project_id': self.project_public.id, 'amount_committed': 1000, 'currency': 'USD'}
+        data = {'project': self.project_public.id, 'amount_committed': 1000, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -126,7 +127,7 @@ class InvestmentAPITests(APITestCase):
         self.client.force_authenticate(user=self.investor_user)
         
         data = {
-            'project_id': self.project_public.id, 
+            'project': self.project_public.id, 
             'amount_committed': 5000, 
             'currency': 'USD',
             'meta': {'round': 'seed'}
@@ -143,39 +144,38 @@ class InvestmentAPITests(APITestCase):
 
     def test_create_investment_invalid_amount(self):
         self.client.force_authenticate(user=self.investor_user)
-        data = {'project_id': self.project_public.id, 'amount_committed': -100, 'currency': 'USD'}
+        data = {'project': self.project_public.id, 'amount_committed': -100, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_investment_invalid_currency(self):
         self.client.force_authenticate(user=self.investor_user)
-        data = {'project_id': self.project_public.id, 'amount_committed': 100, 'currency': 'US'}
+        data = {'project': self.project_public.id, 'amount_committed': 100, 'currency': 'US'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('currency', response.data)
 
     def test_create_investment_project_not_fundraising(self):
         self.client.force_authenticate(user=self.investor_user)
-        data = {'project_id': self.project_not_fundraising.id, 'amount_committed': 1000, 'currency': 'USD'}
+        data = {'project': self.project_not_fundraising.id, 'amount_committed': 1000, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("not currently fundraising", response.data['project_id'][0])
+        self.assertIn("not currently fundraising", response.data['project'][0])
 
     def test_create_investment_project_not_public(self):
         self.client.force_authenticate(user=self.investor_user)
-        data = {'project_id': self.project_private.id, 'amount_committed': 1000, 'currency': 'USD'}
+        data = {'project': self.project_private.id, 'amount_committed': 1000, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("cannot invest", response.data['project_id'][0])
+        self.assertIn("cannot invest", response.data['project'][0])
 
     def test_create_investment_project_not_found(self):
         self.client.force_authenticate(user=self.investor_user)
         invalid_uuid = uuid.uuid4()
-        data = {'project_id': invalid_uuid, 'amount_committed': 1000, 'currency': 'USD'}
+        data = {'project': invalid_uuid, 'amount_committed': 1000, 'currency': 'USD'}
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("not found", response.data['project_id'][0])
-
+        self.assertIn("does not exist", str(response.data['project'][0]))
 
     def test_owner_update_investment_success(self):
         self.client.force_authenticate(user=self.investor_user)
@@ -193,8 +193,7 @@ class InvestmentAPITests(APITestCase):
         self.client.force_authenticate(user=self.other_investor)
         data = {'amount_invested': 5000}
         response = self.client.patch(self.detail_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['detail'], "You must be the owner of this object or an administrator.")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_admin_update_investment_success(self):
         self.client.force_authenticate(user=self.admin_user)
@@ -218,7 +217,6 @@ class InvestmentAPITests(APITestCase):
         self.investment.refresh_from_db()
         self.assertEqual(self.investment.amount_committed, 10000)
         self.assertEqual(self.investment.amount_invested, 1)
-
 
     def test_owner_list_investments_success(self):
         self.client.force_authenticate(user=self.investor_user)
@@ -251,3 +249,27 @@ class InvestmentAPITests(APITestCase):
         response = self.client.get(self.other_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+        
+    def test_get_investment_list_as_owner(self):
+        self.client.force_authenticate(user=self.investor_user)
+        response = self.client.get(self.create_url) 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], str(self.investment.id))
+
+    def test_get_investment_list_as_other_investor(self):
+        self.client.force_authenticate(user=self.other_investor)
+        response = self.client.get(self.create_url) 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_get_investment_detail_as_owner(self):
+        self.client.force_authenticate(user=self.investor_user)
+        response = self.client.get(self.detail_url) 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['amount_committed'], "10000.00")
+
+    def test_get_investment_detail_as_non_owner(self):
+        self.client.force_authenticate(user=self.other_investor)
+        response = self.client.get(self.detail_url) 
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
