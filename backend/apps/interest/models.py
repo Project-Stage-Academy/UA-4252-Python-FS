@@ -5,6 +5,12 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class InterestStatus(models.TextChoices):
+    EXPRESSED = "expressed", "Expressed"
+    CONTACTED = "contacted", "Contacted"
+    IGNORED = "ignored", "Ignored"
+
+
 class Interest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -26,15 +32,19 @@ class Interest(models.Model):
 
     status = models.CharField(
         max_length=32,
-        default="expressed",
-        choices=[
-            ("expressed", "Expressed"),
-            ("contacted", "Contacted"),
-            ("ignored", "Ignored"),
-        ]
+        choices=InterestStatus.choices,
+        default=InterestStatus.EXPRESSED,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Interest {self.id} by {self.investor_id}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["investor", "project"],
+                name="unique_investor_project_interest"
+            )
+        ]
