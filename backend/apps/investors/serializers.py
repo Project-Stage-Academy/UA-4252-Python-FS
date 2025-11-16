@@ -1,12 +1,11 @@
-from django.db import IntegrityError
+from django.db import IntegrityError  # noqa: F401
 from rest_framework import serializers
 
 from apps.investors.models import Tracking
 from apps.projects.models import Project
+from apps.projects.serializers import ProjectListSerializer  # noqa: F401
 from apps.startups.models import StartupProfile
-
-from apps.projects.serializers import ProjectListSerializer
-from apps.startups.serializers import StartupPublicProfileSerializer
+from apps.startups.serializers import StartupPublicProfileSerializer  # noqa: F401
 
 
 class TrackingCreateSerializer(serializers.ModelSerializer):
@@ -14,6 +13,7 @@ class TrackingCreateSerializer(serializers.ModelSerializer):
     Serializer for creating (POST) a Tracking object.
     It validates target_id and automatically sets the investor.
     """
+
     investor = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -66,12 +66,13 @@ class TrackedStartupSerializer(serializers.ModelSerializer):
     """
     Minimal serializer for StartupProfile as required by the task.
     """
+
     logo_url = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = StartupProfile
         fields = ['id', 'company_name', 'logo_url']
-    
+
     def get_logo_url(self, obj):
         request = self.context.get("request")
         if obj.logo and hasattr(obj.logo, "url"):
@@ -83,6 +84,7 @@ class TrackedProjectSerializer(serializers.ModelSerializer):
     """
     Minimal serializer for Project as required by the task.
     """
+
     class Meta:
         model = Project
         fields = ['id', 'title', 'slug', 'thumbnail']
@@ -93,6 +95,7 @@ class TrackingListSerializer(serializers.ModelSerializer):
     Serializer for a list (GET) of Tracking objects.
     The 'target' field will be added to the View for optimization.
     """
+
     target = serializers.JSONField(read_only=True, default=None)
 
     class Meta:

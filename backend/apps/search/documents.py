@@ -57,9 +57,9 @@ class ProjectDocument(Document):
             "created_at",
             "updated_at",
         ]
-        related_models = ['startup']
+        related_models = [StartupProfile]
 
-    def get_instance_from_related(self, related_instance):
+    def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, StartupProfile):
             return related_instance.projects.all()
         return []
