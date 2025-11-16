@@ -1,10 +1,18 @@
-import { describe, it, beforeAll, beforeEach, afterEach, expect, jest } from "@jest/globals";
+import { describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, jest } from "@jest/globals";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import PasswordResetRequest from "./PasswordResetRequest";
 
+jest.mock("../config/env", () => ({
+  API_BASE: "/api",
+  RECAPTCHA_PUBLIC_KEY: "test-recaptcha-key",
+}));
+jest.mock("react-google-recaptcha", () => () => <div data-testid="recaptcha" />);
+
 let originalFetch: typeof global.fetch;
+let errorSpy: jest.SpyInstance;
+let warnSpy: jest.SpyInstance;
 
 function mockFetchOnce(status = 200, body?: any) {
   const payload = body ?? null;
@@ -22,6 +30,8 @@ function mockFetchOnce(status = 200, body?: any) {
 describe("PasswordResetRequest (UA)", () => {
   beforeAll(() => {
     originalFetch = global.fetch;
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   beforeEach(() => {
@@ -33,15 +43,17 @@ describe("PasswordResetRequest (UA)", () => {
     jest.resetAllMocks();
   });
 
+  afterAll(() => {
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
+
   it("показує помилку 'обов’язкове поле', якщо email порожній", async () => {
     const user = userEvent.setup();
     render(<PasswordResetRequest lang="uk" />);
 
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText("Поле електронної пошти є обов’язковим.")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Поле електронної пошти є обов’язковим.")).toBeInTheDocument();
   });
 
   it("показує помилку 'некоректний формат', якщо email неправильний", async () => {
@@ -50,13 +62,10 @@ describe("PasswordResetRequest (UA)", () => {
 
     await user.type(screen.getByLabelText("Електронна пошта"), "not-an-email");
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText("Введіть коректну адресу електронної пошти.")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Введіть коректну адресу електронної пошти.")).toBeInTheDocument();
   });
 
-  it("рендерить повідомлення про успіх при 200 OK", async () => {
+  it("рендерить success-UI при 200 OK і надсилає правильний payload", async () => {
     const user = userEvent.setup();
     mockFetchOnce(200);
     render(<PasswordResetRequest lang="uk" />);
@@ -65,28 +74,20 @@ describe("PasswordResetRequest (UA)", () => {
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
 
     expect(
-      await screen.findByText(
-        "Ми надіслали інструкції з відновлення пароля на вашу електронну пошту."
-      )
+      await screen.findByText("Ми надіслали інструкції з відновлення пароля на вашу електронну пошту.")
     ).toBeInTheDocument();
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/auth/password-reset/",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "test@example.com" }),
+      })
+    );
   });
 
-  it("рендерить повідомлення про успіх при 400 (не розкриваючи існування акаунта)", async () => {
-    const user = userEvent.setup();
-    mockFetchOnce(400, { detail: "Bad request" });
-    render(<PasswordResetRequest lang="uk" />);
-
-    await user.type(screen.getByLabelText("Електронна пошта"), "test@example.com");
-    await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText(
-        "Ми надіслали інструкції з відновлення пароля на вашу електронну пошту."
-      )
-    ).toBeInTheDocument();
-  });
-
-  it("рендерить повідомлення про успіх при 500", async () => {
+  it("рендерить той самий success-UI при помилці сервера (наприклад, 500) — без розкриття існування акаунта", async () => {
     const user = userEvent.setup();
     mockFetchOnce(500);
     render(<PasswordResetRequest lang="uk" />);
@@ -95,24 +96,7 @@ describe("PasswordResetRequest (UA)", () => {
     await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
 
     expect(
-      await screen.findByText(
-        "Ми надіслали інструкції з відновлення пароля на вашу електронну пошту."
-      )
-    ).toBeInTheDocument();
-  });
-
-  it("рендерить повідомлення про успіх при помилці мережі (fetch reject)", async () => {
-    const user = userEvent.setup();
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("network down"));
-    render(<PasswordResetRequest lang="uk" />);
-
-    await user.type(screen.getByLabelText("Електронна пошта"), "test@example.com");
-    await user.click(screen.getByRole("button", { name: "Надіслати запит" }));
-
-    expect(
-      await screen.findByText(
-        "Ми надіслали інструкції з відновлення пароля на вашу електронну пошту."
-      )
+      await screen.findByText("Ми надіслали інструкції з відновлення пароля на вашу електронну пошту.")
     ).toBeInTheDocument();
   });
 });

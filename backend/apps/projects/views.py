@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
@@ -9,13 +10,15 @@ from rest_framework.response import Response
 from apps.common.constants import PROJECT_TRANSITIONS
 from apps.startups.models import StartupProfile
 
-from .models import Project
+from .models import Project, ProjectAudit
 from .pagination import ProjectPagination
 from .permissions import IsOwnerOrReadOnly, IsStartupOwner
 from .serializers import (
+    ProjectAttachmentSerializer,
+    ProjectAuditSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
-    ProjectsCreateUpdateSerialiser,
+    ProjectsCreateUpdateSerializer,
     ProjectSerializer,
     ProjectStatusSerializer,
 )
@@ -29,7 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return ProjectListSerializer
         elif self.action in ['create', 'update', 'partial_update']:
-            return ProjectsCreateUpdateSerialiser
+            return ProjectsCreateUpdateSerializer
         elif self.action == 'update_status':
             return ProjectStatusSerializer
         return ProjectDetailSerializer
@@ -78,6 +81,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return [IsStartupOwner()]
         return [IsOwnerOrReadOnly()]
 
+    def _handle_attachment(self, project, request):
+        files = request.FILES.getlist('attachments')
+        captions_raw = request.data.get('captions', '')
+        if isinstance(captions_raw, str):
+            captions = [c.strip() for c in captions_raw.split(',') if c.strip()]
+        else:
+            captions = captions_raw if captions_raw else []
+
+        validated_serializers = []
+        for idx, file in enumerate(files):
+            caption = captions[idx] if idx < len(captions) else ''
+            serializer = ProjectAttachmentSerializer(
+                data={'file': file, 'caption': caption, 'order': idx},
+                context={'request': request},
+            )
+            serializer.is_valid(raise_exception=True)
+            validated_serializers.append(serializer)
+
+        created_attachments = []
+        for serializer in validated_serializers:
+            attachment = serializer.save(project=project)
+            created_attachments.append(attachment)
+        return created_attachments
+
     def list(self, request, *args, **kwargs):
         startup_pk = self.kwargs.get('startup_pk')
         if not startup_pk:
@@ -97,11 +124,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             data=request.data, context={'startup': startup, 'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        with transaction.atomic():
+            project = serializer.save()
+
+            if request.FILES:
+                self._handle_attachment(project, request)
 
         headers = self.get_success_headers(serializer.data)
+        detail_serializer = ProjectDetailSerializer(
+            project, context={'request': request}
+        )
+
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            detail_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def get_success_headers(self, data):
@@ -124,8 +159,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        serializer.instance.refresh_from_db()
+        detail_serializer = ProjectDetailSerializer(
+            serializer.instance, context={'request': request}
+        )
 
-        return Response(serializer.data)
+        return Response(detail_serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
@@ -190,6 +229,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'], url_path='history')
+    def history(self, request, pk=None, **kwargs):
+        project = self.get_object()
+
+        queryset = ProjectAudit.objects.filter(project=project).select_related('user')
+
+        action_filter = request.query_params.get('action')
+        if action_filter:
+            queryset = queryset.filter(action=action_filter)
+        paginator = ProjectPagination()
+        page = paginator.paginate_queryset(queryset, request)
+
+        if page is not None:
+            serializer = ProjectAuditSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = ProjectAuditSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def _get_allowed_transitions(self, project):
         allowed = []

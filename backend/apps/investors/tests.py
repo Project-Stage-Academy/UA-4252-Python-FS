@@ -7,6 +7,9 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
 
 from apps.investors.models import (
     Investment,
@@ -268,3 +271,158 @@ class PortfolioSnapshotModelTest(TestCase):
                 total_invested=1.00,
                 summary={'kpi': 'data'},
             )
+
+class TrackingAPITestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        self.investor_user = User.objects.create_user(
+            email='investor-tracker@example.com',
+            password='testpass123',
+            first_name='Test',
+            last_name='Investor',
+        )
+        self.investor_profile = InvestorProfile.objects.create(
+            user=self.investor_user,
+            company_name='Tracker Inc.',
+            full_name='T I',
+            investment_range_min=1,
+            investment_range_max=10,
+            email='track@test.com',
+            phone='+380504444444',
+            description='desc',
+        )
+        
+        self.other_user = User.objects.create_user(
+            email='other@example.com',
+            password='testpass123',
+            first_name='Other',
+            last_name='User',
+        )
+
+        self.startup = StartupProfile.objects.create(
+            user=self.other_user, 
+            company_name="Test Startup",
+            email="startup@test.com",
+        )
+        self.project = Project.objects.create(
+            startup=self.startup,
+            title="Test Project",
+            target_amount=Decimal('10000.00'),
+        )
+
+        self.create_url = reverse('tracking-list')
+        self.list_url = reverse(
+            'investor-tracking-list',
+            kwargs={'investor_id': str(self.investor_user.id)}
+        )
+
+    def test_create_tracking_startup_success(self):
+        self.client.force_authenticate(user=self.investor_user)
+        data = {
+            "target_type": "startup",
+            "target_id": str(self.startup.id),
+            "source": "manual"
+        }
+        response = self.client.post(self.create_url, data, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tracking.objects.count(), 1)
+        self.assertEqual(response.data['target_id'], str(self.startup.id))
+
+    def test_create_tracking_idempotent(self):
+        self.client.force_authenticate(user=self.investor_user)
+        data = {
+            "target_type": "project",
+            "target_id": str(self.project.id),
+            "source": "manual"
+        }
+        
+        response1 = self.client.post(self.create_url, data, format='json')
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tracking.objects.count(), 1)
+        tracking_id = response1.data['id']
+
+        response2 = self.client.post(self.create_url, data, format='json')
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        self.assertEqual(Tracking.objects.count(), 1)
+        self.assertEqual(response2.data['id'], tracking_id) 
+
+    def test_create_tracking_invalid_target_id(self):
+        self.client.force_authenticate(user=self.investor_user)
+        data = {
+            "target_type": "startup",
+            "target_id": str(uuid.uuid4()), # Неіснуючий UUID
+            "source": "manual"
+        }
+        response = self.client.post(self.create_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("target_id", response.data)
+
+    def test_delete_tracking_success(self):
+        self.client.force_authenticate(user=self.investor_user)
+        tracking = Tracking.objects.create(
+            investor=self.investor_user,
+            target_type="startup",
+            target_id=self.startup.id
+        )
+        self.assertEqual(Tracking.objects.count(), 1)
+        
+        delete_url = reverse('tracking-detail', kwargs={'pk': tracking.pk})
+        response = self.client.delete(delete_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Tracking.objects.count(), 0)
+
+    def test_delete_tracking_not_owner_forbidden(self):
+        tracking = Tracking.objects.create(
+            investor=self.investor_user,
+            target_type="startup",
+            target_id=self.startup.id
+        )
+        self.assertEqual(Tracking.objects.count(), 1)
+        
+        self.client.force_authenticate(user=self.other_user)
+        delete_url = reverse('tracking-detail', kwargs={'pk': tracking.pk})
+        response = self.client.delete(delete_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Tracking.objects.count(), 1) 
+
+    def test_list_tracking_success_and_filtering(self):
+        self.client.force_authenticate(user=self.investor_user)
+        
+        Tracking.objects.create(
+            investor=self.investor_user,
+            target_type="startup",
+            target_id=self.startup.id
+        )
+        Tracking.objects.create(
+            investor=self.investor_user,
+            target_type="project",
+            target_id=self.project.id
+        )
+        
+        response_startup = self.client.get(self.list_url, {'type': 'startup'})
+        self.assertEqual(response_startup.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_startup.data['count'], 1)
+        self.assertEqual(
+            response_startup.data['results'][0]['target_id'], str(self.startup.id)
+        )
+        self.assertIsNotNone(response_startup.data['results'][0]['target'])
+        self.assertEqual(
+            response_startup.data['results'][0]['target']['company_name'],
+            self.startup.company_name
+        )
+        response_project = self.client.get(self.list_url, {'type': 'project'})
+        self.assertEqual(response_project.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_project.data['count'], 1)
+        self.assertEqual(
+            response_project.data['results'][0]['target']['title'],
+            self.project.title
+        )
+
+    def test_list_tracking_not_owner_forbidden(self):
+        self.client.force_authenticate(user=self.other_user)
+        response = self.client.get(self.list_url, {'type': 'startup'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

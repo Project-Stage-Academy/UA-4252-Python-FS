@@ -4,6 +4,7 @@ import '../css/RegisterStartup.css';
 import opentechlogo from "../img/opentechlogo.png";
 import craftmergelogo from "../img/craftmergelogo.png";
 import craftmergelogoblack from "../img/craftmergelogoblack.png";
+import ReCAPTCHA from 'react-google-recaptcha';
 
 type FormState = {
   name: string;
@@ -36,6 +37,7 @@ export default function RegisterStartup() {
     logoFile: null,
   });
 
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [errors, setErrors] = useState<ErrorState>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -102,6 +104,12 @@ export default function RegisterStartup() {
     if (form.logoFile) {
       formData.append("logo", form.logoFile);
     }
+    if (!recaptchaToken) {
+      setErrors(prev => ({ ...prev, recaptcha: "Підтвердіть, що ви не робот" }));
+      setStatus("idle");
+      return;
+    }
+    formData.append("recaptcha", recaptchaToken);
 
     try {
       const API_BASE = import.meta.env.VITE_API_BASE || "";
@@ -179,7 +187,6 @@ export default function RegisterStartup() {
       </div>
     );
   }
-
   return (
       <div className="page">
         <header className="navigation">
@@ -325,6 +332,14 @@ export default function RegisterStartup() {
                   особа</label>
               </div>
               {errors.person && <p className="error-text">{errors.person}</p>}
+
+              <div className="field">
+                <ReCAPTCHA
+                  sitekey={import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY}
+                  onChange={token => setRecaptchaToken(token)}
+                />
+                {errors.recaptcha && <p className="error-text">{errors.recaptcha}</p>}
+              </div>
 
               <p className="form-terms">
                 Реєструючись, я погоджуюсь з <a href="#" className="link">правилами використання</a> сайту Craftmerge

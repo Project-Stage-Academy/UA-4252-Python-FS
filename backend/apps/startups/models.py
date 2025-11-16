@@ -4,8 +4,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
+from apps.common.utils import logo_upload_to
 
 User = get_user_model()
 
@@ -34,6 +34,11 @@ class StartupProfile(TimeStampedModel):
     partners_brands = models.TextField(blank=True, default='')
 
     audit_status = models.CharField(max_length=100, blank=True, default="")
+
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    published_by_id = models.UUIDField(null=True, blank=True)
+    draft_saved_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.company_name

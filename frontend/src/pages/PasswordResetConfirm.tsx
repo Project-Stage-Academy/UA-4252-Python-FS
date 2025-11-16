@@ -6,41 +6,40 @@ type Props = { lang?: Lang };
 
 const TR = {
   uk: {
-    title: "Створення нового пароля",
-    passwordLabel: "Новий пароль",
-    confirmLabel: "Підтвердження пароля",
-    submit: "Змінити пароль",
-    required: "Обидва поля є обов’язковими.",
+    title: "Встановлення нового пароля",
+    password: "Новий пароль",
+    confirm: "Підтвердження пароля",
+    submit: "Зберегти пароль",
+    invalid: "Токен недійсний або строк його дії минув.",
+    resend: "Надіслати запит повторно",
     mismatch: "Паролі не співпадають.",
+    weak: "Пароль не відповідає вимогам безпеки.",
     success: "Пароль успішно змінено.",
-    invalidLink: "Недійсне або прострочене посилання.",
+    login: "Увійти",
   },
   en: {
-    title: "Set a new password",
-    passwordLabel: "New password",
-    confirmLabel: "Confirm password",
-    submit: "Change password",
-    required: "Both fields are required.",
+    title: "Set new password",
+    password: "New password",
+    confirm: "Confirm password",
+    submit: "Save password",
+    invalid: "Token is invalid or has expired.",
+    resend: "Resend request",
     mismatch: "Passwords do not match.",
-    success: "Password successfully changed.",
-    invalidLink: "Invalid or expired link.",
+    weak: "Password does not meet security requirements.",
+    success: "Password has been changed successfully.",
+    login: "Login",
   },
 } as const;
 
+const STRONG_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 export default function PasswordResetConfirm({ lang = "uk" }: Props) {
   const t = TR[lang];
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-
-  const uid = searchParams.get("uid");
-  const token = searchParams.get("token");
-
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // 🔐 Проверка: если uid или token отсутствуют — редирект
   useEffect(() => {
     if (!uid || !token) {
       setError(t.invalidLink);
@@ -54,9 +53,10 @@ export default function PasswordResetConfirm({ lang = "uk" }: Props) {
     setError(null);
     setMsg(null);
 
-    if (!password || !confirm) return setError(t.required);
+    if (!STRONG_RE.test(password)) return setError(t.weak);
     if (password !== confirm) return setError(t.mismatch);
 
+    setLoading(true);
     try {
       const r = await fetch("/api/auth/password-reset/confirm/", {
         method: "POST",
