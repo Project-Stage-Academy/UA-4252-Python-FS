@@ -65,6 +65,7 @@ LOCAL_APPS = [
     "apps.authentication",
     "apps.profiles",
     "apps.search",
+    "apps.conversations",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -130,6 +131,8 @@ DATABASES = {
         "PORT": os.environ.get("MONGO_PORT", 27017),
     }
 }
+
+DATABASE_ROUTERS = ["backend.routers.MongoRouter"]
 
 if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
     DATABASES = {
