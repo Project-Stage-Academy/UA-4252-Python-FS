@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, mixins, exceptions
 
@@ -18,7 +19,7 @@ class SavedItemViewSet(
 
     def get_investor(self):
         investor_id = self.kwargs.get("investor_id")
-        investor = InvestorProfile.objects.get(id=investor_id)
+        investor = get_object_or_404(InvestorProfile, id=investor_id)
 
         if investor.user != self.request.user:
             raise exceptions.NotFound("Investor not found.")
