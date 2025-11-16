@@ -7,9 +7,6 @@ from rest_framework.throttling import BaseThrottle
 
 from apps.users.models import User
 
-RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 60)
-DURATION = getattr(settings, "COMMON_REDIS_THROTTLE_DURATION", 60)
-
 EMAIL_RATE = getattr(settings, "EMAIL_THROTTLE_RATE", 6)
 EMAIL_DURATION = getattr(settings, "EMAIL_THROTTLE_DURATION", 3600)
 
