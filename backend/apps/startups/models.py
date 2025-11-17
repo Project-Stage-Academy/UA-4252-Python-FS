@@ -52,23 +52,3 @@ class StartupProfile(TimeStampedModel):
             models.Index(fields=["-created_at"]),
             GinIndex(fields=["tags"], name="startups_tags_gin"),
         ]
-
-
-class SavedStartup(TimeStampedModel):
-    investor = models.ForeignKey(
-        "investors.InvestorProfile",
-        on_delete=models.CASCADE,
-        related_name="saved_startups",
-    )
-    startup = models.ForeignKey(
-        StartupProfile, on_delete=models.CASCADE, related_name="saved_by_investors"
-    )
-    notes = models.TextField(blank=True, default="")
-
-    def __str__(self):
-        return f"Saved {self.startup.company_name} by {self.investor.company_name}"
-
-    class Meta(TimeStampedModel.Meta):
-        verbose_name = "Saved Startup"
-        verbose_name_plural = "Saved Startups"
-        unique_together = ["investor", "startup"]

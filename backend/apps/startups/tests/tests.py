@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.investors.models import InvestorProfile
-from apps.startups.models import SavedStartup, StartupProfile
+from apps.startups.models import StartupProfile
 
 User = get_user_model()
 
@@ -80,97 +80,6 @@ class StartupProfileModelTest(TestCase):
         startup = StartupProfile.objects.create(**self.valid_data)
         self.assertEqual(startup.user, self.user)
         self.assertEqual(startup.user.email, "startup@example.com")
-
-
-class SavedStartupModelTest(TestCase):
-    """Unit tests for the SavedStartup model"""
-
-    def setUp(self):
-        """Create related objects for testing SavedStartup"""
-        self.investor_user = User.objects.create_user(
-            email="investor@example.com",
-            password="password123",
-            first_name="Investor",
-            last_name="User",
-        )
-
-        self.investor = InvestorProfile.objects.create(
-            user=self.investor_user,
-            company_name="Global Ventures",
-            full_name="Investor Inc.",
-            description="A venture fund investing in tech startups.",
-            investment_range_min=10000.00,
-            investment_range_max=50000.00,
-            preferred_industries="AI, SaaS",
-            website="https://globalventures.com",
-            email="contact@globalventures.com",
-            phone="+380441234567",
-            country="Ukraine",
-            region=8,
-            city="Kyiv",
-            address="Khreshchatyk 10",
-            postal_code="01001",
-            logo="media/Investor_logos/logo.png",
-            partners_brands="Tesla, SpaceX",
-            audit_status="Verified",
-        )
-
-        self.startup_user = User.objects.create_user(
-            email="owner@smartvision.ai",
-            password="password321",
-            first_name="Owner",
-            last_name="Smart",
-        )
-
-        self.startup = StartupProfile.objects.create(
-            user=self.startup_user,
-            company_name="SmartVision",
-            description="AI-based startup.",
-            founded_year=2021,
-            team_size=10,
-            website="https://smartvision.ai",
-            email="info@smartvision.ai",
-            phone="+380501112233",
-            city="Lviv",
-            address="Shevchenka 22",
-            postal_code="79000",
-            logo="media/startup_logos/smartvision.png",
-            partners_brands="Google, Amazon",
-            audit_status="Approved",
-        )
-
-        self.valid_data = {
-            "investor": self.investor,
-            "startup": self.startup,
-            "notes": "Potential collaboration opportunity for Series A investment.",
-        }
-
-    def test_create_valid_saved_startup(self):
-        """Ensure a valid SavedStartup can be created"""
-        saved = SavedStartup.objects.create(**self.valid_data)
-        self.assertIsInstance(saved, SavedStartup)
-        self.assertEqual(saved.investor.company_name, "Global Ventures")
-        self.assertEqual(saved.startup.company_name, "SmartVision")
-
-    def test_str_method_returns_readable_text(self):
-        """__str__ should return readable text with both company names"""
-        saved = SavedStartup.objects.create(**self.valid_data)
-        expected_str = "Saved SmartVision by Global Ventures"
-        self.assertEqual(str(saved), expected_str)
-
-    def test_missing_required_fields(self):
-        """Missing required fields should raise ValidationError"""
-        invalid_data = self.valid_data.copy()
-        invalid_data.pop("startup")
-        saved = SavedStartup(**invalid_data)
-        with self.assertRaises(ValidationError):
-            saved.full_clean()
-
-    def test_foreign_key_relations(self):
-        """SavedStartup must have valid investor and startup relations"""
-        saved = SavedStartup.objects.create(**self.valid_data)
-        self.assertEqual(saved.investor.user.email, "investor@example.com")
-        self.assertEqual(saved.startup.user.email, "owner@smartvision.ai")
 
 
 class StartupPublicProfileAPITest(APITestCase):

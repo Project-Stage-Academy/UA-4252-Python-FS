@@ -9,7 +9,6 @@ class IsTrackingOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.investor == request.user
 
-
 class IsInvestorSelf(permissions.BasePermission):
     """
     Allows access only if the `investor_id` in the URL
@@ -22,19 +21,19 @@ class IsInvestorSelf(permissions.BasePermission):
 
 class IsInvestor(permissions.BasePermission):
     message = "Only users with an investor profile can perform this action."
-    
+
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         return InvestorProfile.objects.filter(user=request.user).exists()
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     message = "You must be the owner of this object or an administrator."
-    
+
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user.is_staff or 
+            request.user.is_staff or
             obj.investor == request.user
         )
