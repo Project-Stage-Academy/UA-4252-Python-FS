@@ -6,6 +6,8 @@ set -o nounset
 
 python manage.py wait_for_db || exit 1
 python manage.py migrate --no-input || exit 1
+
+python manage.py wait_for_mongodb || exit 1
 python manage.py migrate --database=mongodb --no-input || exit 1
 
 python manage.py wait_for_es || exit 1
