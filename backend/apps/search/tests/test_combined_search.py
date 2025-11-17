@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from apps.projects.models import Project
-from apps.search.documents import StartupDocument, ProjectDocument
+from apps.search.documents import ProjectDocument, StartupDocument
 from apps.startups.models import StartupProfile
 
 User = get_user_model()
@@ -82,6 +82,7 @@ def sample_data():
         Project.objects.create(
             startup=startups[0],
             title="Eco Pottery",
+            visibility='public',
             short_description="Sustainable craft pottery project.",
             description="Handmade ceramics and eco-friendly materials.",
             status="fundraising",
@@ -94,6 +95,7 @@ def sample_data():
         Project.objects.create(
             startup=startups[1],
             title="Smart Home Hub",
+            visibility='public',
             short_description="IoT project for smart homes.",
             description="AI integration and smart sensors.",
             status="active",
@@ -106,6 +108,7 @@ def sample_data():
         Project.objects.create(
             startup=startups[2],
             title="Wooden Lamps",
+            visibility='public',
             short_description="Wood design project.",
             description="Unique handcrafted wooden lamps.",
             status="funded",
@@ -206,8 +209,7 @@ def test_filter_by_tag_and_city(client, search_url, sample_data):
 
     results = response.data["results"]
     assert all(
-        ("pottery" in item["tags"]) and (item["city"] == "Lviv")
-        for item in results
+        ("pottery" in item["tags"]) and (item["city"] == "Lviv") for item in results
     )
 
 

@@ -1,7 +1,7 @@
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
 
-from .documents import StartupDocument, ProjectDocument
+from .documents import ProjectDocument, StartupDocument
 
 
 class ElasticSearchSerializer(DocumentSerializer):
@@ -50,6 +50,11 @@ class ProjectDocumentSerializer(ElasticSearchSerializer):
             "tags",
             "created_at",
             "updated_at",
+            "visibility",
+            "startup_id",
+            "startup_name",
+            "location",
+            "thumbnail_url",
         ]
 
     def get_type(self, obj):

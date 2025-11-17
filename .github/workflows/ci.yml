@@ -90,12 +90,24 @@ jobs:
 
       - name: Tests with coverage
         working-directory: backend
+        env:
+          POSTGRES_HOST: db
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ELASTIC_HOST: es
+          ELASTIC_PORT: 9200
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
         run: |
-          echo "Running tests for project apps with detailed output..."
-          coverage run manage.py test --verbosity=2
-          echo ""
-          coverage report
-          coverage xml
+          echo "Running tests with pytest..."
+          pytest --cov --cov-report=xml --cov-report=term -v
+
+#          coverage run manage.py test --verbosity=2
+#          echo ""
+#          coverage report
+#          coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

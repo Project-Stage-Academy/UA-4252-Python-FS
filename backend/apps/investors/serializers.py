@@ -1,14 +1,15 @@
-from django.contrib.contenttypes.models import ContentType
-from rest_framework import serializers
-from django.conf import settings
 from decimal import Decimal
+
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator
+from rest_framework import serializers
 
 from apps.investors.models import (
-    Tracking,
+    ALLOWED_SAVED_MODELS,
     Investment,
     SavedItem,
-    ALLOWED_SAVED_MODELS,
+    Tracking,
 )
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
@@ -89,20 +90,22 @@ class TrackingListSerializer(serializers.ModelSerializer):
             'target',
         ]
 
+
 class InvestmentCreateSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(
         queryset=Project.objects.all(),
         write_only=True,
-        pk_field=serializers.UUIDField()
+        pk_field=serializers.UUIDField(),
     )
 
     amount_committed = serializers.DecimalField(
-        max_digits=18, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        max_digits=18, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))]
     )
     currency = serializers.RegexField(
         r'^[A-Z]{3}$',
-        error_messages={'invalid': 'Currency code must be in ISO-4217 format (e.g., "USD").'}
+        error_messages={
+            'invalid': 'Currency code must be in ISO-4217 format (e.g., "USD").'
+        },
     )
     meta = serializers.JSONField(required=False)
 
@@ -115,17 +118,22 @@ class InvestmentCreateSerializer(serializers.ModelSerializer):
             'currency',
             'meta',
             'status',
-            'created_at'
+            'created_at',
         ]
         read_only_fields = ['id', 'status', 'created_at']
 
     def validate_project(self, project_instance):
         if project_instance.visibility not in ['public', 'investor_allowed']:
-            raise serializers.ValidationError("You cannot invest in this project (not public).")
+            raise serializers.ValidationError(
+                "You cannot invest in this project (not public)."
+            )
 
         FUNDRAISING_STATUS = getattr(settings, 'FUNDRAISING_STATUS', 'fundraising')
         if project_instance.status != FUNDRAISING_STATUS:
-            raise serializers.ValidationError(f"The project is not currently fundraising (status: {project_instance.status}).")
+            raise serializers.ValidationError(
+                f"The project is not currently fundraising ("
+                f"status: {project_instance.status})."
+            )
 
         return project_instance
 
@@ -136,10 +144,9 @@ class InvestmentCreateSerializer(serializers.ModelSerializer):
         validated_data['status'] = 'committed'
 
         return Investment.objects.create(
-            investor=user,
-            project=project,
-            **validated_data
+            investor=user, project=project, **validated_data
         )
+
 
 class InvestmentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -150,6 +157,7 @@ class InvestmentUpdateSerializer(serializers.ModelSerializer):
             'status': {'required': False},
             'meta': {'required': False},
         }
+
 
 class InvestmentListSerializer(serializers.ModelSerializer):
     project_title = serializers.CharField(source='project.title', read_only=True)
@@ -163,7 +171,7 @@ class InvestmentListSerializer(serializers.ModelSerializer):
             'amount_invested',
             'currency',
             'status',
-            'created_at'
+            'created_at',
         ]
 
 
@@ -180,16 +188,15 @@ class SavedItemCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "saved_at"]
 
     def validate(self, attrs):
-        app_label, model_name = (ALLOWED_SAVED_MODELS[attrs.get("target_type")]
-                                 .split("."))
+        app_label, model_name = ALLOWED_SAVED_MODELS[attrs.get("target_type")].split(
+            "."
+        )
         target_type = ContentType.objects.get(app_label=app_label, model=model_name)
         model_class = target_type.model_class()
         target_id = attrs.get("target_id")
 
         if not model_class.objects.filter(id=target_id).exists():
-            raise serializers.ValidationError(
-                {"target_id": "Object not found."}
-            )
+            raise serializers.ValidationError({"target_id": "Object not found."})
 
         attrs["target_type"] = target_type
         return attrs
