@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 type Lang = "uk" | "en";
 type Props = { lang?: Lang };
@@ -38,19 +39,14 @@ export default function PasswordResetConfirm({ lang = "uk" }: Props) {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "invalid">("idle");
 
-  const token = new URLSearchParams(window.location.search).get("token");
-
-  if (!token) {
-    return (
-      <div style={{ maxWidth: 480, margin: "2rem auto", textAlign: "center" }}>
-        <p>{t.invalid}</p>
-        <a href="/forgot-password">{t.resend}</a>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!uid || !token) {
+      setError(t.invalidLink);
+      const timeout = setTimeout(() => navigate("/reset-password", { replace: true }), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [uid, token, navigate, t.invalidLink]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,70 +61,49 @@ export default function PasswordResetConfirm({ lang = "uk" }: Props) {
       const r = await fetch("/api/auth/password-reset/confirm/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, new_password: password }),
+        body: JSON.stringify({ uidb64: uid, token, new_password: password }),
       });
 
-      if (r.ok) setStatus("success");
-      else setStatus("invalid");
-    } catch (err) {
-      setStatus("invalid");
-      console.error?.("password-reset-confirm fetch error", err);
-    } finally {
-      setLoading(false);
+      if (r.ok) {
+        setMsg(t.success);
+        setTimeout(() => navigate("/login"), 2500);
+      } else {
+        setError(t.invalidLink);
+      }
+    } catch {
+      setError(t.invalidLink);
     }
-  }
-
-  if (status === "success") {
-    return (
-      <div style={{ maxWidth: 480, margin: "2rem auto", textAlign: "center" }}>
-        <h1>{t.success}</h1>
-        <a href="/login">{t.login}</a>
-      </div>
-    );
-  }
-
-  if (status === "invalid") {
-    return (
-      <div style={{ maxWidth: 480, margin: "2rem auto", textAlign: "center" }}>
-        <p>{t.invalid}</p>
-        <a href="/forgot-password">{t.resend}</a>
-      </div>
-    );
   }
 
   return (
     <div style={{ maxWidth: 480, margin: "2rem auto", fontFamily: "sans-serif" }}>
       <h1>{t.title}</h1>
-      <form onSubmit={onSubmit}>
-        <label>{t.password}</label>
-        <input
-          type="password"
-          placeholder={t.password}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ display: "block", width: "100%", marginBottom: 8, padding: 8 }}
-        />
 
-        <label>{t.confirm}</label>
-        <input
-          type="password"
-          placeholder={t.confirm}
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          style={{ display: "block", width: "100%", marginBottom: 8, padding: 8 }}
-        />
+      {error && <div style={{ color: "#b00020", marginBottom: 8 }}>{error}</div>}
 
-        {error && (
-          <div role="alert" style={{ color: "#b00020", marginBottom: 8 }}>
-            {error}
-          </div>
-        )}
-        {msg && <div role="status">{msg}</div>}
+      {!error && (
+        <form onSubmit={onSubmit}>
+          <label>{t.passwordLabel}</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ display: "block", width: "100%", marginBottom: 8 }}
+          />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "..." : t.submit}
-        </button>
-      </form>
+          <label>{t.confirmLabel}</label>
+          <input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            style={{ display: "block", width: "100%", marginBottom: 8 }}
+          />
+
+          {msg && <div style={{ color: "#0f7b0f", marginBottom: 8 }}>{msg}</div>}
+
+          <button type="submit">{t.submit}</button>
+        </form>
+      )}
     </div>
   );
 }

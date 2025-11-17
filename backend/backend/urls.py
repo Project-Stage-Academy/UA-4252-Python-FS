@@ -32,6 +32,7 @@ urlpatterns = [
     path("api/content/", include(content_patterns)),
     path("api/users/", include("apps.users.urls")),
     path("api/", include("apps.user_messages.urls")),
+    path("api/interest/", include("apps.interest.urls")),
     path("api/profiles/", include("apps.profiles.urls")),
     path("api/search/", include("apps.search.urls")),
 ]

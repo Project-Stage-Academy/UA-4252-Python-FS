@@ -3,13 +3,30 @@ from decimal import Decimal
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
-from apps.startups.models import SavedStartup
-
 from .models import Project, ProjectAudit
 from .tasks import send_project_notification
+from apps.investors.models import SavedItem
+
+
+def get_investors_by_saved_items(project: Project):
+    project_ct = ContentType.objects.get_for_model(Project)
+    startup_ct = ContentType.objects.get_for_model(project.startup.__class__)
+
+    saved_project_investors = SavedItem.objects.filter(
+        target_type=project_ct,
+        target_id=project.id,
+    ).values_list("investor_id", flat=True)
+
+    saved_startup_investors = SavedItem.objects.filter(
+        target_type=startup_ct,
+        target_id=project.startup.id,
+    ).values_list("investor_id", flat=True)
+
+    return list(saved_project_investors | saved_startup_investors)
 
 User = get_user_model()
 
@@ -85,11 +102,7 @@ def _serialize_value(value):
 @receiver(post_save, sender=Project)
 def project_created_handler(sender, instance, created, **kwargs):
     if created and instance.visibility == 'public':
-        saved_by = SavedStartup.objects.filter(startup=instance.startup).values_list(
-            'investor_id', flat=True
-        )
-
-        recipient_ids = list(saved_by)
+        recipient_ids = get_investors_by_saved_items(instance)
 
         if recipient_ids:
             send_project_notification.delay(
@@ -119,11 +132,7 @@ def project_status_changed_handler(sender, instance, created, **kwargs):
     old_status = getattr(instance, '_old_status', None)
 
     if old_status and old_status != instance.status:
-        saved_by = SavedStartup.objects.filter(startup=instance.startup).values_list(
-            'investor_id', flat=True
-        )
-
-        recipient_ids = list(saved_by)
+        recipient_ids = get_investors_by_saved_items(instance)
 
         if recipient_ids:
             if instance.status == Project.Status.FUNDRAISING:

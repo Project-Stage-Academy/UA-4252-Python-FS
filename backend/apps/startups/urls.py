@@ -12,7 +12,6 @@ router.register('', StartupPublicProfileViewSet, basename='startup')
 projects_router = routers.NestedDefaultRouter(router, r"", lookup="startup")
 projects_router.register(r"projects", ProjectViewSet, basename="startup-projects")
 
-
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(projects_router.urls)),
