@@ -63,6 +63,7 @@ LOCAL_APPS = [
     "apps.users",
     "apps.authentication",
     "apps.profiles",
+    "apps.interest",
     "apps.search",
 ]
 
