@@ -51,7 +51,7 @@ tzdata==2025.2
 urllib3==2.5.0
 virtualenv==20.35.3
 coverage==7.11.0
-pytest==8.4.2
+pytest==9.0.1
 pytest-django==4.11.0
 freezegun==1.5.5
 drf-recaptcha==4.0.3
