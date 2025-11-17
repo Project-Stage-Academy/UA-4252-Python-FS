@@ -148,6 +148,14 @@ class Project(TimeStampedModel):
             return round((self.raised_amount / self.target_amount) * 100, 2)
         return 0.0
 
+    @property
+    def is_searchable(self):
+        return self.visibility == 'public' and not self.is_deleted
+
+    @property
+    def thumbnail_url(self):
+        return self.thumbnail
+
     def __str__(self):
         return self.title
 

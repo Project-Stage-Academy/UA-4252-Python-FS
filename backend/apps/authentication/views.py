@@ -14,7 +14,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .throttling import CommonRedisThrottle, EmailThrottle
 from .emails import send_password_reset_email
 from .serializers import (
     CheckEmailSerializer,
@@ -23,7 +22,7 @@ from .serializers import (
     RegistrationSerializer,
     UserLoginSerializer,
 )
-from .throttling import CommonRedisThrottle
+from .throttling import CommonRedisThrottle, EmailThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -181,6 +180,7 @@ class RegisterView(APIView):
     - Prevents attackers from discovering registered emails
     - Duplicate emails are handled in serializer validation
     """
+
     throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request):
@@ -200,7 +200,9 @@ class RegisterView(APIView):
                     status=status.HTTP_201_CREATED,
                 )
 
-        serializer = RegistrationSerializer(data=request.data, context={'request': request})
+        serializer = RegistrationSerializer(
+            data=request.data, context={'request': request}
+        )
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -238,6 +240,7 @@ class VerifyEmailView(APIView):
     GET /api/auth/verify/<uid>/<token>/
     Activates user account after successful email verification.
     """
+
     throttle_classes = [CommonRedisThrottle, EmailThrottle]
 
     def post(self, request, uid, token):
@@ -292,6 +295,7 @@ class PasswordResetRequestView(APIView):
              password reset link.
         400: Validation errors.
     """
+
     throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
@@ -332,6 +336,7 @@ class PasswordResetConfirmView(APIView):
         200: Sets a new password for a user.
         400: Validation errors.
     """
+
     throttle_classes = [CommonRedisThrottle, EmailThrottle]
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer

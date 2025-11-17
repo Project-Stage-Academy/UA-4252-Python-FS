@@ -21,8 +21,8 @@
       "logo": null,
       "partners_brands": "Google, Microsoft",
       "audit_status": "approved",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2021-11-21T11:30:00Z",
+      "updated_at": "2021-11-21T11:30:00Z"
     }
   },
   {
@@ -47,8 +47,8 @@
       "logo": null,
       "partners_brands": "Tesla, DTEK",
       "audit_status": "pending",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2022-03-05T11:30:00Z",
+      "updated_at": "2022-03-05T11:30:00Z"
     }
   },
   {
@@ -73,8 +73,8 @@
       "logo": null,
       "partners_brands": "PwC, SoftServe",
       "audit_status": "approved",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2023-02-20T11:30:00Z",
+      "updated_at": "2023-02-20T11:30:00Z"
     }
   },
   {
@@ -99,8 +99,8 @@
       "logo": null,
       "partners_brands": "KPI, Coursera",
       "audit_status": "in_review",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2025-05-25T11:30:00Z",
+      "updated_at": "2025-05-25T11:30:00Z"
     }
   },
   {
@@ -125,8 +125,8 @@
       "logo": null,
       "partners_brands": "Ministry of Health",
       "audit_status": "approved",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2023-10-30T11:30:00Z",
+      "updated_at": "2023-10-30T11:30:00Z"
     }
   },
   {
@@ -151,8 +151,8 @@
       "logo": null,
       "partners_brands": "John Deere, AgroBank",
       "audit_status": "approved",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2025-04-01T11:30:00Z",
+      "updated_at": "2025-04-01T11:30:00Z"
     }
   },
   {
@@ -176,8 +176,8 @@
       "logo": null,
       "partners_brands": "ESET, Cisco",
       "audit_status": "pending",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2024-12-03T11:30:00Z",
+      "updated_at": "2024-12-03T11:30:00Z"
     }
   },
   {
@@ -202,8 +202,116 @@
       "logo": null,
       "partners_brands": "NVIDIA, BMW",
       "audit_status": "draft",
-      "created_at": "2025-10-31T11:30:00Z",
-      "updated_at": "2025-10-31T11:30:00Z"
+      "created_at": "2025-09-09T11:30:00Z",
+      "updated_at": "2025-09-09T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "97e8a2f4-5f49-49ff-85f5-48a91b4de2f0",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "BuildWise",
+      "email": "contact@buildwise.ua",
+      "description": "AI-based construction planning and safety platform.",
+      "founded_year": 2021,
+      "team_size": 14,
+      "tags": [
+        "Construction",
+        "AI",
+        "Safety"
+      ],
+      "website": "https://buildwise.ua",
+      "phone": "+380931234100",
+      "city": "Kharkiv",
+      "address": "Pushkinska St, 14",
+      "postal_code": "61002",
+      "logo": null,
+      "partners_brands": "Kovalska, Trimble",
+      "audit_status": "approved",
+      "created_at": "2024-05-22T11:30:00Z",
+      "updated_at": "2024-11-12T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "9e11c7db-9af2-4d0c-b9ce-bb2a7bfc98d9",
+    "fields": {
+      "user": "411a4a83-32fc-4e87-8e07-bece70a99532",
+      "company_name": "FoodPrint",
+      "email": "info@foodprint.io",
+      "description": "Sustainable food traceability system using blockchain.",
+      "founded_year": 2022,
+      "team_size": 9,
+      "tags": [
+        "Agro",
+        "Blockchain",
+        "Sustainability"
+      ],
+      "website": "https://foodprint.io",
+      "phone": "+380931234200",
+      "city": "Odesa",
+      "address": "Katerynynska St, 11",
+      "postal_code": "65026",
+      "logo": null,
+      "partners_brands": "Agrohold, IBM Food Trust",
+      "audit_status": "approved",
+      "created_at": "2023-06-18T11:30:00Z",
+      "updated_at": "2025-01-25T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "ce851b4b-0f92-43ab-8d9b-82c0b01607d4",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "RoboLogix",
+      "email": "team@robologix.tech",
+      "description": "Industrial robotics and automation software.",
+      "founded_year": 2019,
+      "team_size": 22,
+      "tags": [
+        "Robotics",
+        "Automation",
+        "Industry"
+      ],
+      "website": "https://robologix.tech",
+      "phone": "+380991234300",
+      "city": "Dnipro",
+      "address": "Polia Ave, 8",
+      "postal_code": "49005",
+      "logo": null,
+      "partners_brands": "ABB, Siemens",
+      "audit_status": "pending",
+      "created_at": "2022-11-09T11:30:00Z",
+      "updated_at": "2025-04-14T11:30:00Z"
+    }
+  },
+  {
+    "model": "startups.startupprofile",
+    "pk": "b72b841f-cc09-43d5-b5d7-bc40b3e87a23",
+    "fields": {
+      "user": "f6b9392d-6775-48ad-95dd-f2a7732d240a",
+      "company_name": "Artify",
+      "email": "hello@artify.co",
+      "description": "NFT marketplace for digital artists.",
+      "founded_year": 2021,
+      "team_size": 7,
+      "tags": [
+        "Art",
+        "NFT",
+        "Blockchain"
+      ],
+      "website": "https://artify.co",
+      "phone": "+380931234400",
+      "city": "Lviv",
+      "address": "Doroshenka St, 23",
+      "postal_code": "79005",
+      "logo": null,
+      "partners_brands": "OpenSea, Binance NFT",
+      "audit_status": "in_review",
+      "created_at": "2024-02-27T11:30:00Z",
+      "updated_at": "2025-08-15T11:30:00Z"
     }
   }
 ]
