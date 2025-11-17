@@ -92,6 +92,7 @@ class ProfileViewSetTestCase(APITestCase):
 
     def test_retrieve_nonexistent_profile(self):
         """Test retrieving a profile that doesn't exist returns 404"""
+        self.client.force_authenticate(user=self.startup_user)
         non_existent_uuid = uuid.uuid4()
         url = URL_BASE.format(id=non_existent_uuid)
         response = self.client.get(url)
@@ -496,3 +497,74 @@ class ProfileViewSetTestCase(APITestCase):
         # Verify another_profile is NOT published
         another_profile.refresh_from_db()
         self.assertFalse(another_profile.is_published)
+
+    # ==================== AUDIT LOG TESTS ====================
+
+    def test_update_creates_audit_log_with_changes(self):
+        """Test that update creates audit log with changed fields"""
+        self.client.force_authenticate(user=self.startup_user)
+        url = URL_BASE.format(id=str(self.startup_profile.id))
+
+        data = {'company_name': 'Updated Name', 'team_size': 15}
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        from apps.profiles.models import ProfileAudit
+
+        audit_entry = ProfileAudit.objects.filter(startup=self.startup_profile).first()
+
+        self.assertIsNotNone(audit_entry)
+        self.assertEqual(audit_entry.user_id, self.startup_user)
+        self.assertEqual(audit_entry.changes['company_name']['old'], 'Test Startup')
+        self.assertEqual(audit_entry.changes['company_name']['new'], 'Updated Name')
+        self.assertEqual(audit_entry.changes['team_size']['new'], 15)
+
+    def test_publish_creates_audit_log(self):
+        """Test that publishing creates audit log"""
+        self.client.force_authenticate(user=self.startup_user)
+        url = f'/api/profiles/{self.startup_profile.id}/publish/'
+
+        self.client.post(url)
+
+        from apps.profiles.models import ProfileAudit
+
+        audit_entry = ProfileAudit.objects.filter(startup=self.startup_profile).first()
+
+        self.assertIsNotNone(audit_entry)
+        self.assertEqual(audit_entry.changes['is_published']['old'], False)
+        self.assertEqual(audit_entry.changes['is_published']['new'], True)
+
+    def test_no_audit_log_when_no_changes(self):
+        """Test no audit log created when nothing changes"""
+        self.client.force_authenticate(user=self.startup_user)
+        url = URL_BASE.format(id=str(self.startup_profile.id))
+
+        from apps.profiles.models import ProfileAudit
+
+        initial_count = ProfileAudit.objects.count()
+
+        self.client.patch(url, {'company_name': 'Test Startup'}, format='json')
+
+        self.assertEqual(ProfileAudit.objects.count(), initial_count)
+
+    # ==================== HISTORY ENDPOINT TESTS ====================
+
+    def test_get_history_returns_audit_entries(self):
+        """Test history endpoint returns audit entries"""
+        from apps.profiles.models import ProfileAudit
+
+        ProfileAudit.objects.create(
+            user_id=self.startup_user,
+            startup=self.startup_profile,
+            changes={'company_name': {'old': 'Old', 'new': 'New'}},
+        )
+
+        self.client.force_authenticate(user=self.startup_user)
+        url = f'/api/profiles/{self.startup_profile.id}/get_history/'
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertIn('company_name', response.data[0]['changes'])
