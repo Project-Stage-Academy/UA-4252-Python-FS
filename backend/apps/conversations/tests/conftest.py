@@ -3,7 +3,7 @@ from django.conf import settings
 from pymongo import MongoClient
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(autouse=True, scope="function")
 def clean_test_mongo():
     """Clean MongoDB test database before and after the test session."""
 
@@ -24,10 +24,10 @@ def clean_test_mongo():
             f"Refusing to clean non-test MongoDB database: {db.name}"
         )
 
-    # Clean before tests
+    # Clean before every test
     client.drop_database(db_name)
 
-    yield  # run tests
+    yield  # run test
 
-    # Clean after tests
+    # Clean after every test
     client.drop_database(db_name)
