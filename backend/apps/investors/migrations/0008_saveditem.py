@@ -5,10 +5,9 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
-        ('investors', '0006_alter_investorprofile_user'),
+        ('investors', '0007_investorprofile_draft_saved_at_and_more'),
     ]
 
     operations = [

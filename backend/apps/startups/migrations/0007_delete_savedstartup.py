@@ -4,9 +4,8 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('startups', '0005_startupprofile_tags'),
+        ('startups', '0006_startupprofile_draft_saved_at_and_more'),
     ]
 
     operations = [

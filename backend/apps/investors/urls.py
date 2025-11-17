@@ -1,8 +1,20 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
+from .views import (
+    TrackingViewSet,
+    InvestorTrackingListView,
+    SavedItemViewSet,
+)
 
-from .views import SavedItemViewSet
+router = DefaultRouter()
+router.register(r'tracking', TrackingViewSet, basename='tracking')
 
-urlpatterns = [
+investor_patterns = [
+    path(
+        'investors/<uuid:investor_id>/tracking/',
+        InvestorTrackingListView.as_view(),
+        name='investor-tracking-list'
+    ),
     path(
         "<uuid:investor_id>/saved/",
         SavedItemViewSet.as_view({"post": "create"}),
@@ -14,3 +26,5 @@ urlpatterns = [
         name="saved-item-delete",
     ),
 ]
+
+urlpatterns = investor_patterns + router.urls

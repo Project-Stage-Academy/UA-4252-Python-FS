@@ -2,15 +2,14 @@ import hashlib
 
 from django.conf import settings
 from django.core.cache import cache
-from rest_framework.throttling import BaseThrottle
-from apps.users.models import User
 from django.utils.http import urlsafe_base64_decode
+from rest_framework.throttling import BaseThrottle
 
-RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 60)
-DURATION = getattr(settings, "COMMON_REDIS_THROTTLE_DURATION", 60)
+from apps.users.models import User
 
 EMAIL_RATE = getattr(settings, "EMAIL_THROTTLE_RATE", 6)
 EMAIL_DURATION = getattr(settings, "EMAIL_THROTTLE_DURATION", 3600)
+
 
 class CommonRedisThrottle(BaseThrottle):
     """
@@ -37,7 +36,7 @@ class CommonRedisThrottle(BaseThrottle):
         return f"throttle:{request.path}:{ident}:{email_hash}"
 
     def allow_request(self, request, view):
-        key = self.get_cache_key(request, view)
+        key = self.get_cache_key(request)
 
         duration = self._get_duration()
         rate = self._get_rate()
@@ -54,6 +53,7 @@ class CommonRedisThrottle(BaseThrottle):
             current = cache.get(key) or 0
             cache.set(key, int(current) + 1, timeout=duration)
         return True
+
 
 class EmailThrottle(BaseThrottle):
     def get_cache_key(self, request, view):
@@ -72,13 +72,13 @@ class EmailThrottle(BaseThrottle):
             return None
 
         ident = email.strip().lower()
-        
+
         return f"throttle:email:{request.path}:{ident}"
 
     def allow_request(self, request, view):
         key = self.get_cache_key(request, view)
         if key is None:
-            return True 
+            return True
 
         current = cache.get(key)
         if current is None:

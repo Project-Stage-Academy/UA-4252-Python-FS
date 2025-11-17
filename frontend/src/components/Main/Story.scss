@@ -1,0 +1,143 @@
+html {
+  scroll-behavior: smooth;
+}
+
+/* ====== STORY CONTAINER ====== */
+.story {
+  padding: 24px 16px;
+}
+
+.story__grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px; /* контент + сайдбар */
+  gap: 28px;
+}
+
+/* ====== ЛІВА КОЛОНКА ====== */
+.story__pageTitle {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 18px;
+}
+
+.story__section {
+  margin: 0 0 28px;
+}
+
+.story__h3 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.story__content {
+  line-height: 1.8;
+  color: #1f2937;
+}
+
+.story__content p {
+  margin: 0 0 12px;
+}
+
+.story__content strong {
+  font-weight: 700;
+}
+
+.story__content ul {
+  margin: 8px 0 12px 20px;
+}
+
+/* ====== ВИДІЛЕНА СЕКЦІЯ (блакитна) ====== */
+.story__section.is-highlight .story__h3 {
+  padding: 10px 12px;
+  background: #eef6ff;        /* м’яке блакитне тло */
+  border: 2px solid #60a5fa;  /* синя рамка */
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.story__section.is-highlight .story__content {
+  border: 2px dashed #60a5fa; /* пунктир */
+  background: #f8fbff;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+/* ====== ПРАВИЙ САЙДБАР ====== */
+.story__sidebar {
+  position: sticky;
+  top: 80px;
+  height: max-content;
+}
+
+.storyCard {
+  background: #fbfaf5;            /* теплий бежевий */
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.storyCard__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.storyCard__label {
+  width: 44%;
+  padding: 8px 6px;
+  font-size: 13px;
+  color: #6b7280;
+  vertical-align: top;
+}
+
+.storyCard__value {
+  padding: 8px 6px;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-word;
+}
+
+.storyCard a {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+/* ====== TOC (опціональний список якорів) ====== */
+.storyTOC {
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.storyTOC ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.storyTOC a {
+  color: #111;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.storyTOC a:hover {
+  text-decoration: underline;
+}
+
+/* ====== АДАПТИВ ====== */
+@media (max-width: 1080px) {
+  .story__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .story__sidebar {
+    position: static;
+  }
+}

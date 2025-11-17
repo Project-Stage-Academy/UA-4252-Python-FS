@@ -49,6 +49,8 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_filters",
     "drf_recaptcha",
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
@@ -61,6 +63,7 @@ LOCAL_APPS = [
     "apps.users",
     "apps.authentication",
     "apps.profiles",
+    "apps.search",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -131,8 +134,7 @@ if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME":
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -147,7 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.authentication.cookie_auth.CookieJWTAuthentication",
     ),
 }
 
@@ -176,7 +178,6 @@ if os.environ.get("DJANGO_TEST", "0") == "1":
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-for-testing",
     }
-
 
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
@@ -230,3 +231,17 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# ================ ELASTIC SEARCH CONFIGURATION ================
+ES_HOST = os.environ.get("ELASTIC_HOST", "es")
+ES_PORT = os.environ.get("ELASTIC_PORT", 9200)
+
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": f"http://{ES_HOST}:{ES_PORT}",
+        "basic_auth": (
+            os.environ.get("ELASTIC_USERNAME"),
+            os.environ.get("ELASTIC_PASSWORD")
+        ),
+    }
+}
