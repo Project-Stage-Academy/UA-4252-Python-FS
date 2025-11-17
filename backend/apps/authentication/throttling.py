@@ -7,9 +7,6 @@ from rest_framework.throttling import BaseThrottle
 
 from apps.users.models import User
 
-RATE = getattr(settings, "COMMON_REDIS_THROTTLE_RATE", 60)
-DURATION = getattr(settings, "COMMON_REDIS_THROTTLE_DURATION", 60)
-
 EMAIL_RATE = getattr(settings, "EMAIL_THROTTLE_RATE", 6)
 EMAIL_DURATION = getattr(settings, "EMAIL_THROTTLE_DURATION", 3600)
 
@@ -39,7 +36,7 @@ class CommonRedisThrottle(BaseThrottle):
         return f"throttle:{request.path}:{ident}:{email_hash}"
 
     def allow_request(self, request, view):
-        key = self.get_cache_key(request, view)
+        key = self.get_cache_key(request)
 
         duration = self._get_duration()
         rate = self._get_rate()

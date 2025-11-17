@@ -64,6 +64,7 @@ LOCAL_APPS = [
     "apps.users",
     "apps.authentication",
     "apps.profiles",
+    "apps.interest",
     "apps.search",
     "apps.conversations",
 ]
@@ -134,20 +135,19 @@ DATABASES = {
 
 DATABASE_ROUTERS = ["backend.routers.MongoRouter"]
 
-if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+# if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
+#     DATABASES = {
+#         "default": {
+#             "ENGINE": "django.db.backends.sqlite3",
+#             "NAME": BASE_DIR / "db.sqlite3",
+#         }
+#     }
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME":
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -162,7 +162,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.authentication.cookie_auth.CookieJWTAuthentication",
     ),
 }
 
@@ -254,7 +254,7 @@ ELASTICSEARCH_DSL = {
         "hosts": f"http://{ES_HOST}:{ES_PORT}",
         "basic_auth": (
             os.environ.get("ELASTIC_USERNAME"),
-            os.environ.get("ELASTIC_PASSWORD")
+            os.environ.get("ELASTIC_PASSWORD"),
         ),
     }
 }

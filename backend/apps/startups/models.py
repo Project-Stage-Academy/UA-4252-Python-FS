@@ -4,8 +4,8 @@ from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
+from apps.common.utils import logo_upload_to
 
 User = get_user_model()
 
@@ -35,6 +35,11 @@ class StartupProfile(TimeStampedModel):
 
     audit_status = models.CharField(max_length=100, blank=True, default="")
 
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    published_by_id = models.UUIDField(null=True, blank=True)
+    draft_saved_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.company_name
 
@@ -47,23 +52,3 @@ class StartupProfile(TimeStampedModel):
             models.Index(fields=["-created_at"]),
             GinIndex(fields=["tags"], name="startups_tags_gin"),
         ]
-
-
-class SavedStartup(TimeStampedModel):
-    investor = models.ForeignKey(
-        "investors.InvestorProfile",
-        on_delete=models.CASCADE,
-        related_name="saved_startups",
-    )
-    startup = models.ForeignKey(
-        StartupProfile, on_delete=models.CASCADE, related_name="saved_by_investors"
-    )
-    notes = models.TextField(blank=True, default="")
-
-    def __str__(self):
-        return f"Saved {self.startup.company_name} by {self.investor.company_name}"
-
-    class Meta(TimeStampedModel.Meta):
-        verbose_name = "Saved Startup"
-        verbose_name_plural = "Saved Startups"
-        unique_together = ["investor", "startup"]

@@ -1,10 +1,31 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
 
-// @ts-ignore
-global.TextEncoder = TextEncoder;
-// @ts-ignore
-global.TextDecoder = TextDecoder;
+if (typeof (global as any).TextDecoder === 'undefined') {
+  (global as any).TextDecoder = class TextDecoder {
+    decode(input: any) {
+      return input.toString();
+    }
+  };
+}
 
+if (typeof window !== 'undefined') {
+  if (!window.location.assign) {
+    window.location.assign = jest.fn();
+  }
+  if (!window.location.replace) {
+    window.location.replace = jest.fn();
+  }
+  if (!window.location.reload) {
+    window.location.reload = jest.fn();
+  }
+}
 
-window.URL.createObjectURL = jest.fn(() => "mock-url-for-test");
+if (typeof globalThis.fetch === 'undefined') {
+  globalThis.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    })
+  ) as any;
+}

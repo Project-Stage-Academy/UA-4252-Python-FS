@@ -1,8 +1,6 @@
 from django.urls import path
 
-from .views import health
-from .views import LandingContentAPIView
-
+from .views import LandingContentAPIView, health
 
 general_patterns = [
     path("", health, name="health"),

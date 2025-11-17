@@ -5,16 +5,18 @@ from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from apps.common.constants import PROJECT_TRANSITIONS
 from apps.startups.models import StartupProfile
 
-from .models import Project
+from .models import Project, ProjectAudit
 from .pagination import ProjectPagination
-from .permissions import IsOwnerOrReadOnly, IsStartupOwner
+from .permissions import CanViewProject, IsOwnerOrReadOnly, IsStartupOwner
 from .serializers import (
     ProjectAttachmentSerializer,
+    ProjectAuditSerializer,
     ProjectDetailSerializer,
     ProjectListSerializer,
     ProjectsCreateUpdateSerializer,
@@ -78,7 +80,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [IsStartupOwner()]
-        return [IsOwnerOrReadOnly()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnerOrReadOnly()]
+        elif self.action in ['retrieve', 'list']:
+            return [CanViewProject()]
+        elif self.action in ['update_status', 'history']:
+            return [IsAuthenticated(), IsOwnerOrReadOnly()]
+        return [IsAuthenticatedOrReadOnly()]
 
     def _handle_attachment(self, project, request):
         files = request.FILES.getlist('attachments')
@@ -228,6 +236,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'], url_path='history')
+    def history(self, request, pk=None, **kwargs):
+        project = self.get_object()
+
+        queryset = ProjectAudit.objects.filter(project=project).select_related('user')
+
+        action_filter = request.query_params.get('action')
+        if action_filter:
+            queryset = queryset.filter(action=action_filter)
+        paginator = ProjectPagination()
+        page = paginator.paginate_queryset(queryset, request)
+
+        if page is not None:
+            serializer = ProjectAuditSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = ProjectAuditSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def _get_allowed_transitions(self, project):
         allowed = []

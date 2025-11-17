@@ -1,12 +1,14 @@
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
-from apps.common.utils import logo_upload_to
 from apps.common.models import TimeStampedModel
+from apps.common.utils import logo_upload_to, build_limit_choices
 
 User = get_user_model()
 
@@ -40,15 +42,25 @@ REGION_CHOICES = (
     (26, 'Chernivtsi Region'),
 )
 
+ALLOWED_SAVED_MODELS = {
+    "startupprofile": "startups.startupprofile",
+    "project": "projects.project",
+}
+
 
 class InvestorProfile(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='investor_profile')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='investor_profile'
+    )
     company_name = models.CharField(max_length=200)
     full_name = models.CharField(max_length=200)
-    description = models.TextField()
-    investment_range_min = models.DecimalField(max_digits=12, decimal_places=2)
-    investment_range_max = models.DecimalField(max_digits=12, decimal_places=2)
+    description = models.TextField(blank=True, default="")
+    investment_range_min = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    investment_range_max = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
 
     preferred_industries = models.CharField(
         max_length=200
@@ -63,15 +75,23 @@ class InvestorProfile(TimeStampedModel):
     address = models.CharField(max_length=200)
     postal_code = models.CharField(max_length=20)
     logo = models.ImageField(upload_to=logo_upload_to, blank=True, null=True)
-    partners_brands = models.TextField()
+    partners_brands = models.TextField(blank=True, default="")
     audit_status = models.CharField(max_length=50, default="Pending")
 
-    def clean(self):
-        if self.investment_range_max < self.investment_range_min:
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    published_by_id = models.UUIDField(blank=True, null=True)
+    draft_saved_at = models.DateTimeField(auto_now=True)
 
-            raise ValidationError(
-                "Maximum investment must be greater than minimum investment."
-            )
+    def clean(self):
+        if (
+            self.investment_range_min is not None
+            and self.investment_range_max is not None
+        ):
+            if self.investment_range_max < self.investment_range_min:
+                raise ValidationError(
+                    "investment_range_max must be >= investment_range_min"
+                )
 
     def __str__(self):
         return self.company_name
@@ -87,8 +107,7 @@ class Tracking(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name='tracking'
     )
     target_type = models.CharField(
-        choices=[('startup', 'startup'), ('project', 'project')],
-        max_length=32
+        choices=[('startup', 'startup'), ('project', 'project')], max_length=32
     )
     target_id = models.UUIDField()  # FK via generic relation or separate FK fields
     source = models.CharField(
@@ -167,3 +186,33 @@ class PortfolioSnapshot(TimeStampedModel):
         verbose_name = "Portfolio Snapshot"
         verbose_name_plural = "Portfolio Snapshots"
         unique_together = ('investor', 'computed_at')
+
+
+class SavedItem(models.Model):
+    investor = models.ForeignKey(
+        InvestorProfile,
+        on_delete=models.CASCADE,
+        related_name="saved_items",
+    )
+
+    # Generic Foreign Key fields
+    target_type = models.ForeignKey(
+        to=ContentType,
+        limit_choices_to=build_limit_choices(ALLOWED_SAVED_MODELS),
+        on_delete=models.CASCADE,
+    )
+    target_id = models.UUIDField()
+    target_object = GenericForeignKey(
+        ct_field="target_type",
+        fk_field="target_id",
+    )
+
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Saved {self.target_object} by {self.investor.company_name}"
+
+    class Meta:
+        verbose_name = "Saved Items"
+        verbose_name_plural = "Saved Items"
+        unique_together = ["investor", "target_type", "target_id"]
