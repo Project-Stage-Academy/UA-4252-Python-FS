@@ -57,5 +57,5 @@ freezegun==1.5.5
 drf-recaptcha==4.0.3
 elasticsearch==8.12.0
 elasticsearch-dsl==8.12.0
-django-elasticsearch-dsl==8.0
+django-elasticsearch-dsl==9.0
 django-elasticsearch-dsl-drf==0.22.5
