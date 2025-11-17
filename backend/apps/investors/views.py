@@ -1,21 +1,31 @@
-from django.db import IntegrityError, transaction 
+from django.db import IntegrityError, transaction
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, NotFound
 
-from apps.investors.models import Tracking
+from apps.investors.models import (
+    Tracking,
+    Investment,
+    InvestorProfile,
+    SavedItem,
+)
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 from apps.startups.pagination import StartupPagination
 
-from .permissions import IsTrackingOwner, IsInvestorSelf
+from .permissions import IsTrackingOwner, IsInvestorSelf, IsInvestor, IsOwnerOrAdmin
 from .serializers import (
     TrackingCreateSerializer,
     TrackingListSerializer,
     TrackedStartupSerializer,
     TrackedProjectSerializer,
+    InvestmentCreateSerializer,
+    InvestmentUpdateSerializer,
+    InvestmentListSerializer,
+    SavedItemCreateSerializer,
 )
 
 User = get_user_model()
@@ -50,11 +60,11 @@ class TrackingViewSet(mixins.CreateModelMixin,
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         try:
             with transaction.atomic():
                 self.perform_create(serializer)
-            
+
             headers = self.get_success_headers(serializer.data)
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -73,11 +83,11 @@ class TrackingViewSet(mixins.CreateModelMixin,
 class InvestorTrackingListView(generics.ListAPIView):
     """
     View for the investor's list of tracked objects.
-    GET /api/investors/{investor_id}/tracking/ 
+    GET /api/investors/{investor_id}/tracking/
     """
     serializer_class = TrackingListSerializer
     permission_classes = [IsAuthenticated, IsInvestorSelf]
-    pagination_class = StartupPagination 
+    pagination_class = StartupPagination
 
     def get_queryset(self):
         """
@@ -97,7 +107,7 @@ class InvestorTrackingListView(generics.ListAPIView):
         if target_type in ['startup', 'project']:
             queryset = queryset.filter(target_type=target_type)
         else:
-             return queryset.none() 
+            return queryset.none()
 
         return queryset.order_by('-created_at')
 
@@ -120,7 +130,7 @@ class InvestorTrackingListView(generics.ListAPIView):
 
     def fetch_and_inject_targets(self, request, tracking_data):
         """
-        A helpful method for optimized loading 
+        A helpful method for optimized loading
         of startup or project data.
         """
         if not tracking_data:
@@ -131,7 +141,7 @@ class InvestorTrackingListView(generics.ListAPIView):
 
         target_type = tracking_data[0]['target_type']
         target_ids = [item['target_id'] for item in tracking_data]
-        
+
         targets_map = {}
         serializer_context = {'request': request}
 
@@ -141,7 +151,7 @@ class InvestorTrackingListView(generics.ListAPIView):
                 str(t.pk): TrackedStartupSerializer(t, context=serializer_context).data
                 for t in targets
             }
-        
+
         elif target_type == 'project':
             targets = Project.objects.filter(pk__in=target_ids)
             targets_map = {
@@ -149,8 +159,85 @@ class InvestorTrackingListView(generics.ListAPIView):
                 for t in targets
             }
 
-
         for item in tracking_data:
             item['target'] = targets_map.get(str(item['target_id']))
 
         return tracking_data
+
+
+class InvestmentViewSet(mixins.CreateModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+
+    queryset = Investment.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return InvestmentCreateSerializer
+        elif self.action == 'partial_update':
+            return InvestmentUpdateSerializer
+        return InvestmentListSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsInvestor()]
+
+        elif self.action in ['partial_update', 'retrieve']:
+            return [IsAuthenticated(), IsOwnerOrAdmin()]
+
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Investment.objects.none()
+        if user.is_staff:
+            return Investment.objects.all()
+
+        return Investment.objects.filter(investor=user)
+
+
+class InvestorInvestmentsListView(generics.ListAPIView):
+
+    serializer_class = InvestmentListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        investor_id = self.kwargs.get('id')
+        investor = get_object_or_404(User, pk=investor_id)
+
+        if not self.request.user.is_staff and self.request.user.pk != investor.pk:
+            raise PermissionDenied("You can only view your own investments.")
+
+        return Investment.objects.filter(investor=investor).order_by('-created_at')
+
+
+class SavedItemViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = SavedItem.objects.all()
+    serializer_class = SavedItemCreateSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    lookup_url_kwarg = "saved_item_id"
+
+    def get_investor(self):
+        investor_id = self.kwargs.get("investor_id")
+        investor = get_object_or_404(InvestorProfile, id=investor_id)
+
+        if investor.user != self.request.user:
+            raise NotFound("Investor not found.")
+
+        return investor
+
+    def get_queryset(self):
+        investor = self.get_investor()
+        return self.queryset.filter(investor=investor)
+
+    def perform_create(self, serializer):
+        investor = self.get_investor()
+        serializer.save(investor=investor)
