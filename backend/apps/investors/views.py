@@ -4,19 +4,27 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied, NotFound
 
-from apps.investors.models import Tracking, InvestorProfile, SavedItem
+from apps.investors.models import (
+    Tracking,
+    Investment,
+    InvestorProfile,
+    SavedItem,
+)
 from apps.projects.models import Project
 from apps.startups.models import StartupProfile
 from apps.startups.pagination import StartupPagination
 
-from .permissions import IsTrackingOwner, IsInvestorSelf
+from .permissions import IsTrackingOwner, IsInvestorSelf, IsInvestor, IsOwnerOrAdmin
 from .serializers import (
     TrackingCreateSerializer,
     TrackingListSerializer,
     TrackedStartupSerializer,
     TrackedProjectSerializer,
+    InvestmentCreateSerializer,
+    InvestmentUpdateSerializer,
+    InvestmentListSerializer,
     SavedItemCreateSerializer,
 )
 
@@ -155,6 +163,55 @@ class InvestorTrackingListView(generics.ListAPIView):
             item['target'] = targets_map.get(str(item['target_id']))
 
         return tracking_data
+
+
+class InvestmentViewSet(mixins.CreateModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+
+    queryset = Investment.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return InvestmentCreateSerializer
+        elif self.action == 'partial_update':
+            return InvestmentUpdateSerializer
+        return InvestmentListSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated(), IsInvestor()]
+
+        elif self.action in ['partial_update', 'retrieve']:
+            return [IsAuthenticated(), IsOwnerOrAdmin()]
+
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Investment.objects.none()
+        if user.is_staff:
+            return Investment.objects.all()
+
+        return Investment.objects.filter(investor=user)
+
+
+class InvestorInvestmentsListView(generics.ListAPIView):
+
+    serializer_class = InvestmentListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        investor_id = self.kwargs.get('id')
+        investor = get_object_or_404(User, pk=investor_id)
+
+        if not self.request.user.is_staff and self.request.user.pk != investor.pk:
+            raise PermissionDenied("You can only view your own investments.")
+
+        return Investment.objects.filter(investor=investor).order_by('-created_at')
 
 
 class SavedItemViewSet(

@@ -3,17 +3,25 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     TrackingViewSet,
     InvestorTrackingListView,
+    InvestmentViewSet,
+    InvestorInvestmentsListView,
     SavedItemViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'tracking', TrackingViewSet, basename='tracking')
+router.register(r'investments', InvestmentViewSet, basename='investment')
 
 investor_patterns = [
     path(
-        'investors/<uuid:investor_id>/tracking/',
+        '<uuid:investor_id>/tracking/',
         InvestorTrackingListView.as_view(),
         name='investor-tracking-list'
+    ),
+    path(
+        '<uuid:id>/investments/',
+        InvestorInvestmentsListView.as_view(),
+        name='investor-investments-list'
     ),
     path(
         "<uuid:investor_id>/saved/",
