@@ -4,6 +4,8 @@ from rest_framework import serializers
 from apps.investors.models import InvestorProfile
 from apps.startups.models import StartupProfile
 
+from .models import ProfileAudit
+
 
 class UnifiedProfileSerializer(serializers.Serializer):
     # Common fields for Startups and Investors
@@ -151,3 +153,9 @@ class UnifiedProfileUpdateSerializer(serializers.Serializer):
         if value is not None and value > 5000:
             raise serializers.ValidationError("Team size seems unrealistic")
         return value
+
+
+class ProfileAuditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileAudit
+        fields = ['id', 'user_id', 'startup', 'investor', 'changes', 'timestamp']
