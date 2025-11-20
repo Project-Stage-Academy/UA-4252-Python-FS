@@ -22,6 +22,11 @@ jobs:
       ELASTIC_PORT: 9200
       ELASTIC_USERNAME: ${{ secrets.ELASTIC_USERNAME }}
       ELASTIC_PASSWORD: ${{ secrets.ELASTIC_PASSWORD }}
+      MONGO_DB_NAME: test_mongo
+      MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USERNAME }}
+      MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
     services:
       db:
         image: postgres:14
@@ -54,6 +59,16 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+      mongodb:
+        image: mongodb/mongodb-community-server:8.0-ubi8
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        options: >-
+          --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     steps:
       - uses: actions/checkout@v5
@@ -77,11 +92,17 @@ jobs:
           chmod 600 ~/.pgpass
           psql -h "${POSTGRES_HOST}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "SELECT 1;"
 
+      - name: Check MongoDB connection
+        working-directory: backend
+        run: |
+          python manage.py wait_for_mongodb
+
       - name: Check migrations
         working-directory: backend
         run: |
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --noinput
+          python manage.py migrate --database=mongodb --no-input
 
       - name: Check ES connection
         working-directory: backend

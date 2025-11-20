@@ -51,6 +51,7 @@ THIRD_PARTY_APPS = [
     "drf_recaptcha",
     "django_elasticsearch_dsl",
     "django_elasticsearch_dsl_drf",
+    "django_mongodb_backend",
 ]
 
 LOCAL_APPS = [
@@ -65,6 +66,7 @@ LOCAL_APPS = [
     "apps.profiles",
     "apps.interest",
     "apps.search",
+    "apps.conversations",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -120,8 +122,18 @@ DATABASES = {
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": os.environ.get("POSTGRES_HOST"),
         "PORT": os.environ.get("POSTGRES_PORT", 5432),
+    },
+    "mongodb": {
+        "ENGINE": "django_mongodb_backend",
+        "NAME": os.environ.get("MONGO_DB_NAME"),
+        "USER": os.environ.get("MONGO_INITDB_ROOT_USERNAME"),
+        "PASSWORD": os.environ.get("MONGO_INITDB_ROOT_PASSWORD"),
+        "HOST": os.environ.get("MONGO_HOST", "mongodb"),
+        "PORT": os.environ.get("MONGO_PORT", 27017),
     }
 }
+
+DATABASE_ROUTERS = ["backend.routers.MongoRouter"]
 
 # if os.environ.get("USE_SQLITE_FOR_TESTS", "").lower() in {"1", "true", "yes"}:
 #     DATABASES = {
