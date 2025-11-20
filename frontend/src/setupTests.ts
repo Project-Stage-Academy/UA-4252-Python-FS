@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+import 'whatwg-fetch';
 
 if (typeof (global as any).TextDecoder === 'undefined') {
   (global as any).TextDecoder = class TextDecoder {
