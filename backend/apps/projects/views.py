@@ -5,6 +5,7 @@ from django_fsm import TransitionNotAllowed, can_proceed  # noqa: F401
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from apps.common.constants import PROJECT_TRANSITIONS
@@ -12,7 +13,7 @@ from apps.startups.models import StartupProfile
 
 from .models import Project, ProjectAudit
 from .pagination import ProjectPagination
-from .permissions import IsOwnerOrReadOnly, IsStartupOwner
+from .permissions import CanViewProject, IsOwnerOrReadOnly, IsStartupOwner
 from .serializers import (
     ProjectAttachmentSerializer,
     ProjectAuditSerializer,
@@ -79,7 +80,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [IsStartupOwner()]
-        return [IsOwnerOrReadOnly()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnerOrReadOnly()]
+        elif self.action in ['retrieve', 'list']:
+            return [CanViewProject()]
+        elif self.action in ['update_status', 'history']:
+            return [IsAuthenticated(), IsOwnerOrReadOnly()]
+        return [IsAuthenticatedOrReadOnly()]
 
     def _handle_attachment(self, project, request):
         files = request.FILES.getlist('attachments')
