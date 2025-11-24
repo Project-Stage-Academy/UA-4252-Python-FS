@@ -16,7 +16,7 @@ jobs:
       AUTH_LOGIN_THROTTLE: '10/min'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
